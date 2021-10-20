@@ -11,8 +11,14 @@
 #include "macros.h"
 #include "types.h"
 
+#include "graphics.h"
+
 #include "assets.h"
 #include "globals.h"
+
+#include "anime.h"
+#include "stage.h"
+#include "camera.h"
 #include "mario.h"
 
 #endif

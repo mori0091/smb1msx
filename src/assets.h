@@ -27,9 +27,6 @@ extern const char smb1map[];
 /* default color palette */
 extern const palette_t color_palette[16];
 
-/* colors for palette animation of coin / ?-block */
-extern const palette_t coin_colors[8];
-
-void setup_assets(void);
+void assets_setup(void);
 
 #endif

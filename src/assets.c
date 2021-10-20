@@ -2,11 +2,11 @@
 
 #include "smb1.h"
 
-void setup_assets(void) {
+void assets_setup(void) {
   /* Apply palette table to VDP */
   vdp_write_palette(color_palette);
 
-  /* Copy sprite ptterns and sprite colors to VRAM */
+  /* Copy sprite patterns and sprite colors to VRAM */
   vmem_write(SPRITE_PATTERNS, smb1spt, smb1spt_size);
   vmem_write(SPRITE_COLORS, smb1sct, smb1sct_size);
 
