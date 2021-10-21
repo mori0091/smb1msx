@@ -38,7 +38,7 @@
 #define STAGEMAP_VISIBLE_COLS   (16)
 #define STAGEMAP_VISIBLE_ROWS   (14)
 
-#define SCROLL_SPEED_MAX (f10q6i(32))
+#define SCROLL_SPEED_MAX (f10q6i(112))
 
 
 
