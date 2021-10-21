@@ -11,6 +11,19 @@ static void game_core_task(void) {
   camera_set_speed(mario_state.speed);
 }
 
+static void show_fps(void) {
+  const uint16_t jiffy = JIFFY;
+  if (jiffy < 60) return;
+  const uint16_t fps = tick * 60 / jiffy;
+  JIFFY = tick = 0;
+  struct sprite s = {0};
+  sprite_set_xy(&s, 124, 59 - fps);
+  s.pat = 8*4;
+  vmem_write(SPRITES + sizeof(struct sprite) * 8, &s, sizeof(struct sprite));
+  s.pat = 9*4;
+  vmem_write(SPRITES + sizeof(struct sprite) * 9, &s, sizeof(struct sprite));
+}
+
 static void play_game(void) {
   stage_init();
   camera_init();
@@ -33,8 +46,11 @@ static void play_game(void) {
     // ---- stage map rendering task ----
     stage_update_map();
     // ---- game core task ----
-    if (tick & 1) continue;
-    game_core_task();
+    if (tick & 1) {
+      game_core_task();
+    }
+    // ----
+    show_fps();
   }
 }
 
