@@ -5,10 +5,8 @@
 static void game_core_task(void) {
   // update mario's state
   mario_move();
-  // update camera position
+  // update camera position and speed
   camera_move();
-  // update scroll speed
-  camera_set_speed(mario_state.speed);
 }
 
 static void show_fps(void) {

@@ -37,6 +37,7 @@ static void map_renderer_task(void) {
   // To avoid overflow and to keep invariant,
   // correct camera position and next column to be rendered
   if (camera_get_x() >= map_cols * TILE_WIDTH) {
+    mario_set_x(mario_get_x() - map_cols * TILE_WIDTH);
     camera_set_x(camera_get_x() - map_cols * TILE_WIDTH);
     map_next -= map_cols;
   }

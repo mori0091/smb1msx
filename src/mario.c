@@ -2,12 +2,43 @@
 
 #include "smb1.h"
 
+void dynamics_state_update(dynamics_state_t* ds) {
+  /* SDCC does not support assignment to variable of struct / union. */
+  ds->prev_pos.x.i = ds->pos.x.i;
+  ds->prev_pos.x.d = ds->pos.x.d;
+  ds->prev_pos.y.i = ds->pos.y.i;
+  ds->prev_pos.y.d = ds->pos.y.d;
+
+  ds->pos.x.d += ds->vel.x;
+  ds->pos.x.i += ds->pos.x.d >> 6;
+  ds->pos.x.d &= ((1 << 6) - 1);
+
+  ds->pos.y.d += ds->vel.y;
+  ds->pos.y.i += ds->pos.y.d >> 6;
+  ds->pos.y.d &= ((1 << 6) - 1);
+
+  ds->vel.x += ds->acc.x;
+  ds->vel.y += ds->acc.y;
+}
+
 struct mario_state mario_state;
 
 void mario_init(void) {
   mario_state.input = 0;
   mario_state.speed = 0;
   mario_state.facing = FACING_RIGHT;
+
+  /* SDCC does not support ISO C99 compound literal */
+  mario_state.dynamics_state.pos.x.i = 40;
+  mario_state.dynamics_state.pos.x.d = 0;
+  mario_state.dynamics_state.pos.y.i = 176;
+  mario_state.dynamics_state.pos.y.d = 0;
+  mario_state.dynamics_state.vel.x = 0;
+  mario_state.dynamics_state.vel.y = 0;
+  mario_state.dynamics_state.acc.x = 0;
+  mario_state.dynamics_state.acc.y = 0;
+
+  mario_state.collision_state = COLLISION_FLOOR;
 }
 
 void mario_animate(void) {
@@ -24,9 +55,26 @@ void mario_animate(void) {
                  64);
     }
   }
+
+  /* move sprite */
+  struct sprite s = {0};
+  const int16_t x = mario_state.dynamics_state.pos.x.i;
+  const int16_t y = mario_state.dynamics_state.pos.y.i;
+  sprite_set_xy(&s, x - camera_get_x(), y - 1);
+  s.pat = 0;
+  vmem_write(SPRITES + 0 * sizeof(struct sprite), &s, sizeof(struct sprite));
+  s.pat = 4;
+  vmem_write(SPRITES + 1 * sizeof(struct sprite), &s, sizeof(struct sprite));
 }
 
-void mario_move(void) {
+static void mario_update_input_state(void) {
+  const uint8_t joy = joypad_get_state(1);
+  mario_state.input &= 0x30;
+  mario_state.input <<= 2;
+  mario_state.input |= joy & 0x3f;
+}
+
+static void mario_update_speed_on_floor(void) {
   const f10q6_t speed_hi = f10q6i(10);
   const f10q6_t speed_lo = f10q6i(6);
   const uint8_t accel = 16;
@@ -42,9 +90,10 @@ void mario_move(void) {
     BACKWARD_KEY = VK_LEFT;
   }
 
-  uint8_t joy = joypad_get_state(1);
-  if (joy & FORWARD_KEY) {
-    if (joy & VK_FIRE_1) {
+  const uint8_t LR_KEY = mario_state.input & (VK_LEFT | VK_RIGHT);
+
+  if (LR_KEY == FORWARD_KEY) {
+    if (mario_state.input & VK_FIRE_1) {
       mario_state.speed += 2 * accel;
       if (speed_hi <= mario_state.speed) {
         mario_state.speed = speed_hi;
@@ -55,18 +104,69 @@ void mario_move(void) {
       mario_state.speed -= accel;
     }
   }
-  if (joy & BACKWARD_KEY) {
+  else if (LR_KEY == BACKWARD_KEY) {
     if (brake < mario_state.speed) {
       mario_state.speed -= brake;
     } else {
       mario_state.speed = 0;
     }
   }
-  if (0 < mario_state.speed && !(joy & (VK_LEFT | VK_RIGHT))) {
-    mario_state.speed -= accel;
+  else {
+    if (accel < mario_state.speed) {
+      mario_state.speed -= accel;
+    } else {
+      mario_state.speed = 0;
+    }
   }
 
-  mario_state.input &= 0x30;
-  mario_state.input <<= 2;
-  mario_state.input |= joy & 0x3f;
+  if (!mario_state.speed) {
+    if (LR_KEY == VK_LEFT) {
+      mario_state.facing = FACING_LEFT;
+    }
+    if (LR_KEY == VK_RIGHT) {
+      mario_state.facing = FACING_RIGHT;
+    }
+  }
+
+  if (mario_state.facing == FACING_LEFT) {
+    mario_state.dynamics_state.vel.x = -mario_state.speed;
+  } else {
+    mario_state.dynamics_state.vel.x = mario_state.speed;
+  }
+}
+
+static void mario_update_speed_flight(void) {
+  // TODO
+}
+
+static void mario_update_speed(void) {
+  if (mario_state.collision_state & COLLISION_FLOOR) {
+    mario_update_speed_on_floor();
+  } else {
+    mario_update_speed_flight();
+  }
+}
+
+void mario_move(void) {
+  mario_update_input_state();
+
+  dynamics_state_update(&mario_state.dynamics_state);
+  if (mario_state.dynamics_state.pos.x.i < camera_get_x() + 8) {
+    mario_state.dynamics_state.pos.x.i = camera_get_x() + 8;
+    mario_state.dynamics_state.pos.x.d = 0;
+  }
+
+  mario_update_speed();
+}
+
+int16_t mario_get_prev_x(void) {
+  return mario_state.dynamics_state.prev_pos.x.i;
+}
+
+int16_t mario_get_x(void) {
+  return mario_state.dynamics_state.pos.x.i;
+}
+
+void mario_set_x(int16_t x) {
+  mario_state.dynamics_state.pos.x.i = x;
 }
