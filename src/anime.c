@@ -46,25 +46,26 @@ static void coin_palette_animate(void) {
 }
 
 static void demo_animate(void) {
+  const uint8_t p = WALKING_1 + mario_state.facing;
   uint8_t j;
   // sprite animation #1 (every 1 frame ; 60fps @ 60Hz)
   {
     j = tick % 3;
-    vmem_write(SPRITE_PATTERNS+0x100, smb1spt + 64 * (2*j + WALKING_1_R), 64);
+    vmem_write(SPRITE_PATTERNS+0x100, smb1spt + 64 * (2*j + p), 64);
   }
   // sprite animation #2 (every 2 frames ; 30fps @ 60Hz)
-  if (!(tick & 1)) {
+  if (!(tick & 1 ^ 1)) {
     j = (tick >> 1) % 3;
-    vmem_write(SPRITE_PATTERNS+0x140, smb1spt + 64 * (2*j + WALKING_1_R), 64);
+    vmem_write(SPRITE_PATTERNS+0x140, smb1spt + 64 * (2*j + p), 64);
   }
   // sprite animation #3 (every 4 frames ; 15fps @ 60Hz)
-  if (!(tick & 3)) {
+  if (!(tick & 3 ^ 2)) {
     j = (tick >> 2) % 3;
-    vmem_write(SPRITE_PATTERNS+0x180, smb1spt + 64 * (2*j + WALKING_1_R), 64);
+    vmem_write(SPRITE_PATTERNS+0x180, smb1spt + 64 * (2*j + p), 64);
   }
   // sprite animation #4 (every 8 frames ; 7.5fps @ 60Hz)
-  if (!(tick & 7)) {
+  if (!(tick & 7 ^ 4)) {
     j = (tick >> 3) % 3;
-    vmem_write(SPRITE_PATTERNS+0x1C0, smb1spt + 64 * (2*j + WALKING_1_R), 64);
+    vmem_write(SPRITE_PATTERNS+0x1C0, smb1spt + 64 * (2*j + p), 64);
   }
 }

@@ -56,6 +56,7 @@ void mario_animate(void) {
     }
   }
 
+  if ((tick & 1)) return;
   /* move sprite */
   struct sprite s = {0};
   const int16_t x = mario_state.dynamics_state.pos.x.i;
