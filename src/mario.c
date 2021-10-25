@@ -23,6 +23,38 @@ void dynamics_state_update(dynamics_state_t* ds) {
 
 struct mario_state mario_state;
 
+static const vec2i_t W16H16D2[] = {
+  /* layer #1 */
+  {0,0},
+  /* layer #2 */
+  {0,0},
+};
+
+static const uint8_t mario_pats[] = {
+  /* layer #1 */
+  0,
+  /* layer #2 */
+  4,
+};
+
+static const metasprite_t mario_metasprite = {
+  .n = 2,
+  .anchor = {0,0},
+  .layouts = W16H16D2,
+  .pats = mario_pats,
+};
+
+// static const tagged_color_t mario_colors[] = {
+//   1,  2  | SPRITE_TAG_CC,       // Mario colors
+//   14, 13 | SPRITE_TAG_CC,       // Fire colors
+//   14, 5  | SPRITE_TAG_CC,       // Luigi colors
+//   10, 9  | SPRITE_TAG_CC,       // Goomba colors
+// };
+
+static const tagged_color_t mario_colors[] = {
+  1, 2 | SPRITE_TAG_CC,         // Mario colors
+};
+
 void mario_init(void) {
   mario_state.input = 0;
   mario_state.speed = 0;
@@ -39,6 +71,7 @@ void mario_init(void) {
   mario_state.dynamics_state.acc.y = 0;
 
   mario_state.collision_state = COLLISION_FLOOR;
+  vmem_set_sprite_color_m(SPRITES, 0, mario_metasprite.n, mario_colors);
 }
 
 void mario_animate(void) {
@@ -58,14 +91,9 @@ void mario_animate(void) {
 
   if ((tick & 1)) return;
   /* move sprite */
-  struct sprite s = {0};
-  const int16_t x = mario_state.dynamics_state.pos.x.i;
+  const int16_t x = mario_state.dynamics_state.pos.x.i - camera_get_x();
   const int16_t y = mario_state.dynamics_state.pos.y.i;
-  sprite_set_xy(&s, x - camera_get_x(), y - 1);
-  s.pat = 0;
-  vmem_write(SPRITES + 0 * sizeof(struct sprite), &s, sizeof(struct sprite));
-  s.pat = 4;
-  vmem_write(SPRITES + 1 * sizeof(struct sprite), &s, sizeof(struct sprite));
+  vmem_set_metasprite_a(SPRITES, 0, x, y, &mario_metasprite);
 }
 
 static void mario_update_input_state(void) {
