@@ -126,8 +126,13 @@ static void mario_update_input_state(void) {
 
 static const f10q6_t speed_hi = f10q6i(10);
 static const f10q6_t speed_lo = f10q6i(6);
-static const uint8_t accel = 16;
+static const uint8_t accel_hi = 20;
+static const uint8_t accel = 10;
 static const uint8_t brake = 24;
+static const f10q6_t initial_vy_hi = f10q6(-8.5);
+static const f10q6_t initial_vy_lo = f10q6(-8.25);
+static const f10q6_t gravity_hi = f10q6(2.0);
+static const f10q6_t gravity_lo = f10q6(0.5);
 
 static void mario_update_speed_on_floor(void) {
   {
@@ -154,7 +159,7 @@ static void mario_update_speed_on_floor(void) {
 
   if (LR_KEY == FORWARD_KEY) {
     if (mario_state.input & B_BUTTON) {
-      mario_state.speed += 2 * accel;
+      mario_state.speed += accel_hi;
       if (speed_hi <= mario_state.speed) {
         mario_state.speed = speed_hi;
       }
@@ -200,7 +205,7 @@ static void mario_update_speed_flight(void) {
 
   if (LR_KEY == VK_RIGHT) {
     if (mario_state.input & B_BUTTON) {
-      // mario_state.dynamics_state.vel.x += 2 * accel;
+      // mario_state.dynamics_state.vel.x += accel_hi;
       mario_state.dynamics_state.vel.x += accel;
       if (speed_hi <= mario_state.dynamics_state.vel.x) {
         mario_state.dynamics_state.vel.x = speed_hi;
@@ -213,7 +218,7 @@ static void mario_update_speed_flight(void) {
   }
   else if (LR_KEY == VK_LEFT) {
     if (mario_state.input & B_BUTTON) {
-      // mario_state.dynamics_state.vel.x -= 2 * accel;
+      // mario_state.dynamics_state.vel.x -= accel_hi;
       mario_state.dynamics_state.vel.x -= accel;
       if (mario_state.dynamics_state.vel.x <= -speed_hi) {
         mario_state.dynamics_state.vel.x = -speed_hi;
@@ -234,11 +239,11 @@ static void mario_update_speed(void) {
     // jump (set initial vertical velocity and gravity)
     if ((mario_state.input & (A_BUTTON | PREV_A_BUTTON)) == A_BUTTON) {
       if (mario_state.input & B_BUTTON) {
-        mario_state.dynamics_state.vel.y = f10q6i(-9);
+        mario_state.dynamics_state.vel.y = initial_vy_hi;
       } else {
-        mario_state.dynamics_state.vel.y = f10q6i(-8);
+        mario_state.dynamics_state.vel.y = initial_vy_lo;
       }
-      mario_state.dynamics_state.acc.y = f10q6i(1) >> 1;
+      mario_state.dynamics_state.acc.y = gravity_lo;
     }
     // estimate mario's pose
     if (mario_state.collision_state & COLLISION_FLOOR) {
@@ -254,7 +259,7 @@ static void mario_update_speed(void) {
     // jump (control gravity)
     if (!(mario_state.input & A_BUTTON) ||
         0 <= mario_state.dynamics_state.vel.y) {
-      mario_state.dynamics_state.acc.y = f10q6i(1);
+      mario_state.dynamics_state.acc.y = gravity_hi;
     }
     // estimate mario's pose
     if (mario_state.dynamics_state.vel.y < 0) {
@@ -279,6 +284,15 @@ void mario_move(void) {
     }
     if (f10q6i(16) < mario_state.dynamics_state.vel.y) {
       mario_state.dynamics_state.vel.y = f10q6i(16);
+    }
+    if (mario_state.dynamics_state.pos.y.i < -32) {
+      mario_state.dynamics_state.pos.y.i = -32;
+      mario_state.dynamics_state.pos.y.d = 0;
+    }
+    if (211 < mario_state.dynamics_state.pos.y.i) {
+      // \TODO die
+      mario_state.dynamics_state.pos.y.i = -32;
+      mario_state.dynamics_state.pos.y.d = 0;
     }
   }
 
