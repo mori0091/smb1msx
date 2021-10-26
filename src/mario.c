@@ -22,13 +22,94 @@ void dynamics_state_update(dynamics_state_t* ds) {
 }
 
 void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
-  if (ds->pos.y.i < 176) {
-    *cs &= ~COLLISION_FLOOR;
-  } else {
-    *cs |= COLLISION_FLOOR;
-    ds->pos.y.i = 176;
-    ds->pos.y.d = 0;
+  uint8_t c1 = 0;
+  uint8_t c2 = 0;
+  *cs = 0;
+  if (ds->pos.y.i <= -16) {
+    return;
   }
+
+  const uint16_t x0 = ds->pos.x.i % stage_get_width();
+  f16q6_t yy = { .i = ds->pos.y.i, .d = ds->pos.y.d };
+  f10q6_t vy = ds->vel.y;
+
+  {
+    const rect_t box = {
+      .pos  = { 4, 0 },
+      .size = { 8,16 },
+    };
+    const int lx = (x0 + box.pos.x) & 0x0fff0;
+    const int rx = (x0 + box.pos.x + box.size.x - 1) & 0x0fff0;
+
+    if (ds->pos.y.i < ds->prev_pos.y.i) {
+      // - collision check (ceil)
+      int ty = (ds->pos.y.i + box.pos.y - 1) / 16;
+      if (ty < 0) ty = 0;
+      c1 = *(smb1map + lx + ty);
+      c2 = *(smb1map + rx + ty);
+      if ((c1 | c2) & 0x80) {
+        *cs |= COLLISION_CEIL;
+        yy.i = (ds->pos.y.i + 15) & 240;
+        yy.d = 0;
+        vy = abs(ds->vel.y);
+      }
+    }
+    else {
+      // - collision check (floor)
+      int by = (ds->pos.y.i + box.pos.y + box.size.y) / 16;
+      if (by > 13) by = 13;
+      c1 = *(smb1map + lx + by);
+      c2 = *(smb1map + rx + by);
+      if ((c1 | c2) & 0x80) {
+        *cs |= COLLISION_FLOOR;
+        yy.i = ds->pos.y.i & 240;
+        yy.d = 0;
+        vy = 0;
+      }
+    }
+  }
+  {
+    // - collision check (left / right)
+    const rect_t box = {
+      .pos  = { 2, 0 },
+      .size = { 12,16 },
+    };
+    uint16_t xa;
+    uint16_t xb;
+    uint16_t xc;
+    uint8_t a;
+    uint8_t b;
+    if (ds->prev_pos.x.i < ds->pos.x.i) {
+      xa = box.pos.x + box.size.x - 1;
+      xb = (ds->pos.x.i +  0) & 0x0fff0;
+      xc = 16 - (box.pos.x + box.size.x);
+      a = c1;
+      b = COLLISION_RIGHT;
+    } else {
+      xa = box.pos.x;
+      xb = (ds->pos.x.i + 15) & 0x0fff0;
+      xc = -box.pos.x;
+      a = c2;
+      b = COLLISION_LEFT;
+    }
+    const uint16_t u = (x0 + xa) & 0x0fff0;
+    const uint8_t c = (*(smb1map + u + (yy.i + 0 ) / 16) |
+                       *(smb1map + u + (yy.i + 15) / 16));
+    if (c & 0x080) {
+      ds->pos.x.i = xb + xc;
+      ds->pos.x.d = 0;
+      ds->vel.x = 0;
+      *cs |= b;
+      // recheck ceil/floor, then clear flag or apply y/vy
+      if (!(a & 0x080)) {
+        *cs &= ~(COLLISION_FLOOR | COLLISION_CEIL);
+        return;
+      }
+    }
+  }
+  ds->pos.y.i = yy.i;
+  ds->pos.y.d = yy.d;
+  ds->vel.y = vy;
 }
 
 struct mario_state mario_state;
