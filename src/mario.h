@@ -47,6 +47,7 @@ enum mario_pose {
   JUMPING_L   = 2,
   JUMPING_R   = 3,
 
+  WALKING     = 4,
   WALKING_1   = 4,
   WALKING_1_L = 4,
   WALKING_1_R = 5,
@@ -69,6 +70,7 @@ struct mario_state {
     FACING_LEFT  = 0,
     FACING_RIGHT = 1,
   } facing;
+  enum mario_pose pose;
   dynamics_state_t dynamics_state;
   collision_state_t collision_state;
 };

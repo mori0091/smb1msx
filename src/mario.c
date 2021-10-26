@@ -21,6 +21,16 @@ void dynamics_state_update(dynamics_state_t* ds) {
   ds->vel.y += ds->acc.y;
 }
 
+void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
+  if (ds->pos.y.i < 176) {
+    *cs &= ~COLLISION_FLOOR;
+  } else {
+    *cs |= COLLISION_FLOOR;
+    ds->pos.y.i = 176;
+    ds->pos.y.d = 0;
+  }
+}
+
 struct mario_state mario_state;
 
 static const vec2i_t W16H16D2[] = {
@@ -59,6 +69,7 @@ void mario_init(void) {
   mario_state.input = 0;
   mario_state.speed = 0;
   mario_state.facing = FACING_RIGHT;
+  mario_state.pose = STANDING;
 
   /* SDCC does not support ISO C99 compound literal */
   mario_state.dynamics_state.pos.x.i = 40;
@@ -75,18 +86,23 @@ void mario_init(void) {
 }
 
 void mario_animate(void) {
-  if (mario_state.speed == 0) {
+  switch (mario_state.pose) {
+  default:
+  case STANDING:
+  case JUMPING:
     vmem_write(SPRITE_PATTERNS+0x000,
-               smb1spt + 64 * (STANDING + mario_state.facing),
+               smb1spt + 64 * (mario_state.pose + mario_state.facing),
                64);
-  } else {
+    break;
+  case WALKING:;
     const uint8_t b = (mario_state.input & VK_FIRE_1) ? 1 : 2;
     if (!(tick & ((1 << b) - 1))) {
       const uint8_t j = (tick >> b) % 3;
       vmem_write(SPRITE_PATTERNS+0x000,
-                 smb1spt + 64 * (2*j + (WALKING_1 + mario_state.facing)),
+                 smb1spt + 64 * (2*j + (WALKING + mario_state.facing)),
                  64);
     }
+    break;
   }
 
   if ((tick & 1)) return;
@@ -103,11 +119,26 @@ static void mario_update_input_state(void) {
   mario_state.input |= joy & 0x3f;
 }
 
+#define A_BUTTON       VK_FIRE_0
+#define B_BUTTON       VK_FIRE_1
+#define PREV_A_BUTTON  (VK_FIRE_0 << 2)
+#define PREV_B_BUTTON  (VK_FIRE_1 << 2)
+
+static const f10q6_t speed_hi = f10q6i(10);
+static const f10q6_t speed_lo = f10q6i(6);
+static const uint8_t accel = 16;
+static const uint8_t brake = 24;
+
 static void mario_update_speed_on_floor(void) {
-  const f10q6_t speed_hi = f10q6i(10);
-  const f10q6_t speed_lo = f10q6i(6);
-  const uint8_t accel = 16;
-  const uint8_t brake = 24;
+  {
+    if (mario_state.dynamics_state.vel.x < 0) {
+      mario_state.facing = FACING_LEFT;
+    }
+    if (0 < mario_state.dynamics_state.vel.x) {
+      mario_state.facing = FACING_RIGHT;
+    }
+    mario_state.speed = abs(mario_state.dynamics_state.vel.x);
+  }
 
   uint8_t FORWARD_KEY;
   uint8_t BACKWARD_KEY;
@@ -122,7 +153,7 @@ static void mario_update_speed_on_floor(void) {
   const uint8_t LR_KEY = mario_state.input & (VK_LEFT | VK_RIGHT);
 
   if (LR_KEY == FORWARD_KEY) {
-    if (mario_state.input & VK_FIRE_1) {
+    if (mario_state.input & B_BUTTON) {
       mario_state.speed += 2 * accel;
       if (speed_hi <= mario_state.speed) {
         mario_state.speed = speed_hi;
@@ -165,14 +196,70 @@ static void mario_update_speed_on_floor(void) {
 }
 
 static void mario_update_speed_flight(void) {
-  // TODO
+  const uint8_t LR_KEY = mario_state.input & (VK_LEFT | VK_RIGHT);
+
+  if (LR_KEY == VK_RIGHT) {
+    if (mario_state.input & B_BUTTON) {
+      // mario_state.dynamics_state.vel.x += 2 * accel;
+      mario_state.dynamics_state.vel.x += accel;
+      if (speed_hi <= mario_state.dynamics_state.vel.x) {
+        mario_state.dynamics_state.vel.x = speed_hi;
+      }
+    } else if (mario_state.dynamics_state.vel.x < speed_lo) {
+      mario_state.dynamics_state.vel.x += accel;
+    } else {
+      // mario_state.dynamics_state.vel.x -= accel;
+    }
+  }
+  else if (LR_KEY == VK_LEFT) {
+    if (mario_state.input & B_BUTTON) {
+      // mario_state.dynamics_state.vel.x -= 2 * accel;
+      mario_state.dynamics_state.vel.x -= accel;
+      if (mario_state.dynamics_state.vel.x <= -speed_hi) {
+        mario_state.dynamics_state.vel.x = -speed_hi;
+      }
+    } else if (-speed_lo < mario_state.dynamics_state.vel.x) {
+      mario_state.dynamics_state.vel.x -= accel;
+    } else {
+      // mario_state.dynamics_state.vel.x += accel;
+    }
+  }
+  mario_state.speed = abs(mario_state.dynamics_state.vel.x);
 }
 
 static void mario_update_speed(void) {
   if (mario_state.collision_state & COLLISION_FLOOR) {
+    // update horizontal speed
     mario_update_speed_on_floor();
+    // jump (set initial vertical velocity and gravity)
+    if ((mario_state.input & (A_BUTTON | PREV_A_BUTTON)) == A_BUTTON) {
+      if (mario_state.input & B_BUTTON) {
+        mario_state.dynamics_state.vel.y = f10q6i(-9);
+      } else {
+        mario_state.dynamics_state.vel.y = f10q6i(-8);
+      }
+      mario_state.dynamics_state.acc.y = f10q6i(1) >> 1;
+    }
+    // estimate mario's pose
+    if (mario_state.collision_state & COLLISION_FLOOR) {
+      if (mario_state.speed == 0) {
+        mario_state.pose = STANDING;
+      } else {
+        mario_state.pose = WALKING;
+      }
+    }
   } else {
+    // update horizontal speed
     mario_update_speed_flight();
+    // jump (control gravity)
+    if (!(mario_state.input & A_BUTTON) ||
+        0 <= mario_state.dynamics_state.vel.y) {
+      mario_state.dynamics_state.acc.y = f10q6i(1);
+    }
+    // estimate mario's pose
+    if (mario_state.dynamics_state.vel.y < 0) {
+      mario_state.pose = JUMPING;
+    }
   }
 }
 
@@ -180,10 +267,23 @@ void mario_move(void) {
   mario_update_input_state();
 
   dynamics_state_update(&mario_state.dynamics_state);
-  if (mario_state.dynamics_state.pos.x.i < camera_get_x() + 8) {
-    mario_state.dynamics_state.pos.x.i = camera_get_x() + 8;
-    mario_state.dynamics_state.pos.x.d = 0;
+
+  {
+    // Limits the state of the dynamics to between the upper and lower limits.
+    if (mario_state.dynamics_state.pos.x.i < camera_get_x() + 8) {
+      mario_state.dynamics_state.pos.x.i = camera_get_x() + 8;
+      mario_state.dynamics_state.pos.x.d = 0;
+    }
+    if (mario_state.dynamics_state.vel.y < f10q6i(-16)) {
+      mario_state.dynamics_state.vel.y = f10q6i(-16);
+    }
+    if (f10q6i(16) < mario_state.dynamics_state.vel.y) {
+      mario_state.dynamics_state.vel.y = f10q6i(16);
+    }
   }
+
+  collision_state_update(&mario_state.collision_state,
+                         &mario_state.dynamics_state);
 
   mario_update_speed();
 }
