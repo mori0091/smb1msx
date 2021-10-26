@@ -10,16 +10,6 @@
 
 #include "types.h"
 
-typedef struct vec2f16q6 {
-  f16q6_t x;
-  f16q6_t y;
-} vec2f16q6_t;
-
-typedef struct vec2f10q6 {
-  f10q6_t x;
-  f10q6_t y;
-} vec2f10q6_t;
-
 typedef struct dynamics_state {
   vec2f16q6_t prev_pos;    // previous position
   vec2f16q6_t pos;         // position
