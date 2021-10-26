@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 /**
  * Initialize `stage` module.
  */
@@ -14,6 +16,20 @@ void stage_init(void);
  * Setup and render the 1st page of stage map.
  */
 void stage_setup_map(void);
+
+/**
+ * Returns number of columns of the current stage.
+ *
+ * \return number of columns of the current stage.
+ */
+uint16_t stage_get_columns(void);
+
+/**
+ * Returns number of horizontal pixels of the current stage.
+ *
+ * \return TILE_WIDTH * stage_get_columns()
+ */
+uint16_t stage_get_width(void);
 
 /**
  * Update rendered stage map according to camera's position and speed.

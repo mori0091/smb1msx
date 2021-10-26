@@ -17,6 +17,14 @@ void stage_init(void) {
   timeslots_counter = 0;
 }
 
+uint16_t stage_get_columns(void) {
+  return map_cols;
+}
+
+uint16_t stage_get_width(void) {
+  return map_cols * TILE_WIDTH;
+}
+
 void stage_setup_map(void) {
   /* Render the 1st page of the stage map */
   for (int j = 0; j < STAGEMAP_PAGE_COLS; ++j) {
