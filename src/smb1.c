@@ -28,7 +28,7 @@ static void play_game(void) {
   mario_init();
 
   stage_setup_map();
-  anime_show_sprites();
+  // anime_show_sprites();
 
   vdp_set_sprite_visible(true);
   vdp_set_visible(true);
