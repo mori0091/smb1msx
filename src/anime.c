@@ -12,12 +12,6 @@ void anime_show_sprites(void) {
     s.pat = 4 * i;
     vmem_write(SPRITES + 4 * i, &s, sizeof(struct sprite));
   }
-  // ---- Mario (player) ---- (#0,#1)
-  sprite_set_xy(&s, 124, 175);
-  s.pat = 0;
-  vmem_write(SPRITES + 0, &s, sizeof(struct sprite));
-  s.pat = 4;
-  vmem_write(SPRITES + 4, &s, sizeof(struct sprite));
 }
 
 static void coin_palette_animate(void);
