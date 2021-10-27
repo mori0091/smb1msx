@@ -69,6 +69,8 @@ extern struct mario_state mario_state;
 
 void mario_init(void);
 void mario_animate(void);
+void mario_animate_die(void);
+void mario_update_input_state(void);
 void mario_move(void);
 
 int16_t mario_get_prev_x(void);

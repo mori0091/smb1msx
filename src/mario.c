@@ -2,6 +2,21 @@
 
 #include "smb1.h"
 
+#define A_BUTTON       VK_FIRE_0
+#define B_BUTTON       VK_FIRE_1
+#define PREV_A_BUTTON  (VK_FIRE_0 << 2)
+#define PREV_B_BUTTON  (VK_FIRE_1 << 2)
+
+static const f10q6_t speed_hi = f10q6i(10);
+static const f10q6_t speed_lo = f10q6i(6);
+static const uint8_t accel_hi = 20;
+static const uint8_t accel = 10;
+static const uint8_t brake = 24;
+static const f10q6_t initial_vy_hi = f10q6(-8.5);
+static const f10q6_t initial_vy_lo = f10q6(-8.25);
+static const f10q6_t gravity_hi = f10q6(2.0);
+static const f10q6_t gravity_lo = f10q6(0.5);
+
 void dynamics_state_update(dynamics_state_t* ds) {
   /* SDCC does not support assignment to variable of struct / union. */
   ds->prev_pos.x.i = ds->pos.x.i;
@@ -195,6 +210,9 @@ void mario_animate(void) {
                  64);
     }
     break;
+  case DEAD:
+    vmem_write(SPRITE_PATTERNS+0x000, smb1spt + 64 * (mario_state.pose), 64);
+    break;
   }
 
   if ((tick & 1)) return;
@@ -204,27 +222,38 @@ void mario_animate(void) {
   vmem_set_metasprite_a(SPRITES, 0, x, y, &mario_metasprite);
 }
 
-static void mario_update_input_state(void) {
+void mario_animate_die(void) {
+  mario_state.pose = DEAD;
+  mario_state.input = A_BUTTON;
+  mario_state.speed = 0;
+  if (212 - 16 < mario_state.dynamics_state.pos.y.i) {
+    mario_state.dynamics_state.pos.y.i = 212 - 16;
+  }
+  mario_state.dynamics_state.vel.y = f10q6(-20.0);
+  mario_state.dynamics_state.vel.x = 0;
+  mario_state.dynamics_state.acc.y = gravity_hi;
+  mario_state.dynamics_state.acc.x = 0;
+
+  await_interrupt();
+  mario_animate();
+  for (int i = 0; i < 40; ++i) {
+    await_interrupt();
+  }
+  do {
+    tick++;
+    await_interrupt();
+    mario_animate();
+    if (tick & 1) continue;
+    dynamics_state_update(&mario_state.dynamics_state);
+  } while (mario_state.dynamics_state.pos.y.i <= 240);
+}
+
+void mario_update_input_state(void) {
   const uint8_t joy = joypad_get_state(1);
   mario_state.input &= 0x30;
   mario_state.input <<= 2;
   mario_state.input |= joy & 0x3f;
 }
-
-#define A_BUTTON       VK_FIRE_0
-#define B_BUTTON       VK_FIRE_1
-#define PREV_A_BUTTON  (VK_FIRE_0 << 2)
-#define PREV_B_BUTTON  (VK_FIRE_1 << 2)
-
-static const f10q6_t speed_hi = f10q6i(10);
-static const f10q6_t speed_lo = f10q6i(6);
-static const uint8_t accel_hi = 20;
-static const uint8_t accel = 10;
-static const uint8_t brake = 24;
-static const f10q6_t initial_vy_hi = f10q6(-8.5);
-static const f10q6_t initial_vy_lo = f10q6(-8.25);
-static const f10q6_t gravity_hi = f10q6(2.0);
-static const f10q6_t gravity_lo = f10q6(0.5);
 
 static void mario_update_speed_on_floor(void) {
   {
@@ -361,8 +390,6 @@ static void mario_update_speed(void) {
 }
 
 void mario_move(void) {
-  mario_update_input_state();
-
   dynamics_state_update(&mario_state.dynamics_state);
 
   {
@@ -382,9 +409,9 @@ void mario_move(void) {
       mario_state.dynamics_state.pos.y.d = 0;
     }
     if (211 < mario_state.dynamics_state.pos.y.i) {
-      // \TODO die
-      mario_state.dynamics_state.pos.y.i = -32;
+      mario_state.dynamics_state.pos.y.i = 212;
       mario_state.dynamics_state.pos.y.d = 0;
+      event_set(EV_PLAYER_DIES);
     }
   }
 

@@ -7,6 +7,8 @@
 
 void anime_show_sprites(void);
 
+void anime_clear_sprites(void);
+
 void anime_update(void);
 
 #endif

@@ -16,6 +16,8 @@
 #include "assets.h"
 #include "globals.h"
 
+#include "event.h"
+
 #include "anime.h"
 #include "stage.h"
 #include "camera.h"
