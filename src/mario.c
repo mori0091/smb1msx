@@ -34,15 +34,14 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
   f10q6_t vy = ds->vel.y;
 
   {
-    const rect_t box = {
-      .pos  = { 4, 0 },
-      .size = { 8,16 },
-    };
-    const int lx = (x0 + box.pos.x) & 0x0fff0;
-    const int rx = (x0 + box.pos.x + box.size.x - 1) & 0x0fff0;
-
     if (ds->pos.y.i < ds->prev_pos.y.i) {
       // - collision check (ceil)
+      const rect_t box = {
+        .pos  = { 6, 0 },
+        .size = { 4,16 },
+      };
+      const int lx = (x0 + box.pos.x) & 0x0fff0;
+      const int rx = (x0 + box.pos.x + box.size.x - 1) & 0x0fff0;
       int ty = (ds->pos.y.i + box.pos.y - 1) / 16;
       if (ty < 0) ty = 0;
       c1 = *(smb1map + lx + ty);
@@ -56,6 +55,12 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
     }
     else {
       // - collision check (floor)
+      const rect_t box = {
+        .pos  = { 3, 0 },
+        .size = { 10,16 },
+      };
+      const int lx = (x0 + box.pos.x) & 0x0fff0;
+      const int rx = (x0 + box.pos.x + box.size.x - 1) & 0x0fff0;
       int by = (ds->pos.y.i + box.pos.y + box.size.y) / 16;
       if (by > 13) by = 13;
       c1 = *(smb1map + lx + by);
@@ -74,12 +79,18 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
       .pos  = { 2, 0 },
       .size = { 12,16 },
     };
+    bool check_right;
+    if (ds->prev_pos.x.i == ds->pos.x.i) {
+      check_right = (ds->pos.x.i & 15) < 8;
+    } else {
+      check_right = ds->prev_pos.x.i < ds->pos.x.i;
+    }
     uint16_t xa;
     uint16_t xb;
     uint16_t xc;
     uint8_t a;
     uint8_t b;
-    if (ds->prev_pos.x.i < ds->pos.x.i) {
+    if (check_right) {
       xa = box.pos.x + box.size.x - 1;
       xb = (ds->pos.x.i +  0) & 0x0fff0;
       xc = 16 - (box.pos.x + box.size.x);
