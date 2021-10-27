@@ -48,7 +48,7 @@ static void play_game(void) {
       game_core_task();
     }
     // ----
-    show_fps();
+    // show_fps();
   }
 }
 
