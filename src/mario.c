@@ -7,15 +7,15 @@
 #define PREV_A_BUTTON  (VK_FIRE_0 << 2)
 #define PREV_B_BUTTON  (VK_FIRE_1 << 2)
 
-static const f10q6_t speed_hi = f10q6i(10);
-static const f10q6_t speed_lo = f10q6i(6);
-static const uint8_t accel_hi = 20;
-static const uint8_t accel = 10;
-static const uint8_t brake = 24;
-static const f10q6_t initial_vy_hi = f10q6(-8.5);
-static const f10q6_t initial_vy_lo = f10q6(-8.25);
-static const f10q6_t gravity_hi = f10q6(2.0);
-static const f10q6_t gravity_lo = f10q6(0.5);
+#define speed_hi       f10q6i(10)
+#define speed_lo       f10q6i(6)
+#define accel_hi       ((uint8_t)20)
+#define accel          ((uint8_t)10)
+#define brake          ((uint8_t)24)
+#define initial_vy_hi  f10q6(-8.5)
+#define initial_vy_lo  f10q6(-8.25)
+#define gravity_hi     f10q6(2.0)
+#define gravity_lo     f10q6(0.5)
 
 void dynamics_state_update(dynamics_state_t* ds) {
   /* SDCC does not support assignment to variable of struct / union. */
@@ -36,31 +36,43 @@ void dynamics_state_update(dynamics_state_t* ds) {
   ds->vel.y += ds->acc.y;
 }
 
+static uint8_t stage_get_object_at(int x, int y) {
+  y /= TILE_HEIGHT;
+  if (y < 0) y = 0;
+  if (y > 13) y = 13;
+  return *(smb1map + (x & 0x0fff0) + y);
+}
+
 void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
-  uint8_t c1 = 0;
-  uint8_t c2 = 0;
+  static uint8_t c1;            // ceil / floor object #1
+  static uint8_t c2;            // ceil / floor object #2
+  static f16q6_t yy;            // Candidate for corrected Y-coordinate position.
+  static f10q6_t vy;            // Candidate for corrected Y-coordinate velocity.
+
+  c1 = 0;
+  c2 = 0;
   *cs = 0;
   if (ds->pos.y.i <= -16) {
     return;
   }
 
   const uint16_t x0 = ds->pos.x.i % stage_get_width();
-  f16q6_t yy = { .i = ds->pos.y.i, .d = ds->pos.y.d };
-  f10q6_t vy = ds->vel.y;
+  yy.i = ds->pos.y.i;
+  yy.d = ds->pos.y.d;
+  vy = ds->vel.y;
 
   {
     if (ds->pos.y.i < ds->prev_pos.y.i) {
       // - collision check (ceil)
-      const rect_t box = {
+      static const rect_t box = {
         .pos  = { 6, 0 },
         .size = { 4,16 },
       };
-      const int lx = (x0 + box.pos.x) & 0x0fff0;
-      const int rx = (x0 + box.pos.x + box.size.x - 1) & 0x0fff0;
-      int ty = (ds->pos.y.i + box.pos.y - 1) / 16;
-      if (ty < 0) ty = 0;
-      c1 = *(smb1map + lx + ty);
-      c2 = *(smb1map + rx + ty);
+      const int lx = x0 + box.pos.x;
+      const int rx = lx + box.size.x - 1;
+      const int ty = ds->pos.y.i + box.pos.y - 1;
+      c1 = stage_get_object_at(lx, ty);
+      c2 = stage_get_object_at(rx, ty);
       if ((c1 | c2) & 0x80) {
         *cs |= COLLISION_CEIL;
         yy.i = (ds->pos.y.i + 15) & 240;
@@ -70,16 +82,15 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
     }
     else {
       // - collision check (floor)
-      const rect_t box = {
+      static const rect_t box = {
         .pos  = { 3, 0 },
         .size = { 10,16 },
       };
-      const int lx = (x0 + box.pos.x) & 0x0fff0;
-      const int rx = (x0 + box.pos.x + box.size.x - 1) & 0x0fff0;
-      int by = (ds->pos.y.i + box.pos.y + box.size.y) / 16;
-      if (by > 13) by = 13;
-      c1 = *(smb1map + lx + by);
-      c2 = *(smb1map + rx + by);
+      const int lx = x0 + box.pos.x;
+      const int rx = lx + box.size.x - 1;
+      const int by = ds->pos.y.i + box.pos.y + box.size.y;
+      c1 = stage_get_object_at(lx, by);
+      c2 = stage_get_object_at(rx, by);
       if ((c1 | c2) & 0x80) {
         *cs |= COLLISION_FLOOR;
         yy.i = ds->pos.y.i & 240;
@@ -90,39 +101,37 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
   }
   {
     // - collision check (left / right)
-    const rect_t box = {
+    static const rect_t box = {
       .pos  = { 2, 0 },
       .size = { 12,16 },
     };
+
     bool check_right;
     if (ds->prev_pos.x.i == ds->pos.x.i) {
       check_right = (ds->pos.x.i & 15) < 8;
     } else {
       check_right = ds->prev_pos.x.i < ds->pos.x.i;
     }
+
     uint16_t xa;
     uint16_t xb;
-    uint16_t xc;
     uint8_t a;
     uint8_t b;
     if (check_right) {
-      xa = box.pos.x + box.size.x - 1;
-      xb = (ds->pos.x.i +  0) & 0x0fff0;
-      xc = 16 - (box.pos.x + box.size.x);
+      xa = x0 + box.pos.x + box.size.x - 1;
+      xb = ((ds->pos.x.i +  0) & 0x0fff0) - box.pos.x - box.size.x + 16;
       a = c1;
       b = COLLISION_RIGHT;
     } else {
-      xa = box.pos.x;
-      xb = (ds->pos.x.i + 15) & 0x0fff0;
-      xc = -box.pos.x;
+      xa = x0 + box.pos.x;
+      xb = ((ds->pos.x.i + 15) & 0x0fff0) - box.pos.x;
       a = c2;
       b = COLLISION_LEFT;
     }
-    const uint16_t u = (x0 + xa) & 0x0fff0;
-    const uint8_t c = (*(smb1map + u + (yy.i + 0 ) / 16) |
-                       *(smb1map + u + (yy.i + 15) / 16));
+    const uint8_t c = (stage_get_object_at(xa, yy.i + 0 ) |
+                       stage_get_object_at(xa, yy.i + 15));
     if (c & 0x080) {
-      ds->pos.x.i = xb + xc;
+      ds->pos.x.i = xb;
       ds->pos.x.d = 0;
       ds->vel.x = 0;
       *cs |= b;
@@ -173,6 +182,7 @@ static const tagged_color_t mario_colors[] = {
 };
 
 void mario_init(void) {
+  // mario_state.life = 3;
   mario_state.input = 0;
   mario_state.speed = 0;
   mario_state.facing = FACING_RIGHT;

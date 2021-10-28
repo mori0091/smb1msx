@@ -54,6 +54,7 @@ enum mario_pose {
 };
 
 struct mario_state {
+  int8_t life;
   uint8_t input;
   f10q6_t speed;
   enum facing {
@@ -76,5 +77,25 @@ void mario_move(void);
 int16_t mario_get_prev_x(void);
 int16_t mario_get_x(void);
 void mario_set_x(int16_t x);
+
+inline int8_t mario_get_life(void) {
+  return mario_state.life;
+}
+
+inline void mario_set_life(int8_t life) {
+  mario_state.life = life;
+}
+
+inline void mario_died(void) {
+  mario_state.life--;
+}
+
+inline void mario_1up(void) {
+  mario_state.life++;
+}
+
+inline bool mario_is_over(void) {
+  return mario_state.life < 0;
+}
 
 #endif
