@@ -14,6 +14,8 @@
 #include "graphics.h"
 
 #include "assets.h"
+#include "font.h"
+#include "text.h"
 #include "globals.h"
 
 #include "event.h"
