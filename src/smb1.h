@@ -16,7 +16,7 @@
 #include "assets.h"
 #include "font.h"
 #include "text.h"
-#include "globals.h"
+#include "timer.h"
 
 #include "event.h"
 
@@ -24,7 +24,5 @@
 #include "stage.h"
 #include "camera.h"
 #include "mario.h"
-
-void sleep_ticks(const uint16_t ticks);
 
 #endif

@@ -44,25 +44,6 @@ static void game_core_task(void) {
   camera_move();
 }
 
-static void show_fps(void) {
-  const uint16_t jiffy = JIFFY;
-  if (jiffy < 60) return;
-  const uint16_t fps = tick * 60 / jiffy;
-  JIFFY = tick = 0;
-  struct sprite s = {0};
-  sprite_set_xy(&s, 124, 59 - fps);
-  s.pat = 8*4;
-  vmem_set_sprite(SPRITES, 8, &s);
-  s.pat = 9*4;
-  vmem_set_sprite(SPRITES, 9, &s);
-}
-
-void sleep_ticks(const uint16_t ticks) {
-  for (uint16_t i = 0; i < ticks; ++i) {
-    await_interrupt();
-  }
-}
-
 static void set_visible(bool visible) {
   vdp_set_visible(visible);
   vdp_set_sprite_visible(visible);
@@ -145,9 +126,9 @@ static void show_title_demo(void) {
     set_visible(true);
 
     // ---- Title screen ----
-    JIFFY = tick = 0;
+    timer_reset();
     while (tick < 300) {
-      ++tick;
+      timer_update();
       // wait for VSYNC interrupt and interrupt handler finished
       await_interrupt();
       // ---- sound / visual output task ----
@@ -160,9 +141,9 @@ static void show_title_demo(void) {
     }
 
     // ---- auto pilot demo ----
-    JIFFY = tick = 0;
+    timer_reset();
     while (tick < 600) {
-      ++tick;
+      timer_update();
       // wait for VSYNC interrupt and interrupt handler finished
       await_interrupt();
       // ---- sound / visual output task ----
@@ -221,9 +202,9 @@ static void play_game(void) {
     set_visible(true);
 
     bool restart = false;
-    JIFFY = tick = 0;
+    timer_reset();
     while (!restart) {
-      ++tick;
+      timer_update();
       // wait for VSYNC interrupt and interrupt handler finished
       await_interrupt();
       // ---- sound / visual output task ----
@@ -246,7 +227,6 @@ static void play_game(void) {
         break;
       }
       // ----
-      // show_fps();
     }
   }
   // game over
@@ -268,6 +248,7 @@ void main(void) {
   graphics_init_vdp();
   graphics_clear_vram();
   assets_setup();
+  timer_set_fps_visible(true);
   for (;;) {
     mario_set_life(3);
     show_title_demo();

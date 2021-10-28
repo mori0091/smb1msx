@@ -20,9 +20,14 @@ extern const char smb1tile[];
 extern const size_t smb1map_size;
 extern const char smb1map[];
 
-/* default color palette */
+/**
+ * Default color palette.
+ */
 extern const palette_t color_palette[16];
 
+/**
+ * Enumerations of color combination for layered sprites.
+ */
 enum sprite_palette {
   SPRITE_PALETTE_1 = 0,
   SPRITE_PALETTE_2 = 1,
