@@ -43,7 +43,7 @@ static void show_fps(void) {
   vmem_set_sprite(SPRITES, 9, &s);
 }
 
-static void sleep_ticks(const uint16_t ticks) {
+void sleep_ticks(const uint16_t ticks) {
   for (uint16_t i = 0; i < ticks; ++i) {
     await_interrupt();
   }

@@ -246,9 +246,7 @@ void mario_animate_die(void) {
 
   await_interrupt();
   mario_animate();
-  for (int i = 0; i < 40; ++i) {
-    await_interrupt();
-  }
+  sleep_ticks(40);
   do {
     tick++;
     await_interrupt();

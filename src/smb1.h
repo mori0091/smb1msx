@@ -25,4 +25,6 @@
 #include "camera.h"
 #include "mario.h"
 
+void sleep_ticks(const uint16_t ticks);
+
 #endif
