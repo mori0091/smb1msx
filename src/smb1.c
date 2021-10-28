@@ -2,18 +2,32 @@
 
 #include "smb1.h"
 
+static void mario_update_input_state_autopilot(void) {
+  mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
+  mario_state.input |= (mario_state.input << 2);
+  if (mario_get_x() < 200) {
+    mario_state.input |= VK_RIGHT;
+  }
+  else if (mario_get_x() < 256+76 && mario_state.speed < f10q6(1.0)) {
+    mario_state.input |= VK_RIGHT;
+  }
+  else if (tick < 210 && 0 < mario_state.speed) {
+    mario_state.input &= ~VK_RIGHT;
+  }
+  else if (tick < 210 && 0 == mario_state.speed) {
+    mario_state.input |= VK_FIRE_0;
+  }
+  else if (mario_get_x() < 256+92 && mario_state.speed < f10q6(1.0)) {
+    mario_state.input |= VK_RIGHT;
+  } else {
+    mario_state.input &= ~VK_RIGHT;
+  }
+}
+
 static void game_core_task_autopilot(void) {
   if (!(tick & 1)) return;
   // update mario's input
-  if (mario_get_x() < 216) {
-    mario_state.input = VK_RIGHT;
-  }
-  else if (mario_get_x() < 256+92 && mario_state.speed < f10q6(1.0)) {
-    mario_state.input = VK_RIGHT;
-  }
-  else {
-    mario_state.input = 0;
-  }
+  mario_update_input_state_autopilot();
   // update mario's state
   mario_move();
   // update camera position and speed
@@ -49,38 +63,86 @@ void sleep_ticks(const uint16_t ticks) {
   }
 }
 
+static void set_visible(bool visible) {
+  vdp_set_visible(visible);
+  vdp_set_sprite_visible(visible);
+}
+
+static void clear_screen(void) {
+  await_interrupt();
+  vdp_set_hscroll(0);
+  vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
+  anime_clear_sprites();
+}
+
+static void get_ready(void) {
+  event_init();
+  stage_init();
+  camera_init();
+  mario_init();
+  stage_setup_map();
+}
+
+static const char title_logo[] =
+  "efccdfeadf\n"
+  "ijccchcbck\n"
+  "ghghc gacc\n"
+  "\n"
+  "elfefdfcef dfdfefef\n"
+  "cccccccccc cccccccc\n"
+  "cccccckccc ckckccij\n"
+  "cccdcccccc cccccccc\n"
+  "ccccccccgh chccghghc";
+
+#define BX (44)
+#define BY (15)
+#define BW (176)
+#define BH (88)
+
+static void draw_title_logo(void) {
+  // ---- draw title
+  // top border
+  vmem_memset(IMAGE+BY*128+BX/2, 0xaa, BW/2);
+  for (int i = 1; i < BH-1; ++i) {
+    vmemptr_t p = IMAGE+(BY+i)*128+BX/2;
+    vmem_memset(p       , 0xab, 1);      // left border
+    vmem_memset(p+1     , 0xbb, BW/2-2); // background
+    vmem_memset(p+BW/2-1, 0xb9, 1);      // right border
+  }
+  // bottom border
+  vmem_memset(IMAGE+(BY+BH-1)*128+BX/2, 0x99, BW/2);
+
+  // vdp_cmd_execute_LMMV(0,512,256,212,0xbb, VDP_CMD_IMP);
+  set_text_color(9,11);
+  locate(0,512);
+  puts(title_logo);
+  vdp_cmd_execute_LMMM(0,512,20*8,9*8,6*8+5,3*8+4, VDP_CMD_TIMP);
+  set_text_color(10,0);
+  locate(0,512);
+  puts(title_logo);
+  vdp_cmd_execute_LMMM(0,512,20*8,9*8,6*8+4,3*8, VDP_CMD_TIMP);
+
+  set_text_color(10,12);
+  locate(13*8+4,13*8);
+  puts("@1985 NINTENDO");
+  set_text_color(14,12);
+  locate(11*8+4,16*8);
+  puts("1 PLAYER GAME\n"
+       "\n"
+       "2 PLAYER GAME");
+}
+
 static void show_title_demo(void) {
   for (;;) {
-    vdp_set_visible(false);
-    vdp_set_sprite_visible(false);
+    set_visible(false);
 
-    await_interrupt();
-    vdp_set_hscroll(0);
-    vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
-    {
-      anime_clear_sprites();
+    clear_screen();
+    get_ready();
+    draw_title_logo();
 
-      event_init();
-      stage_init();
-      camera_init();
-      mario_init();
-
-      stage_setup_map();
-      // draw title
-      const int x = 45;
-      const int y = 17;
-      const int w = 174;
-      const int h = 86;
-      vdp_cmd_execute_LMMV(x  , y  , w, h, 0xbb, VDP_CMD_IMP); // background
-      vdp_cmd_execute_LMMV(x  , y-1, w, 1, 0xaa, VDP_CMD_IMP); // top border
-      vdp_cmd_execute_LMMV(x  , y+h, w, 1, 0x99, VDP_CMD_IMP); // bottom border
-      vdp_cmd_execute_LMMV(x-1, y  , 1, h, 0xaa, VDP_CMD_IMP); // left border
-      vdp_cmd_execute_LMMV(x+w, y  , 1, h, 0x99, VDP_CMD_IMP); // right border
-    }
     vdp_cmd_await();
 
-    vdp_set_sprite_visible(true);
-    vdp_set_visible(true);
+    set_visible(true);
 
     // ---- Title screen ----
     JIFFY = tick = 0;
@@ -92,8 +154,7 @@ static void show_title_demo(void) {
       // vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
       anime_update();
       // ----
-      uint8_t joy = joypad_get_state(1);
-      if (joy & VK_FIRE_0) {
+      if (joypad_get_state(1) & VK_FIRE_0) {
         return;                 // start the game!
       }
     }
@@ -112,8 +173,7 @@ static void show_title_demo(void) {
       // ---- game core task ----
       game_core_task_autopilot();     // autopilot
       // ----
-      uint8_t joy = joypad_get_state(1);
-      if (joy & VK_FIRE_0) {
+      if (joypad_get_state(1) & VK_FIRE_0) {
         break;                  // return to title
       }
     }
@@ -121,24 +181,18 @@ static void show_title_demo(void) {
 }
 
 static void show_level_intro(void) {
-  vdp_set_visible(false);
-  vdp_set_sprite_visible(false);
+  set_visible(false);
 
-  await_interrupt();
-  vdp_set_hscroll(0);
-  vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
+  clear_screen();
 
-  vdp_cmd_execute_LMMV(124-36, 104-40, 40, 8, 0xee, VDP_CMD_IMP); // WORLD
-  vdp_cmd_execute_LMMV(124+12, 104-40, 8, 8, 0x55, VDP_CMD_IMP); // (major)
-  vdp_cmd_execute_LMMV(124+20, 104-40, 8, 8, 0xee, VDP_CMD_IMP); // -
-  vdp_cmd_execute_LMMV(124+28, 104-40, 8, 8, 0xdd, VDP_CMD_IMP); // (minor)
-  vdp_cmd_execute_LMMV(124-4, 104-8, 8, 8, 0xee, VDP_CMD_IMP); // x
-  vdp_cmd_execute_LMMV(124+12, 104-8, 8, 8, 0x55, VDP_CMD_IMP); // 10
-  vdp_cmd_execute_LMMV(124+20, 104-8, 8, 8, 0xdd, VDP_CMD_IMP); // 1
+  set_text_color(14,0);
+  locate(11*8+4, 8*8); puts("WORLD 1-1");
+  locate(15*8+4,12*8); puts("x ");
+  putc('0' + mario_get_life() / 10 % 10);
+  putc('0' + mario_get_life() % 10);
   {
-    anime_clear_sprites();
     struct sprite s = {0};
-    sprite_set_xy(&s, 124-28, 104-16-1);
+    sprite_set_xy(&s, 124-24, 104-16-1);
     s.pat = 0 * 4;
     vmem_set_sprite(SPRITES, 0, &s);
     s.pat = 1 * 4;
@@ -149,33 +203,24 @@ static void show_level_intro(void) {
   }
   vdp_cmd_await();
 
-  vdp_set_sprite_visible(true);
-  vdp_set_visible(true);
+  set_visible(true);
 
   sleep_ticks(180);
 }
 
 static void play_game(void) {
-  bool restart = true;
-  for (;;) {
-    if (restart) {
-      show_level_intro();
-    }
-    vdp_set_visible(false);
-    vdp_set_sprite_visible(false);
+  while (!mario_is_over()) {
+    show_level_intro();
 
-    event_init();
-    stage_init();
-    camera_init();
-    mario_init();
+    set_visible(false);
 
-    stage_setup_map();
+    get_ready();
+
     // anime_show_sprites();
 
-    vdp_set_sprite_visible(true);
-    vdp_set_visible(true);
+    set_visible(true);
 
-    restart = false;
+    bool restart = false;
     JIFFY = tick = 0;
     while (!restart) {
       ++tick;
@@ -195,6 +240,7 @@ static void play_game(void) {
       case EV_PLAYER_DIES:
         // CUT IN ANIMATION: MARIO DIES
         mario_animate_die();
+        mario_died();
         restart = true;
         sleep_ticks(60);
         break;
@@ -203,6 +249,19 @@ static void play_game(void) {
       // show_fps();
     }
   }
+  // game over
+}
+
+static void game_over(void) {
+  set_visible(false);
+
+  clear_screen();
+  set_text_color(14, 0);
+  locate(96,96);
+  puts("GAME OVER");
+
+  set_visible(true);
+  sleep_ticks(180);
 }
 
 void main(void) {
@@ -210,7 +269,9 @@ void main(void) {
   graphics_clear_vram();
   assets_setup();
   for (;;) {
+    mario_set_life(3);
     show_title_demo();
     play_game();
+    game_over();
   }
 }
