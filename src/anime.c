@@ -2,17 +2,17 @@
 
 #include "smb1.h"
 
-void anime_show_sprites(void) {
-  // // Show 16 sprite characters for demo
-  // struct sprite s = {0};
-  // for (int i = 0; i < 32; ++i) {
-  //   int x =  8 + 16 * (i / 2 % 4);
-  //   int y = -1 + 16 * (i / 8);
-  //   sprite_set_xy(&s, x, y);
-  //   s.pat = 4 * i;
-  //   vmem_set_sprite(SPRITES, i, &s);
-  // }
-}
+// void anime_show_sprites(void) {
+//   // Show 16 sprite characters for demo
+//   struct sprite s = {0};
+//   for (int i = 0; i < 32; ++i) {
+//     int x =  8 + 16 * (i / 2 % 4);
+//     int y = -1 + 16 * (i / 8);
+//     sprite_set_xy(&s, x, y);
+//     s.pat = 4 * i;
+//     vmem_set_sprite(SPRITES, i, &s);
+//   }
+// }
 
 void anime_clear_sprites(void) {
   // Show 16 sprite characters for demo
