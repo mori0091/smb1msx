@@ -15,7 +15,6 @@
 // }
 
 static void coin_palette_animate(void);
-static void demo_animate(void);
 
 void anime_update(void) {
   mario_animate();
