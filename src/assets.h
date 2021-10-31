@@ -34,27 +34,31 @@ enum sprite_palette {
   SPRITE_PALETTE_3 = 2,
   SPRITE_PALETTE_4 = 3,
   SPRITE_PALETTE_5 = 4,
-  // aliases (Mario color)
-  MARIO_PALETTE          = SPRITE_PALETTE_1,
-  // aliases (Fire color)
-  FIRE_PALETTE           = SPRITE_PALETTE_2,
-  FIRE_MARIO_PALETTE     = SPRITE_PALETTE_2,
-  FIRE_LUIGI_PALETTE     = SPRITE_PALETTE_2,
-  MUSHROOM_PALETTE       = SPRITE_PALETTE_2,
-  STARMAN_PALETTE        = SPRITE_PALETTE_2,
-  STARMAN_1_PALETTE      = SPRITE_PALETTE_2,
-  // aliases (Luigi color)
-  LUIGI_PALETTE          = SPRITE_PALETTE_3,
-  GREEN_MUSHROOM_PALETTE = SPRITE_PALETTE_3,
-  GREEN_KOOPA_PALETTE    = SPRITE_PALETTE_3,
-  // aliases (Block color)
-  BLOCK_PALETTE          = SPRITE_PALETTE_4,
-  BRICK_PALETTE          = SPRITE_PALETTE_4,
-  GOOMBA_PALETTE         = SPRITE_PALETTE_4,
-  // aliases (Fireflower color)
-  FIREFLOWER_PALETTE     = SPRITE_PALETTE_5,
-  FIREFLOWER_1_PALETTE   = SPRITE_PALETTE_5,
 };
+
+// aliases (Mario color)
+#define MARIO_PALETTE           SPRITE_PALETTE_1
+// aliases (Fire color)
+#define FIRE_PALETTE            SPRITE_PALETTE_2
+#define FIRE_MARIO_PALETTE      SPRITE_PALETTE_2
+#define FIRE_LUIGI_PALETTE      SPRITE_PALETTE_2
+#define MUSHROOM_PALETTE        SPRITE_PALETTE_2
+#define STARMAN_PALETTE         SPRITE_PALETTE_2
+#define STARMAN_1_PALETTE       SPRITE_PALETTE_2
+// aliases (Luigi color)
+#define LUIGI_PALETTE           SPRITE_PALETTE_3
+#define GREEN_MUSHROOM_PALETTE  SPRITE_PALETTE_3
+#define GREEN_KOOPA_PALETTE     SPRITE_PALETTE_3
+// aliases (Block color)
+#define BLOCK_PALETTE           SPRITE_PALETTE_4
+#define BRICK_PALETTE           SPRITE_PALETTE_4
+#define GOOMBA_PALETTE          SPRITE_PALETTE_4
+// aliases (Fireflower color)
+#define FIREFLOWER_PALETTE      SPRITE_PALETTE_5
+#define FIREFLOWER_1_PALETTE    SPRITE_PALETTE_5
+// aliases (text w/ drop-shadow)
+#define TEXT_1_PALETTE          SPRITE_PALETTE_2
+#define TEXT_2_PALETTE          SPRITE_PALETTE_3
 
 void assets_setup(void);
 

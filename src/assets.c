@@ -26,7 +26,7 @@ const enum sprite_palette sp[] = {
   [12] = FIREFLOWER_PALETTE,
   [13] = STARMAN_PALETTE,
   [14] = BLOCK_PALETTE,
-  [15] = BRICK_PALETTE,
+  [15] = TEXT_1_PALETTE,
 };
 
 void assets_setup(void) {
