@@ -32,10 +32,12 @@ static uint8_t user_freq;
 static uint8_t main_fps;
 static uint8_t user_fps;
 
-#define FPS_SPRITE_PAT     (63*4)
+#define FPS_SPRITE_PAT     FPS_SPRITE_PAT_1
+#define FPS_SPRITE_PAT_1   (252) /* top-left 8x8 pix */
+#define FPS_SPRITE_PAT_2   (253) /* bottom-left 8x8 pix */
 #define FPS_SPRITE_PLANE   FPS_SPRITE_PLANE_1
-#define FPS_SPRITE_PLANE_1 (18)
-#define FPS_SPRITE_PLANE_2 (19)
+#define FPS_SPRITE_PLANE_1 (30)
+#define FPS_SPRITE_PLANE_2 (31)
 
 static uint16_t prev_sys_tick;
 static uint16_t prev_main_tick;
@@ -43,18 +45,21 @@ static uint16_t prev_user_tick;
 
 static bool fps_visible;
 
-void timer_set_fps_visible(bool visible) {
-  static struct sprite s;
-  s.pat = FPS_SPRITE_PAT;
-  s.x = 240;
-  s.y = (visible ? 195 : 217);
-  vdp_cmd_await();
-  vmem_set_sprite(SPRITES, FPS_SPRITE_PLANE, &s);
-  /* s.x++; */
-  /* s.y++; */
-  /* vmem_set_sprite(SPRITES, FPS_SPRITE_PLANE+1, &s); */
+static const struct sprite fps_sprite[2] = {
+  {.y = 195, .x = 240, .pat = FPS_SPRITE_PAT, },
+  {.y = 196, .x = 241, .pat = FPS_SPRITE_PAT, },
+};
 
-  vmem_memset(SPRITE_PATTERNS + 8 * FPS_SPRITE_PAT, 0, 32);
+void timer_set_fps_visible(bool visible) {
+  vdp_cmd_await();
+  if (visible) {
+    graphics_set_sprite(FPS_SPRITE_PLANE  , &fps_sprite[0]);
+    graphics_set_sprite(FPS_SPRITE_PLANE+1, &fps_sprite[1]);
+  } else {
+    graphics_hide_sprite(FPS_SPRITE_PLANE);
+    graphics_hide_sprite(FPS_SPRITE_PLANE+1);
+  }
+  graphics_clear_sprite_pat(FPS_SPRITE_PAT, 32);
   fps_visible = visible;
 }
 
@@ -79,12 +84,15 @@ void timer_reset(void) {
   prev_sys_tick2 = 0;
 }
 
-static void timer_update_fps_sprite(uint8_t fps, uint8_t offset) {
+static void timer__update_fps_sprite(uint8_t fps, uint8_t pat) {
+  graphics_set_sprite_pat(pat  , font_get_8x8_gryph('0'+ fps / 10 % 10), 8);
+  graphics_set_sprite_pat(pat+2, font_get_8x8_gryph('0'+ fps % 10), 8);
+}
+
+static void timer_update_fps_sprite(void) {
   vdp_cmd_await();
-  vmem_write(SPRITE_PATTERNS + 8 * FPS_SPRITE_PAT + offset,
-             font_get_8x8_gryph('0'+ fps / 10 % 10), 8);
-  vmem_write(SPRITE_PATTERNS + 8 * FPS_SPRITE_PAT + offset + 16,
-             font_get_8x8_gryph('0'+ fps % 10), 8);
+  timer__update_fps_sprite(main_fps, FPS_SPRITE_PAT_1);
+  timer__update_fps_sprite(user_fps, FPS_SPRITE_PAT_2);
 }
 
 static void timer_update_fps(void) {
@@ -96,13 +104,12 @@ static void timer_update_fps(void) {
   user_fps = (user_tick - prev_user_tick) * VSYNC_FREQ / dt;
   prev_main_tick = tick;
   prev_user_tick = user_tick;
-  // -- display fps --
-  timer_update_fps_sprite(main_fps, 0);
-  timer_update_fps_sprite(user_fps, 8);
 }
 
 static void timer_update_user_tick(void) {
   const uint16_t t0 = JIFFY;
+  const uint16_t dt = t0 - prev_sys_tick2;
+  prev_sys_tick2 = t0;
   const uint16_t count_per_user_tick = COUNT_PER_SECOND / user_freq;
   user_tick_delta = 0;
   while (count_per_user_tick <= user_accum) {
@@ -110,14 +117,14 @@ static void timer_update_user_tick(void) {
     user_tick_delta++;
     user_tick++;
   }
-  user_accum += (COUNT_PER_SECOND / VSYNC_FREQ * (t0 - prev_sys_tick2));
-  prev_sys_tick2 = t0;
+  user_accum += (COUNT_PER_SECOND / VSYNC_FREQ * dt);
 }
 
 #define timer_update_main_tick()   (++tick)
 
 void timer_update(void) {
   timer_update_fps();
+  timer_update_fps_sprite();
   timer_update_main_tick();
   timer_update_user_tick();
 }
