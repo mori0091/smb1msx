@@ -2,6 +2,8 @@
 
 #include "smb1.h"
 
+static bool autopilot;
+
 static void mario_update_input_state_autopilot(void) {
   mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
   mario_state.input |= (mario_state.input << 2);
@@ -17,25 +19,6 @@ static void mario_update_input_state_autopilot(void) {
   }
 }
 
-static void game_core_task_autopilot(void) {
-  if (!(tick & 1)) return;
-  // update mario's input
-  mario_update_input_state_autopilot();
-  // update mario's state
-  mario_move();
-  // update camera position and speed
-  camera_move();
-}
-
-static void game_core_task(void) {
-  if (!(tick & 1)) return;
-  // update mario's input
-  mario_update_input_state();
-  // update mario's state
-  mario_move();
-  // update camera position and speed
-  camera_move();
-}
 // static void mario_update_input_state_autopilot(void) {
 //   mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
 //   mario_state.input |= (mario_state.input << 2);
@@ -77,6 +60,42 @@ static void get_ready(void) {
   stage_setup_map();
 }
 
+static bool game_main(void) {
+  timer_update();
+  // wait for VSYNC interrupt and interrupt handler finished
+  await_interrupt();
+  // ---- sound / visual output task ----
+  vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
+  anime_update();
+  // ---- event dispatch ----
+  switch (event_get()) {
+  default:
+    // ---- stage map rendering task ----
+    stage_update_map();
+    // ---- game core task ----
+    while (user_tick_delta--) {
+      // update mario's input
+      if (autopilot) {
+        mario_update_input_state_autopilot();
+      } else {
+        mario_update_input_state();
+      }
+      // update mario's state
+      mario_move();
+      // update camera position and speed
+      camera_move();
+    }
+    break;
+  case EV_PLAYER_DIES:
+    // CUT IN ANIMATION: MARIO DIES
+    mario_animate_die();
+    mario_died();
+    sleep_millis(1000);
+    return false;
+  }
+  return true;
+}
+
 static const char title_logo[] =
   "efccdfeadf\n"
   "ijccchcbck\n"
@@ -106,7 +125,6 @@ static void draw_title_logo(void) {
   // bottom border
   vmem_memset(IMAGE+(BY+BH-1)*128+BX/2, 0x99, BW/2);
 
-  // vdp_cmd_execute_LMMV(0,512,256,212,0xbb, VDP_CMD_IMP);
   set_text_color(9,11);
   locate(0,512);
   puts(title_logo);
@@ -127,6 +145,7 @@ static void draw_title_logo(void) {
 }
 
 static void show_title_demo(void) {
+  mario_set_life(3);
   for (;;) {
     set_visible(false);
 
@@ -140,7 +159,7 @@ static void show_title_demo(void) {
 
     // ---- Title screen ----
     timer_reset();
-    while (tick < 300) {
+    while (user_tick < 150) {
       timer_update();
       // wait for VSYNC interrupt and interrupt handler finished
       await_interrupt();
@@ -154,18 +173,12 @@ static void show_title_demo(void) {
     }
 
     // ---- auto pilot demo ----
-    timer_reset();
-    while (tick < 600) {
-      timer_update();
-      // wait for VSYNC interrupt and interrupt handler finished
-      await_interrupt();
-      // ---- sound / visual output task ----
-      vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
-      anime_update();
-      // ---- stage map rendering task ----
-      stage_update_map();
-      // ---- game core task ----
-      game_core_task_autopilot();     // autopilot
+    autopilot = true;
+    // timer_reset();
+    while (user_tick < 150+510) {
+      if (!game_main()) {
+        break;                  // (mario died) return to title
+      }
       // ----
       if (joypad_get_state(1) & VK_FIRE_0) {
         break;                  // return to title
@@ -179,9 +192,15 @@ static void show_level_intro(void) {
 
   clear_screen();
 
+  vdp_cmd_await();
+
   set_text_color(14,0);
-  locate(11*8+4, 8*8); puts("WORLD 1-1");
-  locate(15*8+4,12*8); puts("x ");
+  locate(11*8+4, 8*8);
+  puts("WORLD 1-1\n"
+       "\n"
+       "\n"
+       "\n"
+       "    x ");
   putc('0' + mario_get_life() / 10 % 10);
   putc('0' + mario_get_life() % 10);
   {
@@ -195,52 +214,22 @@ static void show_level_intro(void) {
                smb1spt + 64 * (STANDING + FACING_RIGHT),
                64);
   }
-  vdp_cmd_await();
 
   set_visible(true);
 
-  sleep_ticks(180);
+  sleep_millis(3000);
 }
 
 static void play_game(void) {
+  mario_set_life(3);
   while (!mario_is_over()) {
     show_level_intro();
-
     set_visible(false);
-
     get_ready();
-
-    // anime_show_sprites();
-
     set_visible(true);
-
-    bool restart = false;
+    autopilot = false;
     timer_reset();
-    while (!restart) {
-      timer_update();
-      // wait for VSYNC interrupt and interrupt handler finished
-      await_interrupt();
-      // ---- sound / visual output task ----
-      vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
-      anime_update();
-      // ---- event dispatch ----
-      switch (event_get()) {
-      default:
-        // ---- stage map rendering task ----
-        stage_update_map();
-        // ---- game core task ----
-        game_core_task();
-        break;
-      case EV_PLAYER_DIES:
-        // CUT IN ANIMATION: MARIO DIES
-        mario_animate_die();
-        mario_died();
-        restart = true;
-        sleep_ticks(60);
-        break;
-      }
-      // ----
-    }
+    while (game_main());        // main-loop (until mario die)
   }
   // game over
 }
@@ -254,7 +243,7 @@ static void game_over(void) {
   puts("GAME OVER");
 
   set_visible(true);
-  sleep_ticks(180);
+  sleep_millis(3000);
 }
 
 void main(void) {
@@ -264,7 +253,6 @@ void main(void) {
   timer_init();
   timer_set_fps_visible(true);
   for (;;) {
-    mario_set_life(3);
     show_title_demo();
     play_game();
     game_over();
