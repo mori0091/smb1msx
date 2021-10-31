@@ -2,6 +2,7 @@
 
 #include <msx.h>
 
+#include "graphics.h"
 #include "macros.h"
 
 void graphics_init_vdp(void) {
@@ -40,9 +41,26 @@ void graphics_clear_vram(void) {
     vmem_memset(SPRITE_COLORS, 0, SIZE_OF_SPRITE_COLORS);
 
     /* Clear sprites */
-    struct sprite s = { .y = 217 };
     for (int i = 0; i < 32; ++i) {
-      vmem_write(SPRITES + sizeof(struct sprite) * i, &s, sizeof(struct sprite));
+      graphics_hide_sprite(i);
     }
   }
+}
+
+static const struct sprite hidden_sprite = { .y = 217 };
+
+void graphics_hide_sprite(uint8_t plane) {
+  vmem_set_sprite(SPRITES, plane, &hidden_sprite);
+}
+
+void graphics_fill_sprite_pat(uint8_t pat, uint8_t x, uint8_t n_bytes) {
+  vmem_memset(SPRITE_PATTERNS + 8 * pat, x, n_bytes);
+}
+
+void graphics_set_sprite_pat(uint8_t pat, const uint8_t* p, uint8_t n_bytes) {
+  vmem_write(SPRITE_PATTERNS + 8 * pat, p, n_bytes);
+}
+
+void graphics_set_sprite(uint8_t plane, const struct sprite* s) {
+  vmem_set_sprite(SPRITES, plane, s);
 }
