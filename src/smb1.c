@@ -5,22 +5,15 @@
 static void mario_update_input_state_autopilot(void) {
   mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
   mario_state.input |= (mario_state.input << 2);
-  if (mario_get_x() < 200) {
-    mario_state.input |= VK_RIGHT;
-  }
-  else if (mario_get_x() < 256+76 && mario_state.speed < f10q6(1.0)) {
-    mario_state.input |= VK_RIGHT;
-  }
-  else if (tick < 210 && 0 < mario_state.speed) {
-    mario_state.input &= ~VK_RIGHT;
-  }
-  else if (tick < 210 && 0 == mario_state.speed) {
+
+  mario_state.input |= VK_FIRE_1 | VK_RIGHT;
+  if (mario_state.collision_state & COLLISION_RIGHT) {
     mario_state.input |= VK_FIRE_0;
+    return;
   }
-  else if (mario_get_x() < 256+92 && mario_state.speed < f10q6(1.0)) {
-    mario_state.input |= VK_RIGHT;
-  } else {
-    mario_state.input &= ~VK_RIGHT;
+  if (0 <= mario_state.dynamics_state.vel.y) {
+    mario_state.input &= ~VK_FIRE_0;
+    return;
   }
 }
 
@@ -43,6 +36,26 @@ static void game_core_task(void) {
   // update camera position and speed
   camera_move();
 }
+// static void mario_update_input_state_autopilot(void) {
+//   mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
+//   mario_state.input |= (mario_state.input << 2);
+//
+//   uint16_t x = mario_get_x();
+//   mario_state.input |= VK_RIGHT;
+//   if (x < 211) return;
+//   // if (x < 256+76 && mario_state.speed < f10q6i(1)) return;
+//   if (user_tick < 105) {
+//     if (0 < mario_state.speed) {
+//       mario_state.input &= ~VK_RIGHT;
+//       return;
+//     }
+//     mario_state.input |= VK_FIRE_0;
+//     return;
+//   }
+//   if (x < 256+92 && mario_state.speed < f10q6i(1)) return;
+//
+//   mario_state.input &= ~VK_RIGHT;
+// }
 
 static void set_visible(bool visible) {
   vdp_set_visible(visible);
