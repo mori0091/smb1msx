@@ -14,23 +14,28 @@
 static volatile __at (0xfc9e) uint16_t JIFFY;
 
 /**
- * timer tick counter
+ * The main-timer tick counter.
  */
 extern uint16_t tick;
 
+/**
+ * The user-timer tick counter.
+ */
+extern uint16_t user_tick;
+
+/**
+ * Difference of the `user_tick` between before and after `timer_update()`
+ * calls.
+ */
+extern uint8_t user_tick_delta;
+
+void timer_init(void);
+void timer_set_user_freq(uint8_t Hz);
 void timer_set_fps_visible(bool visible);
-void timer_update_fps(void);
 void timer_reset(void);
+void timer_update(void);
 
-inline uint16_t timer_get_tick(void) {
-  return tick;
-}
-
-inline uint16_t timer_update(void) {
-  timer_update_fps();
-  return ++tick;
-}
-
-void sleep_ticks(const uint16_t ticks);
+void sleep_ticks(uint16_t ticks);
+void sleep_millis(uint16_t ms);
 
 #endif

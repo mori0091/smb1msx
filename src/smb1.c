@@ -248,6 +248,7 @@ void main(void) {
   graphics_init_vdp();
   graphics_clear_vram();
   assets_setup();
+  timer_init();
   timer_set_fps_visible(true);
   for (;;) {
     mario_set_life(3);
