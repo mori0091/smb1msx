@@ -33,16 +33,14 @@ void graphics_clear_vram(void) {
   vdp_cmd_execute_HMMV(0, 0, PIXELS_PER_LINE, 2 * LINES_PER_VRAM_PAGE, 0x00);
 
   // In rare cases, access to VRAM may fail or may be omitted depending on the
-  // timing of the access. Therefore, repeats the VRAM initialization several
-  // times.
-  for (int j = 0; j < 2; ++j) {
-    /* Clear sprite pattern table and sprite color table */
-    vmem_memset(SPRITE_PATTERNS, 0, SIZE_OF_SPRITE_PATTERNS);
-    vmem_memset(SPRITE_COLORS, 0, SIZE_OF_SPRITE_COLORS);
-
-    /* Clear sprites */
-    graphics_hide_all_sprites();
-  }
+  // timing of the access. This occurs during a VDP command is executing.
+  // Therefore, waits for VDP command finished before accsess to VRAM.
+  vdp_cmd_await();
+  /* Clear sprite pattern table and sprite color table */
+  vmem_memset(SPRITE_PATTERNS, 0, SIZE_OF_SPRITE_PATTERNS);
+  vmem_memset(SPRITE_COLORS, 0, SIZE_OF_SPRITE_COLORS);
+  /* Clear sprites */
+  graphics_hide_all_sprites();
 }
 
 static const struct sprite hidden_sprite = { .y = 217 };
