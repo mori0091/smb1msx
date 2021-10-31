@@ -14,14 +14,6 @@
 //   }
 // }
 
-void anime_clear_sprites(void) {
-  // Show 16 sprite characters for demo
-  struct sprite s = {.y = 217};
-  for (int i = 0; i < 32; ++i) {
-    vmem_set_sprite(SPRITES, i, &s);
-  }
-}
-
 static void coin_palette_animate(void);
 static void demo_animate(void);
 

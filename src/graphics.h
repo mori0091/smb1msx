@@ -13,6 +13,8 @@ void graphics_clear_vram(void);
 
 void graphics_hide_sprite(uint8_t plane);
 
+void graphics_hide_all_sprites(void);
+
 #define graphics_clear_sprite_pat(pat, n_bytes) \
   graphics_fill_sprite_pat((pat), 0, (n_bytes))
 

@@ -41,9 +41,7 @@ void graphics_clear_vram(void) {
     vmem_memset(SPRITE_COLORS, 0, SIZE_OF_SPRITE_COLORS);
 
     /* Clear sprites */
-    for (int i = 0; i < 32; ++i) {
-      graphics_hide_sprite(i);
-    }
+    graphics_hide_all_sprites();
   }
 }
 
@@ -51,6 +49,12 @@ static const struct sprite hidden_sprite = { .y = 217 };
 
 void graphics_hide_sprite(uint8_t plane) {
   vmem_set_sprite(SPRITES, plane, &hidden_sprite);
+}
+
+void graphics_hide_all_sprites(void) {
+  for (int i = 0; i < 32; ++i) {
+    graphics_hide_sprite(i);
+  }
 }
 
 void graphics_fill_sprite_pat(uint8_t pat, uint8_t x, uint8_t n_bytes) {

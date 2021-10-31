@@ -49,7 +49,7 @@ static void clear_screen(void) {
   await_interrupt();
   vdp_set_hscroll(0);
   vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
-  anime_clear_sprites();
+  graphics_hide_all_sprites();
 }
 
 static void get_ready(void) {
