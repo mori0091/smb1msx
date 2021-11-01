@@ -36,13 +36,6 @@ void dynamics_state_update(dynamics_state_t* ds) {
   ds->vel.y += ds->acc.y;
 }
 
-static uint8_t stage_get_object_at(int x, int y) {
-  y /= TILE_HEIGHT;
-  if (y < 0) y = 0;
-  if (y > 13) y = 13;
-  return *(smb1map + (x & 0x0fff0) + y);
-}
-
 void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
   static uint8_t c1;            // ceil / floor object #1
   static uint8_t c2;            // ceil / floor object #2
