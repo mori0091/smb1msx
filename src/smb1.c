@@ -6,49 +6,68 @@
 #define TITLE_DURATION (5 * SIM_FREQ)
 #define DEMO_VERSION   (2)
 
-static bool autopilot;
+#define MANUAL_PILOT   (mario_update_input_state)
+#define NONE_PILOT     (0)
 
 #if DEMO_VERSION == 1
-// short version demo
-#define DEMO_DURATION  (8 * SIM_FREQ)
-static void mario_update_input_state_autopilot(void) {
-  mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
-  mario_state.input |= (mario_state.input << 2);
 
+// short version demo
+#define AUTO_PILOT     (mario_update_input_state_autopilot_1)
+#define DEMO_DURATION  (8 * SIM_FREQ)
+static void mario_update_input_state_autopilot_1(void) {
+  mario_backup_input_state();
   uint16_t x = mario_get_x();
   mario_state.input |= VK_RIGHT;
   if (x < 200) return;
   if (x < 256+76 && mario_state.speed < f10q6i(1)) return;
-  if (user_tick < TITLE_DURATION + 105) {
+  if (user_tick < 108) {
     if (0 < mario_state.speed) {
-      mario_state.input &= ~VK_RIGHT;
+      mario_state.input = 0;
       return;
     }
-    mario_state.input |= VK_FIRE_0;
-    return;
+    if (x == 256+80) {
+      mario_state.input = VK_FIRE_0;
+      return;
+    }
   }
-  if (x < 256+92 && mario_state.speed < f10q6i(1)) return;
-
+  if (x < 256+94 && mario_state.speed < f10q6i(1)) return;
   mario_state.input &= ~VK_RIGHT;
 }
-#else
-// long version demo
-#define DEMO_DURATION  (17 * SIM_FREQ)
-static void mario_update_input_state_autopilot(void) {
-  mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
-  mario_state.input |= (mario_state.input << 2);
 
+#else
+
+// long version demo
+#define AUTO_PILOT     (mario_update_input_state_autopilot_2)
+#define DEMO_DURATION  (17 * SIM_FREQ)
+static void mario_update_input_state_autopilot_2(void) {
+  mario_backup_input_state();
   mario_state.input |= VK_FIRE_1 | VK_RIGHT;
   if (mario_state.collision_state & COLLISION_RIGHT) {
     mario_state.input |= VK_FIRE_0;
     return;
   }
-  if (0 <= mario_state.dynamics_state.vel.y) {
-    mario_state.input &= ~VK_FIRE_0;
+  if (mario_state.dynamics_state.vel.y < 0) {
+    mario_state.input |= VK_FIRE_0;
     return;
   }
 }
+
 #endif
+
+typedef void (*pilot_func)(void);
+
+static pilot_func pilot;
+
+static void set_pilot(pilot_func f) {
+  pilot = f;
+}
+
+static void run_pilot(void) {
+  if (pilot) pilot();
+  else {
+    mario_state.input = 0;
+  }
+}
 
 static void set_visible(bool visible) {
   vdp_set_visible(visible);
@@ -85,11 +104,7 @@ static bool game_main(void) {
     // ---- game core task ----
     while (user_tick_delta--) {
       // update mario's input
-      if (autopilot) {
-        mario_update_input_state_autopilot();
-      } else {
-        mario_update_input_state();
-      }
+      run_pilot();
       // update mario's state
       mario_move();
       // update camera position and speed
@@ -178,35 +193,28 @@ static void draw_title_logo(void) {
 static void show_title_demo(void) {
   mario_set_life(3);
   for (;;) {
+    // ---- Title screen ----
     set_visible(false);
-
     clear_screen();
     get_ready();
     draw_title_logo();
-
     vdp_cmd_await();
-
     set_visible(true);
-
-    // ---- Title screen ----
+    // ---- auto pilot demo ----
+    set_pilot(NONE_PILOT);
     timer_reset();
     while (user_tick < TITLE_DURATION) {
-      timer_update();
-      // wait for VSYNC interrupt and interrupt handler finished
-      await_interrupt();
-      // ---- sound / visual output task ----
-      // vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
-      anime_update();
+      if (!game_main()) {
+        break;                  // (mario died) return to title
+      }
       // ----
       if (joypad_get_state(1) & VK_FIRE_0) {
         return;                 // start the game!
       }
     }
-
-    // ---- auto pilot demo ----
-    autopilot = true;
-    // timer_reset();
-    while (user_tick < TITLE_DURATION + DEMO_DURATION) {
+    set_pilot(AUTO_PILOT);
+    timer_reset();
+    while (user_tick < DEMO_DURATION) {
       if (!game_main()) {
         break;                  // (mario died) return to title
       }
@@ -258,7 +266,7 @@ static void play_game(void) {
     set_visible(false);
     get_ready();
     set_visible(true);
-    autopilot = false;
+    set_pilot(MANUAL_PILOT);
     timer_reset();
     while (game_main());        // main-loop (until mario die)
   }
