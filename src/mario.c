@@ -195,26 +195,24 @@ void mario_init(void) {
   vmem_set_sprite_color_m(SPRITES, 0, mario_metasprite.n, mario_colors);
 }
 
+#define SPT(pat)    (smb1spt + 64 * (pat))
+
 void mario_animate(void) {
   switch (mario_state.pose) {
   default:
   case STANDING:
   case JUMPING:
-    vmem_write(SPRITE_PATTERNS+0x000,
-               smb1spt + 64 * (mario_state.pose + mario_state.facing),
-               64);
+    graphics_set_sprite_pat(0, SPT(mario_state.pose + mario_state.facing), 64);
     break;
   case WALKING:;
     const uint8_t b = (mario_state.input & VK_FIRE_1) ? 1 : 2;
     if (!(tick & ((1 << b) - 1))) {
       const uint8_t j = (tick >> b) % 3;
-      vmem_write(SPRITE_PATTERNS+0x000,
-                 smb1spt + 64 * (2*j + (WALKING + mario_state.facing)),
-                 64);
+      graphics_set_sprite_pat(0, SPT(2*j + WALKING + mario_state.facing), 64);
     }
     break;
   case DEAD:
-    vmem_write(SPRITE_PATTERNS+0x000, smb1spt + 64 * (mario_state.pose), 64);
+    graphics_set_sprite_pat(0, SPT(mario_state.pose), 64);
     break;
   }
 

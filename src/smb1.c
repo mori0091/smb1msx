@@ -243,15 +243,14 @@ static void show_level_intro(void) {
   putc('0' + mario_get_life() / 10 % 10);
   putc('0' + mario_get_life() % 10);
   {
-    struct sprite s = {0};
-    sprite_set_xy(&s, 124-24, 104-16-1);
+    struct sprite s;
+    s.x = 124-24;
+    s.y = 104-16-1;
     s.pat = 0 * 4;
-    vmem_set_sprite(SPRITES, 0, &s);
+    graphics_set_sprite(0, &s);
     s.pat = 1 * 4;
-    vmem_set_sprite(SPRITES, 1, &s);
-    vmem_write(SPRITE_PATTERNS+0x000,
-               smb1spt + 64 * (STANDING + FACING_RIGHT),
-               64);
+    graphics_set_sprite(1, &s);
+    graphics_set_sprite_pat(0, smb1spt + 64 * (STANDING + FACING_RIGHT), 64);
   }
 
   set_visible(true);
