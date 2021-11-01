@@ -104,26 +104,47 @@ static const char title_logo[] =
   "elfefdfcef dfdfefef\n"
   "cccccccccc cccccccc\n"
   "cccccckccc ckckccij\n"
-  "cccdcccccc cccccccc\n"
+  "cccdaccccc cccccccc\n"
   "ccccccccgh chccghghc";
 
+static const uint8_t title_dots[] = {
+  0x0ba, 0x0ab,
+  0x0ba, 0x0a9,
+  0x0bb, 0x099,
+};
+
 #define BX (44)
-#define BY (15)
+#define BY (16)
 #define BW (176)
 #define BH (88)
 
+static void draw_title_dot(uint8_t x, uint8_t y) {
+  vmemptr_t p = IMAGE+y*128+x/2;
+  vmem_write(p, title_dots + 0, 2); p += 128;
+  vmem_write(p, title_dots + 2, 2); p += 128;
+  vmem_write(p, title_dots + 4, 2);
+}
+
+static void draw_title_board_line(uint8_t y, uint8_t cl, uint8_t cc, uint8_t cr) {
+  vmemptr_t p = IMAGE+y*128+BX/2;
+  vmem_memset(p, cl, 1);      p++;
+  vmem_memset(p, cc, BW/2-2); p+=BW/2-2;
+  vmem_memset(p, cr, 1);
+}
+
 static void draw_title_logo(void) {
   // ---- draw title
-  // top border
-  vmem_memset(IMAGE+BY*128+BX/2, 0xaa, BW/2);
+  // board
+  draw_title_board_line(BY, 0xca, 0xaa, 0xac);
   for (int i = 1; i < BH-1; ++i) {
-    vmemptr_t p = IMAGE+(BY+i)*128+BX/2;
-    vmem_memset(p       , 0xab, 1);      // left border
-    vmem_memset(p+1     , 0xbb, BW/2-2); // background
-    vmem_memset(p+BW/2-1, 0xb9, 1);      // right border
+    draw_title_board_line(BY+i, 0xab, 0xbb, 0xb9);
   }
-  // bottom border
-  vmem_memset(IMAGE+(BY+BH-1)*128+BX/2, 0x99, BW/2);
+  draw_title_board_line(BY+BH-1, 0xc9, 0x99, 0x9c);
+  // corner dots
+  draw_title_dot(BX   +2, BY   +3);
+  draw_title_dot(BX+BW-6, BY   +3);
+  draw_title_dot(BX   +2, BY+BH-5);
+  draw_title_dot(BX+BW-6, BY+BH-5);
 
   set_text_color(9,11);
   locate(0,512);
