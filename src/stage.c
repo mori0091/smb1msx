@@ -26,6 +26,8 @@ uint16_t stage_get_width(void) {
 }
 
 uint8_t stage_get_object_at(int x, int y) {
+  const uint16_t w = stage_get_width();
+  while (w <= x) x -= w;
   y /= TILE_HEIGHT;
   if (y < 0) y = 0;
   if (y > 13) y = 13;
