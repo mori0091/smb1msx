@@ -249,11 +249,14 @@ void mario_animate_die(void) {
   } while (mario_state.dynamics_state.pos.y.i <= 240);
 }
 
-void mario_update_input_state(void) {
-  const uint8_t joy = joypad_get_state(1);
-  mario_state.input &= 0x30;
+void mario_backup_input_state(void) {
+  mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
   mario_state.input <<= 2;
-  mario_state.input |= joy & 0x3f;
+}
+
+void mario_update_input_state(void) {
+  mario_backup_input_state();
+  mario_state.input |= joypad_get_state(1);
 }
 
 static void mario_update_speed_on_floor(void) {
