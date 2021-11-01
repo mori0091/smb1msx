@@ -12,8 +12,8 @@
 #define accel_hi       ((uint8_t)20)
 #define accel          ((uint8_t)10)
 #define brake          ((uint8_t)24)
-#define initial_vy_hi  f10q6(-8.5)
-#define initial_vy_lo  f10q6(-8.25)
+#define initial_vy_hi  f10q6(-8.25)
+#define initial_vy_lo  f10q6(-8.0)
 #define gravity_hi     f10q6(2.0)
 #define gravity_lo     f10q6(0.5)
 
