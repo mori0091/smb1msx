@@ -2,8 +2,38 @@
 
 #include "smb1.h"
 
+#define SIM_FREQ       (30)
+#define TITLE_DURATION (5 * SIM_FREQ)
+#define DEMO_VERSION   (2)
+
 static bool autopilot;
 
+#if DEMO_VERSION == 1
+// short version demo
+#define DEMO_DURATION  (8 * SIM_FREQ)
+static void mario_update_input_state_autopilot(void) {
+  mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
+  mario_state.input |= (mario_state.input << 2);
+
+  uint16_t x = mario_get_x();
+  mario_state.input |= VK_RIGHT;
+  if (x < 200) return;
+  if (x < 256+76 && mario_state.speed < f10q6i(1)) return;
+  if (user_tick < TITLE_DURATION + 105) {
+    if (0 < mario_state.speed) {
+      mario_state.input &= ~VK_RIGHT;
+      return;
+    }
+    mario_state.input |= VK_FIRE_0;
+    return;
+  }
+  if (x < 256+92 && mario_state.speed < f10q6i(1)) return;
+
+  mario_state.input &= ~VK_RIGHT;
+}
+#else
+// long version demo
+#define DEMO_DURATION  (17 * SIM_FREQ)
 static void mario_update_input_state_autopilot(void) {
   mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
   mario_state.input |= (mario_state.input << 2);
@@ -18,27 +48,7 @@ static void mario_update_input_state_autopilot(void) {
     return;
   }
 }
-
-// static void mario_update_input_state_autopilot(void) {
-//   mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
-//   mario_state.input |= (mario_state.input << 2);
-//
-//   uint16_t x = mario_get_x();
-//   mario_state.input |= VK_RIGHT;
-//   if (x < 211) return;
-//   // if (x < 256+76 && mario_state.speed < f10q6i(1)) return;
-//   if (user_tick < 105) {
-//     if (0 < mario_state.speed) {
-//       mario_state.input &= ~VK_RIGHT;
-//       return;
-//     }
-//     mario_state.input |= VK_FIRE_0;
-//     return;
-//   }
-//   if (x < 256+92 && mario_state.speed < f10q6i(1)) return;
-//
-//   mario_state.input &= ~VK_RIGHT;
-// }
+#endif
 
 static void set_visible(bool visible) {
   vdp_set_visible(visible);
@@ -180,7 +190,7 @@ static void show_title_demo(void) {
 
     // ---- Title screen ----
     timer_reset();
-    while (user_tick < 150) {
+    while (user_tick < TITLE_DURATION) {
       timer_update();
       // wait for VSYNC interrupt and interrupt handler finished
       await_interrupt();
@@ -196,7 +206,7 @@ static void show_title_demo(void) {
     // ---- auto pilot demo ----
     autopilot = true;
     // timer_reset();
-    while (user_tick < 150+510) {
+    while (user_tick < TITLE_DURATION + DEMO_DURATION) {
       if (!game_main()) {
         break;                  // (mario died) return to title
       }
