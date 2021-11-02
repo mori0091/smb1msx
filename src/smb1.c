@@ -2,18 +2,19 @@
 
 #include "smb1.h"
 
-#define SIM_FREQ       (30)
-#define TITLE_DURATION (5 * SIM_FREQ)
-#define DEMO_VERSION   (2)
+#define SIM_FREQ         (30)
+#define TITLE_DURATION   (5 * SIM_FREQ)
 
-#define MANUAL_PILOT   (mario_update_input_state)
-#define NONE_PILOT     (0)
+#define MANUAL_PILOT     (mario_update_input_state)
+#define NONE_PILOT       (0)
 
-#if DEMO_VERSION == 1
+#define AUTO_PILOT_1     (mario_update_input_state_autopilot_1)
+#define DEMO_DURATION_1  (8 * SIM_FREQ)
+
+#define AUTO_PILOT_2     (mario_update_input_state_autopilot_2)
+#define DEMO_DURATION_2  (17 * SIM_FREQ)
 
 // short version demo
-#define AUTO_PILOT     (mario_update_input_state_autopilot_1)
-#define DEMO_DURATION  (8 * SIM_FREQ)
 static void mario_update_input_state_autopilot_1(void) {
   mario_backup_input_state();
   uint16_t x = mario_get_x();
@@ -34,11 +35,7 @@ static void mario_update_input_state_autopilot_1(void) {
   mario_state.input &= ~VK_RIGHT;
 }
 
-#else
-
 // long version demo
-#define AUTO_PILOT     (mario_update_input_state_autopilot_2)
-#define DEMO_DURATION  (17 * SIM_FREQ)
 static void mario_update_input_state_autopilot_2(void) {
   mario_backup_input_state();
   mario_state.input |= VK_FIRE_1 | VK_RIGHT;
@@ -52,7 +49,14 @@ static void mario_update_input_state_autopilot_2(void) {
   }
 }
 
-#endif
+const pilot_func AUTO_PILOT[] = {
+  AUTO_PILOT_1,
+  AUTO_PILOT_2,
+};
+const uint16_t DEMO_DURATION[] = {
+  DEMO_DURATION_1,
+  DEMO_DURATION_2,
+};
 
 typedef void (*pilot_func)(void);
 
@@ -191,6 +195,7 @@ static void draw_title_logo(void) {
 }
 
 static void show_title_demo(void) {
+  uint8_t demo_version = 0;
   mario_set_life(3);
   for (;;) {
     // ---- Title screen ----
@@ -212,9 +217,9 @@ static void show_title_demo(void) {
         return;                 // start the game!
       }
     }
-    set_pilot(AUTO_PILOT);
+    set_pilot(AUTO_PILOT[demo_version]);
     timer_reset();
-    while (user_tick < DEMO_DURATION) {
+    while (user_tick < DEMO_DURATION[demo_version]) {
       if (!game_main()) {
         break;                  // (mario died) return to title
       }
@@ -223,6 +228,7 @@ static void show_title_demo(void) {
         break;                  // return to title
       }
     }
+    demo_version ^= 1;
   }
 }
 
