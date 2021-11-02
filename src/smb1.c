@@ -14,6 +14,21 @@
 #define AUTO_PILOT_2     (mario_update_input_state_autopilot_2)
 #define DEMO_DURATION_2  (17 * SIM_FREQ)
 
+typedef void (*pilot_func)(void);
+
+static pilot_func pilot;
+
+static void set_pilot(pilot_func f) {
+  pilot = f;
+}
+
+static void run_pilot(void) {
+  if (pilot) pilot();
+  else {
+    mario_state.input = 0;
+  }
+}
+
 // short version demo
 static void mario_update_input_state_autopilot_1(void) {
   mario_backup_input_state();
@@ -57,21 +72,6 @@ const uint16_t DEMO_DURATION[] = {
   DEMO_DURATION_1,
   DEMO_DURATION_2,
 };
-
-typedef void (*pilot_func)(void);
-
-static pilot_func pilot;
-
-static void set_pilot(pilot_func f) {
-  pilot = f;
-}
-
-static void run_pilot(void) {
-  if (pilot) pilot();
-  else {
-    mario_state.input = 0;
-  }
-}
 
 static void set_visible(bool visible) {
   vdp_set_visible(visible);
