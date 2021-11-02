@@ -13,8 +13,9 @@ extern const size_t smb1spt_size;
 extern const char smb1spt[];
 
 /* defined tileset */
-extern const size_t smb1tile_size;
-extern const char smb1tile[];
+extern const size_t tileset_size;
+extern const uint8_t tileset[];
+extern const uint8_t tile_patterns[];
 
 /* stage map */
 extern const size_t smb1map_size;
