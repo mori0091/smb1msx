@@ -163,17 +163,6 @@ static const metasprite_t mario_metasprite = {
   .pats = mario_pats,
 };
 
-// static const tagged_color_t mario_colors[] = {
-//   1,  2  | SPRITE_TAG_CC,       // Mario colors
-//   14, 13 | SPRITE_TAG_CC,       // Fire colors
-//   14, 5  | SPRITE_TAG_CC,       // Luigi colors
-//   10, 9  | SPRITE_TAG_CC,       // Goomba colors
-// };
-
-static const tagged_color_t mario_colors[] = {
-  1, 2 | SPRITE_TAG_CC,         // Mario colors
-};
-
 void mario_init(void) {
   // mario_state.life = 3;
   mario_state.input = 0;
@@ -192,7 +181,7 @@ void mario_init(void) {
   mario_state.dynamics_state.acc.y = 0;
 
   mario_state.collision_state = COLLISION_FLOOR;
-  vmem_set_sprite_color_m(SPRITES, 0, mario_metasprite.n, mario_colors);
+  /* assets_set_sprite_palette(SPRITES, 0, MARIO_PALETTE); */
 }
 
 #define SPT(pat)    (smb1spt + 64 * (pat))
@@ -396,8 +385,9 @@ void mario_move(void) {
 
   {
     // Limits the state of the dynamics to between the upper and lower limits.
-    if (mario_state.dynamics_state.pos.x.i < camera_get_x() + 8) {
-      mario_state.dynamics_state.pos.x.i = camera_get_x() + 8;
+    uint16_t x0 = camera_get_x() + 8;
+    if (mario_state.dynamics_state.pos.x.i < x0) {
+      mario_state.dynamics_state.pos.x.i = x0;
       mario_state.dynamics_state.pos.x.d = 0;
     }
     if (mario_state.dynamics_state.vel.y < f10q6i(-16)) {
