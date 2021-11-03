@@ -40,16 +40,8 @@ void assets_setup(void) {
   }
 
   /* Copy tileset image to VRAM page #3 */
-  for (int i = 0; i < tileset_size; ++i) {
-    const uint8_t tile = tileset[i];
-    const uint8_t* p = tile_patterns + 8 * 16 * i;
-    vmemptr_t q = TILESET + (tile & 0xf0) * 128 + (tile & 0x0f) * 8;
-    for (int j = 0; j < 16; ++j) {
-      vmem_write(q, p, 8);
-      q += 128;
-      p += 8;
-    }
-  }
+  tileset_decompress_into_vram();
+
   /* Draw color palette at bottom of VRAM page #3 */
   /* (debug purpose only) */
   for (int i = 0; i < 16; ++i) {
