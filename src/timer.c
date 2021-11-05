@@ -131,7 +131,7 @@ void timer_update(void) {
 
 void sleep_ticks(uint16_t ticks) {
   while (ticks--) {
-    await_interrupt();
+    await_vsync();
   }
 }
 

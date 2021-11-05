@@ -79,7 +79,7 @@ static void set_visible(bool visible) {
 }
 
 static void clear_screen(void) {
-  await_interrupt();
+  await_vsync();
   vdp_set_hscroll(0);
   vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
   graphics_hide_all_sprites();
@@ -96,7 +96,7 @@ static void get_ready(void) {
 static bool game_main(void) {
   timer_update();
   // wait for VSYNC interrupt and interrupt handler finished
-  await_interrupt();
+  await_vsync();
   // ---- sound / visual output task ----
   vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
   anime_update();
