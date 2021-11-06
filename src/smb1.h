@@ -25,4 +25,6 @@
 #include "camera.h"
 #include "mario.h"
 
+#include "sound.h"
+
 #endif

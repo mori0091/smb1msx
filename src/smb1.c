@@ -116,10 +116,13 @@ static bool game_main(void) {
     }
     break;
   case EV_PLAYER_DIES:
+    sound_set_repeat(false);         // turn off the auto-repeat of the BGM.
+    sound_set_bgm(&bgm_player_down); // stop the BGM and then replace it.
+    sound_start();                   // start the BGM.
     // CUT IN ANIMATION: MARIO DIES
     mario_animate_die();
     mario_died();
-    sleep_millis(1000);
+    sleep_millis(2000);
     return false;
   }
   return true;
@@ -217,6 +220,11 @@ static void show_title_demo(void) {
         return;                 // start the game!
       }
     }
+    // ----
+    sound_set_repeat(true);
+    sound_set_bgm(&bgm_over_world);
+    sound_start();              // start BGM
+
     set_pilot(AUTO_PILOT[demo_version]);
     timer_reset();
     while (user_tick < DEMO_DURATION[demo_version]) {
@@ -229,6 +237,8 @@ static void show_title_demo(void) {
       }
     }
     demo_version ^= 1;
+
+    sound_stop();               // stop BGM
   }
 }
 
@@ -272,8 +282,15 @@ static void play_game(void) {
     get_ready();
     set_visible(true);
     set_pilot(MANUAL_PILOT);
+
+    sound_set_repeat(true);
+    sound_set_bgm(&bgm_over_world);
+    sound_start();              // start BGM
+
     timer_reset();
     while (game_main());        // main-loop (until mario die)
+
+    sound_stop();
   }
   // game over
 }
@@ -296,6 +313,9 @@ void main(void) {
   assets_setup();
   timer_init();
   timer_set_fps_visible(true);
+
+  set_vsync_handler(sound_player);
+
   for (;;) {
     show_title_demo();
     play_game();

@@ -8,6 +8,10 @@
 #include <stdlib.h>
 #include <msx.h>
 
+/* BGMs */
+extern const struct sound_clip bgm_player_down;
+extern const struct sound_clip bgm_over_world;
+
 /* defined tileset */
 #include "assets/tileset.h"
 
