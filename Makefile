@@ -5,7 +5,7 @@ LIBMSX_HOME = ./libmsx
 
 NAME = smb1msx
 
-CFLAGS  = -DNDEBUG --opt-code-size
+CFLAGS  = -DNDEBUG --opt-code-speed
 LDFLAGS =
 LDLIBS  =
 LIBS    =
