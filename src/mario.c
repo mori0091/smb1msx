@@ -226,7 +226,7 @@ void mario_animate_die(void) {
 
   await_interrupt();
   mario_animate();
-  sleep_millis(330);
+  sleep_millis(500);
   do {
     tick++;
     await_interrupt();
