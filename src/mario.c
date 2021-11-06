@@ -356,14 +356,16 @@ static void mario_update_speed(void) {
         mario_state.dynamics_state.vel.y = initial_vy_lo;
       }
       mario_state.dynamics_state.acc.y = gravity_lo;
+      // estimate mario's pose
+      mario_state.pose = JUMPING;
+      // ---- \TODO sound effect ----
     }
     // estimate mario's pose
-    if (mario_state.collision_state & COLLISION_FLOOR) {
-      if (mario_state.speed == 0) {
-        mario_state.pose = STANDING;
-      } else {
-        mario_state.pose = WALKING;
-      }
+    else if (mario_state.speed == 0) {
+      mario_state.pose = STANDING;
+    }
+    else {
+      mario_state.pose = WALKING;
     }
   } else {
     // update horizontal speed
@@ -372,10 +374,6 @@ static void mario_update_speed(void) {
     if (!(mario_state.input & A_BUTTON) ||
         0 <= mario_state.dynamics_state.vel.y) {
       mario_state.dynamics_state.acc.y = gravity_hi;
-    }
-    // estimate mario's pose
-    if (mario_state.dynamics_state.vel.y < 0) {
-      mario_state.pose = JUMPING;
     }
   }
 }
