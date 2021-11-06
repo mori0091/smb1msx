@@ -1,6 +1,6 @@
 // -*- coding: utf-8-unix -*-
 
-#include "../sound.h"
+#include <msx.h>
 
 #define CH1_INTRO                                                       \
   0xa0, 0x02, 0xd0, 0x10, 0x00, 0x00, 0xd6, /* T180 O5 C32 S0 M4096 */  \
