@@ -359,6 +359,7 @@ static void mario_update_speed(void) {
       // estimate mario's pose
       mario_state.pose = JUMPING;
       // ---- \TODO sound effect ----
+      sound_effect(&se_jump);
     }
     // estimate mario's pose
     else if (mario_state.speed == 0) {
