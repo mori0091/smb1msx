@@ -314,6 +314,7 @@ void main(void) {
   timer_init();
   timer_set_fps_visible(true);
 
+  sound_init();
   set_vsync_handler(sound_player);
 
   for (;;) {
