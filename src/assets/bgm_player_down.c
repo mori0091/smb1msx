@@ -78,7 +78,7 @@ static const struct sound_fragment a_part = {
   }
 };
 
-static const struct sound_fragment * music[] = {
+static const struct sound_fragment * const music[] = {
   &intro,
   &a_part,
 };
