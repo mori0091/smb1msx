@@ -358,7 +358,7 @@ static void mario_update_speed(void) {
       mario_state.dynamics_state.acc.y = gravity_lo;
       // estimate mario's pose
       mario_state.pose = JUMPING;
-      // ---- \TODO sound effect ----
+      // ---- sound effect ----
       sound_effect(&se_jump);
     }
     // estimate mario's pose
@@ -371,6 +371,11 @@ static void mario_update_speed(void) {
   } else {
     // update horizontal speed
     mario_update_speed_flight();
+    // hit the ceil?
+    if (mario_state.collision_state & COLLISION_CEIL) {
+      // ---- sound effect ----
+      sound_effect(&se_block);
+    }
     // jump (control gravity)
     if (!(mario_state.input & A_BUTTON) ||
         0 <= mario_state.dynamics_state.vel.y) {
