@@ -224,12 +224,12 @@ void mario_animate_die(void) {
   mario_state.dynamics_state.acc.y = gravity_hi;
   mario_state.dynamics_state.acc.x = 0;
 
-  await_interrupt();
+  await_vsync();
   mario_animate();
   sleep_millis(500);
   do {
     tick++;
-    await_interrupt();
+    await_vsync();
     mario_animate();
     if (tick & 1) continue;
     dynamics_state_update(&mario_state.dynamics_state);
