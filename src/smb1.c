@@ -307,7 +307,11 @@ static void game_over(void) {
   sleep_millis(3000);
 }
 
+/** key click beep swith (0:off, non-zero:on) */
+static volatile __at (0xf3db) uint8_t CLIKSW;
+
 void main(void) {
+  CLIKSW = 0;
   graphics_init_vdp();
   graphics_clear_vram();
   assets_setup();
