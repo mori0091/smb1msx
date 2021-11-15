@@ -98,10 +98,15 @@ static void timer_update_fps_sprite(void) {
 static void timer_update_fps(void) {
   const uint16_t t0 = JIFFY;
   const uint16_t dt = t0 - prev_sys_tick;
-  if (dt < VSYNC_FREQ) return;
+  /* if (dt < VSYNC_FREQ) return; */
+  if (dt < 10) return;
   prev_sys_tick = t0;
-  main_fps = (tick      - prev_main_tick) * VSYNC_FREQ / dt;
-  user_fps = (user_tick - prev_user_tick) * VSYNC_FREQ / dt;
+  main_fps += (tick      - prev_main_tick) * VSYNC_FREQ / dt;
+  main_fps ++;
+  main_fps >>= 1;
+  user_fps += (user_tick - prev_user_tick) * VSYNC_FREQ / dt;
+  user_fps ++;
+  user_fps >>= 1;
   prev_main_tick = tick;
   prev_user_tick = user_tick;
 }
