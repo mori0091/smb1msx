@@ -64,7 +64,7 @@ void timer_set_fps_visible(bool visible) {
 }
 
 void timer_init(void) {
-  VSYNC_FREQ = ((INTERNATIONAL_ID_1 & 0x80) ? 50 : 60);
+  VSYNC_FREQ = msx_get_vsync_frequency();
   main_fps = VSYNC_FREQ;
   user_fps = VSYNC_FREQ;
   timer_set_user_freq(30);
@@ -132,18 +132,4 @@ void timer_update(void) {
   timer_update_fps_sprite();
   timer_update_main_tick();
   timer_update_user_tick();
-}
-
-void sleep_ticks(uint16_t ticks) {
-  while (ticks--) {
-    await_vsync();
-  }
-}
-
-void sleep_millis(uint16_t ms) {
-  // sleep_millis(VSYNC_FREQ * ms / 1000); // bad!
-  // when (VSYNC * ms) > 65535, the computation overflows.
-  // the below avoids that situation.
-  sleep_ticks(VSYNC_FREQ * (ms / 1000) +
-              VSYNC_FREQ * (ms % 1000) / 1000);
 }

@@ -35,7 +35,4 @@ void timer_set_fps_visible(bool visible);
 void timer_reset(void);
 void timer_update(void);
 
-void sleep_ticks(uint16_t ticks);
-void sleep_millis(uint16_t ms);
-
 #endif
