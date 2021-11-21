@@ -17,6 +17,7 @@
 #include "font.h"
 #include "text.h"
 #include "timer.h"
+#include "fps_display.h"
 
 #include "event.h"
 

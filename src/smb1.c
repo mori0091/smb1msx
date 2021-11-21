@@ -95,6 +95,7 @@ static void get_ready(void) {
 
 static bool game_main(void) {
   timer_update();
+  fps_display_update();
   // wait for VSYNC interrupt and interrupt handler finished
   await_vsync();
   // ---- sound / visual output task ----
@@ -210,6 +211,7 @@ static void show_title_demo(void) {
     set_visible(true);
     // ---- auto pilot demo ----
     set_pilot(NONE_PILOT);
+    fps_display_reset();
     timer_reset();
     while (user_tick < TITLE_DURATION) {
       if (!game_main()) {
@@ -226,6 +228,7 @@ static void show_title_demo(void) {
     sound_start();              // start BGM
 
     set_pilot(AUTO_PILOT[demo_version]);
+    fps_display_reset();
     timer_reset();
     while (user_tick < DEMO_DURATION[demo_version]) {
       if (!game_main()) {
@@ -287,6 +290,7 @@ static void play_game(void) {
     sound_set_bgm(&bgm_over_world);
     sound_start();              // start BGM
 
+    fps_display_reset();
     timer_reset();
     while (game_main());        // main-loop (until mario die)
 
@@ -316,7 +320,7 @@ void main(void) {
   graphics_clear_vram();
   assets_setup();
   timer_init();
-  timer_set_fps_visible(true);
+  fps_display_set_visible(true);
 
   sound_init();
   set_vsync_handler(sound_player);

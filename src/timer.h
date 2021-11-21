@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include <stdint.h>
 
 /**
@@ -29,9 +28,18 @@ extern uint16_t user_tick;
  */
 extern uint8_t user_tick_delta;
 
+/**
+ * Estimated frame rate of the main-timer.
+ */
+extern uint8_t main_fps;
+
+/**
+ * Estimated frame rate of the user-timer.
+ */
+extern uint8_t user_fps;
+
 void timer_init(void);
 void timer_set_user_freq(uint8_t Hz);
-void timer_set_fps_visible(bool visible);
 void timer_reset(void);
 void timer_update(void);
 
