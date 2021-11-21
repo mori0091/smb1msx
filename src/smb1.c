@@ -210,6 +210,7 @@ static void show_title_demo(void) {
     vdp_cmd_await();
     set_visible(true);
     // ---- auto pilot demo ----
+    msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
     set_pilot(NONE_PILOT);
     fps_display_reset();
     timer_reset();
@@ -222,11 +223,13 @@ static void show_title_demo(void) {
         return;                 // start the game!
       }
     }
+    msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
     // ----
     sound_set_repeat(true);
     sound_set_bgm(&bgm_over_world);
     sound_start();              // start BGM
 
+    msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
     set_pilot(AUTO_PILOT[demo_version]);
     fps_display_reset();
     timer_reset();
@@ -239,6 +242,7 @@ static void show_title_demo(void) {
         break;                  // return to title
       }
     }
+    msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
     demo_version ^= 1;
 
     sound_stop();               // stop BGM
@@ -290,9 +294,11 @@ static void play_game(void) {
     sound_set_bgm(&bgm_over_world);
     sound_start();              // start BGM
 
+    msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
     fps_display_reset();
     timer_reset();
     while (game_main());        // main-loop (until mario die)
+    msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
 
     sound_stop();
   }
