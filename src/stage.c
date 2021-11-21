@@ -46,6 +46,7 @@ void stage_setup_map(void) {
       vdp_cmd_execute_HMMM(x1, y1, 16, 16, x2, y2);
     }
   }
+  vdp_cmd_execute_HMMV(0, 256, 256, 16, 0xcc);
 }
 
 static void map_renderer_task(void) {
@@ -65,11 +66,13 @@ static void map_renderer_task(void) {
   }
 
   const uint16_t col = map_next % map_cols; // wrap around (loop the stage map)
-  const uint8_t* p = smb1map + STAGEMAP_PAGE_ROWS * col;
+  /* const uint8_t* p = smb1map + STAGEMAP_PAGE_ROWS * col; */
+  const uint8_t* p = smb1map + STAGEMAP_PAGE_ROWS * col + 1;
   const uint16_t ix = (TILE_WIDTH * col) & 255;
   const uint16_t pp = (map_next & 0x10) << 4; // page #0 (0) or page #1 (256)
 
-  for (int i = 0; i < STAGEMAP_VISIBLE_ROWS; ++i) {
+  /* for (int i = 0; i < STAGEMAP_VISIBLE_ROWS; ++i) { */
+  for (int i = 1; i < STAGEMAP_VISIBLE_ROWS; ++i) {
     const uint16_t iy = TILE_HEIGHT * i + pp;
     // tile := c|y|y|y|x|x|x|x ... 'c': collision bit
     const uint8_t tile = *p++;

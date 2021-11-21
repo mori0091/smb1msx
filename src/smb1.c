@@ -79,8 +79,9 @@ static void set_visible(bool visible) {
 }
 
 static void clear_screen(void) {
+  set_hscroll(0);
   await_vsync();
-  vdp_set_hscroll(0);
+  /* vdp_set_hscroll(0); */
   vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
   graphics_hide_all_sprites();
 }
@@ -91,15 +92,33 @@ static void get_ready(void) {
   camera_init();
   mario_init();
   stage_setup_map();
+  // ---- hud ----
+  set_text_color(14,12);
+  locate(28,0);
+  puts("MARIO\n"
+       "000000");
+  locate(92,8);
+  puts(" x00");
+  locate(148,0);
+  puts("WORLD\n"
+       " 1-1");
+  locate(204,0);
+  puts("TIME\n"
+       " 000");
+  locate(92,8);
+  // mini-coin
+  set_text_color(7,12);
+  puts("!");
 }
 
 static bool game_main(void) {
   timer_update();
   fps_display_update();
+  /* vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1)); */
+  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
   // wait for VSYNC interrupt and interrupt handler finished
   await_vsync();
   // ---- sound / visual output task ----
-  vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
   anime_update();
   // ---- event dispatch ----
   switch (event_get()) {
@@ -107,7 +126,8 @@ static bool game_main(void) {
     // ---- stage map rendering task ----
     stage_update_map();
     // ---- game core task ----
-    while (user_tick_delta--) {
+    uint8_t n = user_tick_delta;
+    while (n--) {
       // update mario's input
       run_pilot();
       // update mario's state
@@ -329,7 +349,8 @@ void main(void) {
   fps_display_set_visible(true);
 
   sound_init();
-  set_vsync_handler(sound_player);
+  /* set_vsync_handler(sound_player); */
+  setup_interrupt();
 
   for (;;) {
     show_title_demo();

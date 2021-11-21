@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <msx.h>
 
+#include "hsync.h"
+
 #include "macros.h"
 #include "types.h"
 
