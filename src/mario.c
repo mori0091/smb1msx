@@ -149,14 +149,14 @@ static const vec2i_t W16H16D2[] = {
   {0,0},
 };
 
-static uint8_t mario_pats[] = {
+static const uint8_t mario_pats[] = {
   /* layer #1 */
   0,
   /* layer #2 */
   4,
 };
 
-static metasprite_t mario_metasprite = {
+static const metasprite_t mario_metasprite = {
   .n = 2,
   .anchor = {0,0},
   .layouts = W16H16D2,
@@ -184,38 +184,25 @@ void mario_init(void) {
   /* assets_set_sprite_palette(SPRITES, 0, MARIO_PALETTE); */
 }
 
-// #define SPT(pat)    (smb1spt + 64 * (pat))
-// inline void mario_set_sprite_pat(uint8_t pat) {
-//   graphics_set_sprite_pat(0, SPT(pat), 64);
-// }
-
+#define SPT(pat)    (smb1spt + 64 * (pat))
 inline void mario_set_sprite_pat(uint8_t pat) {
-  mario_pats[0] = 8 * pat + 0;
-  mario_pats[1] = 8 * pat + 4;
+  graphics_set_sprite_pat(0, SPT(pat), 64);
 }
 
 static uint8_t anim_tick;
 
 void mario_animate(void) {
-  if (user_tick_delta) return;
-
   anim_tick++;
-  switch (mario_state.pose) {
-  default:
-  case STANDING:
-  case JUMPING:
-    mario_set_sprite_pat(mario_state.pose + mario_state.facing);
-    break;
-  case WALKING:;
-    const uint8_t b = (mario_state.input & VK_FIRE_1) ? 0 : 1;
-    if (!(anim_tick & ((1 << b) - 1))) {
-      const uint8_t j = (anim_tick >> b) % 3;
-      mario_set_sprite_pat(2*j + WALKING + mario_state.facing);
+
+  if (mario_state.pose == WALKING) {
+    uint8_t t = anim_tick;
+    if (!(mario_state.input & VK_FIRE_1)) {
+      t >>= 1;
     }
-    break;
-  case DEAD:
-    mario_set_sprite_pat(mario_state.pose);
-    break;
+    mario_set_sprite_pat(2*(t%3) + WALKING + mario_state.facing);
+  }
+  else {
+    mario_set_sprite_pat(mario_state.pose + mario_state.facing);
   }
 
   /* move sprite */
@@ -226,6 +213,7 @@ void mario_animate(void) {
 
 void mario_animate_die(void) {
   mario_state.pose = DEAD;
+  mario_state.facing = 0;
   mario_state.input = A_BUTTON;
   mario_state.speed = 0;
   if (212 - 16 < mario_state.dynamics_state.pos.y.i) {
@@ -236,12 +224,12 @@ void mario_animate_die(void) {
   mario_state.dynamics_state.acc.y = gravity_hi;
   mario_state.dynamics_state.acc.x = 0;
 
-  await_vsync();
+  await_hsync();
   mario_animate();
   sleep_millis(500);
   do {
     tick++;
-    await_vsync();
+    await_hsync();
     mario_animate();
     if (tick & 1) continue;
     dynamics_state_update(&mario_state.dynamics_state);
@@ -427,6 +415,12 @@ void mario_move(void) {
                          &mario_state.dynamics_state);
 
   mario_update_speed();
+
+  // ---- !? Mario can go back to the left of starting page...??
+  if (mario_state.dynamics_state.pos.x.i <= 8) {
+    mario_state.dynamics_state.pos.x.i = 8;
+    mario_state.dynamics_state.pos.x.d = 0;
+  }
 }
 
 int16_t mario_get_prev_x(void) {

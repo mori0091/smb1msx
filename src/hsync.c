@@ -4,9 +4,9 @@
 
 #define HSYNC_LINE (13)
 
-static __at(0xfd9f) uint8_t H_TIMI[5];
-
 volatile uint16_t scroll_x;
+
+static volatile bool interrupted;
 
 static void vsync_handler(void) {
   // vdp_set_hscroll(0);
@@ -14,6 +14,13 @@ static void vsync_handler(void) {
     VDP_SET_CONTROL_REGISTER(26, 0);
     VDP_SET_CONTROL_REGISTER(27, 0);
   }
+}
+
+inline void vsync_handler_epilogue(void) {
+  interrupted = true;
+  vsync_busy = false;
+  JIFFY++;
+  __asm__("ei");
 }
 
 inline void hsync_handler(void) {
@@ -31,24 +38,45 @@ inline void hsync_handler(void) {
       RG26SA++;
     }
   }
-  sound_player();
 }
 
 static void interrupt_handler(void) {
+  // Checking if HSYNC is caught.
   VDP_SET_STATUS_REGISTER_POINTER(1);
   if (VDP_GET_STATUS_REGISTER_VALUE() & 1) {
-    VDP_SET_STATUS_REGISTER_POINTER(0);
     hsync_handler();
-    __asm__("ei");
+    interrupted = false;
+    // Don't forget reset the status register pointer to 0
+    VDP_SET_STATUS_REGISTER_POINTER(0);
+    // Checking if (delayed) VSYNC is caught at the same time
+    if (VDP_GET_STATUS_REGISTER_VALUE() & 0x80) {
+      // Catching up on delayed VSYNC.
+      // Note that we do not call `vsync_handler()` here.
+      vsync_handler_epilogue();
+    }
+    sound_player();
     return;
   }
+  // Don't forget reset the status register pointer to 0
   VDP_SET_STATUS_REGISTER_POINTER(0);
+  // ---- override BIOS VSYNC routine
+  if (VDP_GET_STATUS_REGISTER_VALUE() & 0x80) {
+    vsync_handler();
+    vsync_handler_epilogue();
+  }
 }
 
 void setup_interrupt(void) {
+  interrupted = false;
   set_hscroll(0);
   vdp_set_control(19, (RG19SA = HSYNC_LINE));
   vdp_set_control(0, (RG0SAV |= 0x10));
   set_interrupt_handler(interrupt_handler);
-  set_vsync_handler(vsync_handler);
+}
+
+void await_hsync(void) {
+  await_vsync();
+  while (interrupted) {
+    // spin lock
+  }
 }

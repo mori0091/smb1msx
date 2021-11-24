@@ -64,7 +64,7 @@ static void timer_update_fps(void) {
   const uint16_t t0 = JIFFY;
   const uint16_t dt = t0 - prev_sys_tick;
   /* if (dt < VSYNC_FREQ) return; */
-  if (dt < 10) return;
+  if (dt < 31) return;
   prev_sys_tick = t0;
   main_fps += (tick      - prev_main_tick) * VSYNC_FREQ / dt;
   main_fps ++;

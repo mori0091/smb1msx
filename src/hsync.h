@@ -15,4 +15,6 @@ inline void set_hscroll(uint16_t x) {
 
 void setup_interrupt(void);
 
+void await_hsync(void);
+
 #endif

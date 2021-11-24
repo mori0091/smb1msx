@@ -80,7 +80,7 @@ static void set_visible(bool visible) {
 
 static void clear_screen(void) {
   set_hscroll(0);
-  await_vsync();
+  await_hsync();
   /* vdp_set_hscroll(0); */
   vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
   graphics_hide_all_sprites();
@@ -112,13 +112,15 @@ static void get_ready(void) {
 }
 
 static bool game_main(void) {
+  // wait for VSYNC interrupt and interrupt handler finished
+  await_hsync();
   timer_update();
-  fps_display_update();
+  // ---- sound / visual output task ----
+  if (!(tick & 31)) {
+    fps_display_update();
+  }
   /* vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1)); */
   set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
-  // wait for VSYNC interrupt and interrupt handler finished
-  await_vsync();
-  // ---- sound / visual output task ----
   anime_update();
   // ---- event dispatch ----
   switch (event_get()) {
