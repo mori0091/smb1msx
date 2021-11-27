@@ -20,7 +20,6 @@ inline void vsync_handler(void) {
 inline void vsync_handler_epilogue(void) {
   vsync_busy = false;
   JIFFY++;
-  __asm__("ei");
 }
 
 inline void hsync_handler(void) {
@@ -53,6 +52,7 @@ static void interrupt_handler(void) {
       // Catching up on delayed VSYNC.
       // Note that we do not call `vsync_handler()` here.
       vsync_handler_epilogue();
+      __asm__("ei");
     }
     sound_player();
     return;
@@ -63,6 +63,7 @@ static void interrupt_handler(void) {
   if (VDP_GET_STATUS_REGISTER_VALUE() & 0x80) {
     vsync_handler();
     vsync_handler_epilogue();
+    __asm__("ei");
   }
 }
 
