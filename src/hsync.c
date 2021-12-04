@@ -43,27 +43,29 @@ inline void hsync_handler(void) {
 static void interrupt_handler(void) {
   // Checking if HSYNC is caught.
   VDP_SET_STATUS_REGISTER_POINTER(1);
-  if (VDP_GET_STATUS_REGISTER_VALUE() & 1) {
+  uint8_t hsync = (VDP_GET_STATUS_REGISTER_VALUE() & 1);
+  // Don't forget reset the status register pointer to 0
+  VDP_SET_STATUS_REGISTER_POINTER(0);
+  if (hsync) {
     hsync_handler();
-    // Don't forget reset the status register pointer to 0
-    VDP_SET_STATUS_REGISTER_POINTER(0);
-    // Checking if (delayed) VSYNC is caught at the same time
+    // ---- override BIOS VSYNC routine
     if (VDP_GET_STATUS_REGISTER_VALUE() & 0x80) {
       // Catching up on delayed VSYNC.
       // Note that we do not call `vsync_handler()` here.
       vsync_handler_epilogue();
       __asm__("ei");
+      sound_player();
+      return;
     }
-    sound_player();
+    __asm__("ei");
     return;
   }
-  // Don't forget reset the status register pointer to 0
-  VDP_SET_STATUS_REGISTER_POINTER(0);
   // ---- override BIOS VSYNC routine
   if (VDP_GET_STATUS_REGISTER_VALUE() & 0x80) {
     vsync_handler();
     vsync_handler_epilogue();
     __asm__("ei");
+    sound_player();
   }
 }
 
