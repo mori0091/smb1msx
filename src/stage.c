@@ -100,8 +100,11 @@ static void map_renderer_task(void) {
 
 #define MARGIN      TILE_WIDTH
 void stage_update_map(void) {
-  while (map_next * TILE_WIDTH < camera_get_x() + PIXELS_PER_LINE + MARGIN) {
+  int8_t rows = 7;
+  while (rows--) {
     map_renderer_task();
+  }
+  while (map_next * TILE_WIDTH < camera_get_x() + PIXELS_PER_LINE + MARGIN) {
     map_renderer_task();
   }
 }
