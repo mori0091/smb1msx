@@ -1,7 +1,7 @@
 # -*- coding: utf-8-unix; tab-width: 8 -*-
 
 # Path to top of the libmsx installed folder.
-LIBMSX_HOME = ./libmsx
+LIBMSX_HOME ?= ./libmsx
 
 NAME = smb1msx
 
