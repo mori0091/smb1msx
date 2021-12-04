@@ -115,18 +115,19 @@ static bool game_main(void) {
   // wait for VSYNC interrupt and interrupt handler finished
   await_hsync();
   timer_update();
-  // ---- sound / visual output task ----
+  // ---- (optional) frame rate / sim.frequency display ----
   if (!(tick & 31)) {
     fps_display_update();
   }
+  // ---- sound / visual output task ----
   /* vdp_set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1)); */
   set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
   anime_update();
+  // ---- stage map rendering task ----
+  stage_update_map();
   // ---- event dispatch ----
   switch (event_get()) {
-  default:
-    // ---- stage map rendering task ----
-    stage_update_map();
+  default:;
     // ---- game core task ----
     uint8_t n = user_tick_delta;
     while (n--) {
@@ -351,7 +352,7 @@ void main(void) {
   fps_display_set_visible(true);
 
   sound_init();
-  /* set_vsync_handler(sound_player); */
+  /* sound_set_volume(12); */
   setup_interrupt();
 
   for (;;) {
