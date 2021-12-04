@@ -6,7 +6,9 @@ static void coin_palette_animate(void);
 
 void anime_update(void) {
   coin_palette_animate();
-  if (!(tick & 1)) return;
+  if (!(tick & 1)) {
+    return;
+  }
   mario_animate();
 }
 
