@@ -7,8 +7,10 @@
 #define PREV_A_BUTTON  (VK_FIRE_0 << 2)
 #define PREV_B_BUTTON  (VK_FIRE_1 << 2)
 
-#define speed_hi       f10q6i(10)
-#define speed_lo       f10q6i(6)
+// #define speed_hi       f10q6i(10)
+// #define speed_lo       f10q6i(6)
+#define speed_hi       f10q6i(8)
+#define speed_lo       f10q6(4.8)
 #define accel_hi       ((uint8_t)20)
 #define accel          ((uint8_t)10)
 #define brake          ((uint8_t)24)

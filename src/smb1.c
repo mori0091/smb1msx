@@ -34,9 +34,9 @@ static void mario_update_input_state_autopilot_1(void) {
   mario_backup_input_state();
   uint16_t x = mario_get_x();
   mario_state.input |= VK_RIGHT;
-  if (x < 200) return;
+  if (x < 250) return;
   if (x < 256+76 && mario_state.speed < f10q6i(1)) return;
-  if (user_tick < 108) {
+  if (user_tick < 116) {
     if (0 < mario_state.speed) {
       mario_state.input = 0;
       return;
