@@ -83,7 +83,7 @@ static void map_renderer_task(void) {
       map_next -= map_cols;
     }
 
-    if (camera_get_x() + 2 * PIXELS_PER_LINE <= TILE_WIDTH * map_next) {
+    if ((camera_get_x() + 2 * PIXELS_PER_LINE) / TILE_WIDTH <= map_next) {
       /* buffer full */
       return;
     }
