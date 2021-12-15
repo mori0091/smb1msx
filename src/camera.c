@@ -25,18 +25,19 @@ void camera_move(void) {
   const int16_t u = x - x0;
   if (x <= sx + 50 || u <= 0) {
     camera_set_speed(0);
-  } else {
-    if (sx + 124 <= x) {
-      camera.x.i = (x - 124 + sx + u) / 2;
-      camera.x.d = mario_state.dynamics_state.pos.x.d;
-      camera_set_speed(mario_state.speed);
-    } else if (u <= 4) {
-      camera.x.i++;
-      camera_set_speed(f10q6i(1));
-    } else {
-      camera.x.i += u - 4;
-      camera_set_speed(f10q6i(u - 4));
-    }
+  }
+  else if (sx + 124 <= x) {
+    camera.x.i = (x - 124 + sx + u) / 2;
+    camera.x.d = mario_state.dynamics_state.pos.x.d;
+    camera_set_speed(mario_state.speed);
+  }
+  else if (u <= 4) {
+    camera.x.i++;
+    camera_set_speed(f10q6i(1));
+  }
+  else {
+    camera.x.i += u - 4;
+    camera_set_speed(f10q6i(u - 4));
   }
 }
 
