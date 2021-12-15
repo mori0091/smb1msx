@@ -22,6 +22,7 @@
 #include "fps_display.h"
 
 #include "event.h"
+#include "countdown.h"
 
 #include "anime.h"
 #include "stage.h"

@@ -84,6 +84,27 @@ static void clear_screen(void) {
   /* vdp_set_hscroll(0); */
   vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
   graphics_hide_all_sprites();
+  anime_reset_palette();
+}
+
+static void show_hud(void) {
+  set_foreground_color(14);
+  locate(28,0);
+  text_puts("MARIO\n"
+            "000000");
+  locate(92,8);
+  text_puts(" x00");
+  locate(148,0);
+  text_puts("WORLD\n"
+            " 1-1");
+  locate(204,0);
+  text_puts("TIME\n"
+            "    ");
+  // countdown_timer_print();
+  locate(92,8);
+  // mini-coin
+  set_foreground_color(7);
+  text_puts("!");
 }
 
 static void get_ready(void) {
@@ -92,23 +113,10 @@ static void get_ready(void) {
   camera_init();
   mario_init();
   stage_setup_map();
+  countdown_timer_set(300);
   // ---- hud ----
   set_text_color(14,12);
-  locate(28,0);
-  puts("MARIO\n"
-       "000000");
-  locate(92,8);
-  puts(" x00");
-  locate(148,0);
-  puts("WORLD\n"
-       " 1-1");
-  locate(204,0);
-  puts("TIME\n"
-       " 000");
-  locate(92,8);
-  // mini-coin
-  set_text_color(7,12);
-  puts("!");
+  show_hud();
 }
 
 static bool game_main(void) {
@@ -140,10 +148,13 @@ static bool game_main(void) {
       // To avoid overflow and to keep invariant,
       // correct camera position and next column to be rendered.
       stage_test_and_fix_wraparound();
+      // time
+      countdown_timer_update();
     }
     break;
   case EV_PLAYER_DIES:
     sound_set_repeat(false);         // turn off the auto-repeat of the BGM.
+    sound_set_speed(SOUND_SPEED_1X); // 1.0x
     sound_set_bgm(&bgm_player_down); // stop the BGM and then replace it.
     sound_start();                   // start the BGM.
     // CUT IN ANIMATION: MARIO DIES
@@ -207,19 +218,19 @@ static void draw_title_logo(void) {
 
   set_text_color(9,11);
   locate(0,512);
-  puts(title_logo);
+  text_puts(title_logo);
   vdp_cmd_execute_LMMM(0,512,20*8,9*8,6*8+5,3*8+4, VDP_CMD_TIMP);
   set_text_color(10,0);
   locate(0,512);
-  puts(title_logo);
+  text_puts(title_logo);
   vdp_cmd_execute_LMMM(0,512,20*8,9*8,6*8+4,3*8, VDP_CMD_TIMP);
 
   set_text_color(10,12);
   locate(13*8+4,13*8);
-  puts("@1985 NINTENDO");
+  text_puts("@1985 NINTENDO");
   set_text_color(14,12);
   locate(11*8+4,16*8);
-  puts("1 PLAYER GAME\n"
+  text_puts("1 PLAYER GAME\n"
        "\n"
        "2 PLAYER GAME");
 }
@@ -238,6 +249,7 @@ static void show_title_demo(void) {
     // ---- auto pilot demo ----
     msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
     set_pilot(NONE_PILOT);
+    countdown_timer_print();
     fps_display_reset();
     timer_reset();
     while (user_tick < TITLE_DURATION) {
@@ -252,11 +264,13 @@ static void show_title_demo(void) {
     msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
     // ----
     sound_set_repeat(true);
+    sound_set_speed(SOUND_SPEED_1X); // 1.0x
     sound_set_bgm(&bgm_over_world);
     sound_start();              // start BGM
 
     msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
     set_pilot(AUTO_PILOT[demo_version]);
+    countdown_timer_print();
     fps_display_reset();
     timer_reset();
     while (user_tick < DEMO_DURATION[demo_version]) {
@@ -279,18 +293,18 @@ static void show_level_intro(void) {
   set_visible(false);
 
   clear_screen();
-
   vdp_cmd_await();
-
-  set_text_color(14,0);
+  set_text_color(14, 0);
+  show_hud();
+  set_text_color(14, 0);
   locate(11*8+4, 8*8);
-  puts("WORLD 1-1\n"
+  text_puts("WORLD 1-1\n"
        "\n"
        "\n"
        "\n"
        "    x ");
-  putc('0' + mario_get_life() / 10 % 10);
-  putc('0' + mario_get_life() % 10);
+  text_putc('0' + mario_get_life() / 10 % 10);
+  text_putc('0' + mario_get_life() % 10);
   {
     struct sprite s;
     s.x = 124-24;
@@ -303,8 +317,29 @@ static void show_level_intro(void) {
   }
 
   set_visible(true);
-
   sleep_millis(3000);
+}
+
+static void show_message(const char* msg) {
+  set_visible(false);
+
+  clear_screen();
+  set_text_color(14, 0);
+  show_hud();
+  set_text_color(14, 0);
+  locate(96,96);
+  text_puts(msg);
+
+  set_visible(true);
+  sleep_millis(3000);
+}
+
+static void time_up(void) {
+  show_message(" TIME UP ");
+}
+
+static void game_over(void) {
+  show_message("GAME OVER");
 }
 
 static void play_game(void) {
@@ -317,30 +352,23 @@ static void play_game(void) {
     set_pilot(MANUAL_PILOT);
 
     sound_set_repeat(true);
+    sound_set_speed(SOUND_SPEED_1X); // 1.0x
     sound_set_bgm(&bgm_over_world);
     sound_start();              // start BGM
 
     msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
+    countdown_timer_print();
     fps_display_reset();
     timer_reset();
     while (game_main());        // main-loop (until mario die)
     msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
 
     sound_stop();
+    if (countdown_is_time_up()) {
+      time_up();
+    }
   }
   // game over
-}
-
-static void game_over(void) {
-  set_visible(false);
-
-  clear_screen();
-  set_text_color(14, 0);
-  locate(96,96);
-  puts("GAME OVER");
-
-  set_visible(true);
-  sleep_millis(3000);
 }
 
 /** key click beep swith (0:off, non-zero:on) */

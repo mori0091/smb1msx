@@ -5,8 +5,8 @@
 
 #pragma once
 
-void anime_clear_sprites(void);
-
 void anime_update(void);
+
+void anime_reset_palette(void);
 
 #endif

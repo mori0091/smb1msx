@@ -10,7 +10,7 @@ uint8_t text_bg_color;
 static uint8_t buf[4];
 static uint8_t cc[4];
 
-void putc(uint8_t c) {
+void text_putc(uint8_t c) {
   cc[0] = (text_bg_color << 4) | text_bg_color;
   cc[1] = (text_bg_color << 4) | text_fg_color;
   cc[2] = (text_fg_color << 4) | text_bg_color;
@@ -32,14 +32,14 @@ void putc(uint8_t c) {
   locate(text_x + 8, text_y);
 }
 
-void puts(const uint8_t* s) {
+void text_puts(const uint8_t* s) {
   const uint16_t x = text_x;
   uint8_t c;
   while ((c = *s++)) {
     if (c == '\n') {
       locate(x, text_y + 8);
     } else {
-      putc(c);
+      text_putc(c);
     }
   }
 }
