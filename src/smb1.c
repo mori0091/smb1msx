@@ -137,6 +137,9 @@ static bool game_main(void) {
       mario_move();
       // update camera position and speed
       camera_move();
+      // To avoid overflow and to keep invariant,
+      // correct camera position and next column to be rendered.
+      stage_test_and_fix_wraparound();
     }
     break;
   case EV_PLAYER_DIES:

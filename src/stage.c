@@ -11,10 +11,14 @@ static uint16_t map_next;
 /* state of renderer coroutine (indicates next row of tile to be rendered) */
 static uint8_t renderer_state;
 
+/* width of stage map in pixels */
+static uint16_t map_width;
+
 void stage_init(void) {
   map_cols = smb1map_size / STAGEMAP_PAGE_ROWS;
   map_next = STAGEMAP_VISIBLE_COLS;
   renderer_state = 0;
+  map_width = map_cols * TILE_WIDTH;
 }
 
 uint16_t stage_get_columns(void) {
@@ -22,12 +26,11 @@ uint16_t stage_get_columns(void) {
 }
 
 uint16_t stage_get_width(void) {
-  return map_cols * TILE_WIDTH;
+  return map_width;
 }
 
 uint8_t stage_get_object_at(int x, int y) {
-  const uint16_t w = stage_get_width();
-  while (w <= x) x -= w;
+  while (map_width <= x) x -= map_width;
   y /= TILE_HEIGHT;
   if (y < 0) y = 0;
   if (y > 13) y = 13;
@@ -48,6 +51,15 @@ void stage_setup_map(void) {
   }
   vdp_cmd_execute_HMMV(0, 256, 256, 16, 0xcc);
 }
+
+void stage_test_and_fix_wraparound(void) {
+  if (camera_get_x() >= map_width) {
+    mario_set_x(mario_get_x() - map_width);
+    camera_set_x(camera_get_x() - map_width);
+    map_next -= map_cols;
+  }
+}
+
 
 static const uint8_t * p;
 static uint16_t ix;
@@ -71,20 +83,16 @@ static void map_renderer_task_do(const int row) {
   vdp_cmd_execute_HMMM(x, y, TILE_WIDTH, TILE_HEIGHT, ix, iy);
 }
 
+inline bool map_renderer_task_is_buffer_full(void) {
+  // return ((camera_get_x() + 2 * PIXELS_PER_LINE) / TILE_WIDTH <= map_next);
+  return (camera_get_x() / TILE_WIDTH + 2 * STAGEMAP_PAGE_COLS <= map_next);
+}
+
 static void map_renderer_task(void) {
   // if (map_cols <= map_next) return;         /* no more map page */
 
   if (!renderer_state) {
-    // To avoid overflow and to keep invariant,
-    // correct camera position and next column to be rendered
-    if (camera_get_x() >= map_cols * TILE_WIDTH) {
-      mario_set_x(mario_get_x() - map_cols * TILE_WIDTH);
-      camera_set_x(camera_get_x() - map_cols * TILE_WIDTH);
-      map_next -= map_cols;
-    }
-
-    if ((camera_get_x() + 2 * PIXELS_PER_LINE) / TILE_WIDTH <= map_next) {
-      /* buffer full */
+    if (map_renderer_task_is_buffer_full()) {
       return;
     }
 
@@ -98,13 +106,24 @@ static void map_renderer_task(void) {
   }
 }
 
-#define MARGIN      TILE_WIDTH
+// #define MAX_PIXELS_PER_FRAME  (4) // highest value of scroll speed
+// #define TIMESLOT_1 (MAX_PIXELS_PER_FRAME * (STAGEMAP_VISIBLE_ROWS - 1))
+// #define TIMESLOT_2 (TILE_WIDTH)
+// #define MIN_TILES_PER_FRAME (TIMESLOT_1 / TIMESLOT_2)     // = 3.25 (@60fps)
+// #define MAX_TILES_PER_FRAME (2 * TIMESLOT_1 / TIMESLOT_2) // = 6.50 (@30fps)
+
 void stage_update_map(void) {
-  int8_t rows = 7;
-  while (rows--) {
-    map_renderer_task();
+  {
+    int8_t n = 5;
+    while (n--) {
+      map_renderer_task();
+    }
   }
-  while (map_next * TILE_WIDTH < camera_get_x() + PIXELS_PER_LINE + MARGIN) {
-    map_renderer_task();
+  {
+    // const uint16_t col = (camera_get_x() + PIXELS_PER_LINE) / TILE_WIDTH;
+    const uint16_t col = camera_get_x() / TILE_WIDTH + STAGEMAP_PAGE_COLS;
+    while (map_next <= col) {
+      map_renderer_task();
+    }
   }
 }

@@ -47,4 +47,10 @@ uint8_t stage_get_object_at(int x, int y);
  */
 void stage_update_map(void);
 
+/**
+ * To avoid overflow and to keep invariant, correct camera position, character's
+ * X-coordinates, and the next map column to be rendered.
+ */
+void stage_test_and_fix_wraparound(void);
+
 #endif
