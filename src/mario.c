@@ -191,26 +191,33 @@ inline void mario_set_sprite_pat(uint8_t pat) {
   graphics_set_sprite_pat(0, SPT(pat), 64);
 }
 
+inline void mario_move_sprite(void) {
+  const int16_t x = mario_state.dynamics_state.pos.x.i - camera_get_x();
+  const int16_t y = mario_state.dynamics_state.pos.y.i;
+  vmem_set_metasprite_a(SPRITES, 0, x, y, &mario_metasprite);
+}
+
 static uint8_t anim_tick;
 
 void mario_animate(void) {
-  anim_tick++;
-
   if (mario_state.pose == WALKING) {
-    uint8_t t = anim_tick;
-    if (!(mario_state.input & VK_FIRE_1)) {
-      t >>= 1;
+    if (mario_state.input & VK_FIRE_1) {
+      anim_tick += 2;
     }
-    mario_set_sprite_pat(2*(t%3) + WALKING + mario_state.facing);
+    else {
+      anim_tick++;
+    }
+    if (6 <= anim_tick) {
+      anim_tick = 0;
+    }
+    const uint8_t t = anim_tick & ~1;
+    mario_set_sprite_pat(t + WALKING + mario_state.facing);
   }
   else {
     mario_set_sprite_pat(mario_state.pose + mario_state.facing);
   }
 
-  /* move sprite */
-  const int16_t x = mario_state.dynamics_state.pos.x.i - camera_get_x();
-  const int16_t y = mario_state.dynamics_state.pos.y.i;
-  vmem_set_metasprite_a(SPRITES, 0, x, y, &mario_metasprite);
+  mario_move_sprite();
 }
 
 void mario_animate_die(void) {
