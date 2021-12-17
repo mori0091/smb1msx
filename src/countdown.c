@@ -2,31 +2,19 @@
 
 #include "smb1.h"
 
-static int remaining;
+static uBCD16_t remaining;
 static uint8_t elapsed;
+static bool visible;
 
-// void countdown_timer_print(void) {
-//   int t = remaining;
-//   set_foreground_color(14);
-//   locate(212,8);
-//   if (t < 10) {
-//     text_puts("  ");
-//   }
-//   else {
-//     if (t < 100) {
-//       text_puts(" ");
-//     }
-//     else {
-//       text_putc('0' + t / 100);
-//       t %= 100;
-//     }
-//     text_putc('0' + t / 10);
-//     t %= 10;
-//   }
-//   text_putc('0' + t);
-// }
+void countdown_timer_set_visible(bool b) {
+  visible = b;
+}
+
 void countdown_timer_print(void) {
-  int t = remaining;
+  if (!visible) {
+    return;
+  }
+  const uBCD16_t t = remaining;
   set_foreground_color(14);
   locate(212,8);
   text_putc(t < 0x100 ? ' ' : ('0' + ((t >> 8) & 15)));
@@ -34,26 +22,11 @@ void countdown_timer_print(void) {
   text_putc('0' + (t & 15));
 }
 
-// void countdown_timer_set(int t) {
-//   remaining = t;
-//   elapsed = 0;
-// }
-void countdown_timer_set(int t) {
-  remaining = ((t % 1000) / 100 * 256) + ((t % 100) / 10 * 16) + (t % 10);
+void countdown_timer_set(uBCD16_t t) {
+  remaining = t;
   elapsed = 0;
 }
 
-// void countdown_timer_update(void) {
-//   if (remaining <= 0) {
-//     event_set(EV_PLAYER_DIES);
-//     return;
-//   }
-//   if (++elapsed == 10) {
-//     elapsed = 0;
-//     remaining--;
-//     countdown_timer_print();
-//   }
-// }
 void countdown_timer_update(void) {
   if (remaining <= 0) {
     event_set(EV_PLAYER_DIES);

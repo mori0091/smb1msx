@@ -7,9 +7,13 @@
 
 #include <stdbool.h>
 
+typedef uint16_t uBCD16_t;
+
+void countdown_timer_set_visible(bool visible);
+
 void countdown_timer_print(void);
 
-void countdown_timer_set(int t);
+void countdown_timer_set(uBCD16_t t);
 
 void countdown_timer_update(void);
 
