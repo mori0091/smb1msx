@@ -303,8 +303,11 @@ static void show_level_intro(void) {
        "\n"
        "\n"
        "    x ");
-  text_putc('0' + mario_get_life() / 10 % 10);
-  text_putc('0' + mario_get_life() % 10);
+  {
+    const uint8_t x = mario_get_life();
+    text_putc(x < 10 ? ' ' : ('0' + x / 10 % 10));
+    text_putc('0' + mario_get_life() % 10);
+  }
   {
     struct sprite s;
     s.x = 124-24;
