@@ -383,6 +383,8 @@ void main(void) {
   fps_display_set_visible(true);
 
   sound_init();
+  /* Register software envelope patterns */
+  sound_set_eg_table(envelope_table);
   /* sound_set_volume(12); */
   setup_interrupt();
 

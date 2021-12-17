@@ -74,8 +74,11 @@ void countdown_timer_update(void) {
       __asm__("0001$:");
     }
     countdown_timer_print();
-    if (remaining == 0x100) {
-      sound_set_speed((uint8_t)(1.5 * SOUND_SPEED_1X)); // 1.5x
+    if (remaining == 0x099) {
+      sound_effect(&se_hurryup);
+    }
+    if (remaining == 0x091) {
+      sound_set_speed((uint8_t)(1.5 * SOUND_SPEED_1X));
     }
   }
 }

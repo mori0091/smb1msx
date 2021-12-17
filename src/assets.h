@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <msx.h>
 
+/* Software envelope patterns */
+extern const struct sound_eg_attribute envelope_table[16];
+
 /* BGMs */
 extern const struct sound_clip bgm_player_down;
 extern const struct sound_clip bgm_over_world;
@@ -15,6 +18,7 @@ extern const struct sound_clip bgm_over_world;
 /* SEs */
 extern const struct sound_clip se_jump;
 extern const struct sound_clip se_block;
+extern const struct sound_clip se_hurryup;
 
 /* defined tileset */
 #include "assets/tileset.h"
