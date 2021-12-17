@@ -201,7 +201,7 @@ static uint8_t anim_tick;
 
 void mario_animate(void) {
   if (mario_state.pose == WALKING) {
-    if (mario_state.input & VK_FIRE_1) {
+    if (speed_lo < mario_state.speed) {
       anim_tick += 2;
     }
     else {
