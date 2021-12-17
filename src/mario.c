@@ -226,11 +226,16 @@ void mario_animate_die(void) {
   mario_state.input = A_BUTTON;
   mario_state.speed = 0;
   if (212 - 16 < mario_state.dynamics_state.pos.y.i) {
-    mario_state.dynamics_state.pos.y.i = 212 - 16;
+    // falling down
+    mario_state.dynamics_state.vel.y = f10q6(0.0);
+    mario_state.dynamics_state.acc.y = gravity_lo;
   }
-  mario_state.dynamics_state.vel.y = f10q6(-20.0);
+  else {
+    // ouch!
+    mario_state.dynamics_state.vel.y = f10q6(-20.0);
+    mario_state.dynamics_state.acc.y = gravity_hi;
+  }
   mario_state.dynamics_state.vel.x = 0;
-  mario_state.dynamics_state.acc.y = gravity_hi;
   mario_state.dynamics_state.acc.x = 0;
 
   await_hsync();
