@@ -119,11 +119,11 @@ void stage_update_map(void) {
       map_renderer_task();
     }
   }
-  {
-    // const uint16_t col = (camera_get_x() + PIXELS_PER_LINE) / TILE_WIDTH;
-    const uint16_t col = camera_get_x() / TILE_WIDTH + STAGEMAP_PAGE_COLS;
-    while (map_next <= col) {
-      map_renderer_task();
-    }
-  }
+  // {
+  //   // const uint16_t col = (camera_get_x() + PIXELS_PER_LINE) / TILE_WIDTH;
+  //   const uint16_t col = camera_get_x() / TILE_WIDTH + STAGEMAP_PAGE_COLS;
+  //   while (map_next <= col) {
+  //     map_renderer_task();
+  //   }
+  // }
 }
