@@ -96,7 +96,7 @@ inline void mario_1up(void) {
 }
 
 inline bool mario_is_over(void) {
-  return mario_state.life < 0;
+  return mario_state.life <= 0;
 }
 
 #endif
