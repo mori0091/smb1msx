@@ -247,6 +247,10 @@ void mario_animate_die(void) {
     mario_animate();
     if (tick & 1) continue;
     dynamics_state_update(&mario_state.dynamics_state);
+    if (mario_state.dynamics_state.pos.y.i < -32) {
+      mario_state.dynamics_state.pos.y.i = -32;
+      mario_state.dynamics_state.pos.y.d = 0;
+    }
   } while (mario_state.dynamics_state.pos.y.i <= 240);
 }
 
