@@ -49,8 +49,6 @@ void countdown_timer_update(void) {
     countdown_timer_print();
     if (remaining == 0x099) {
       sound_effect(&se_hurryup);
-    }
-    if (remaining == 0x091) {
       sound_set_speed((uint8_t)(1.5 * SOUND_SPEED_1X));
     }
   }
