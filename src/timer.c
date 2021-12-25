@@ -32,6 +32,9 @@ static uint8_t VSYNC_FREQ;
 
 #define COUNT_PER_SECOND    (1200)
 
+static uint8_t count_per_vsync;
+static uint8_t count_per_user_tick;
+
 static uint16_t prev_sys_tick2;
 static uint16_t user_accum;
 static uint8_t user_freq;
@@ -42,6 +45,7 @@ static uint16_t prev_user_tick;
 
 void timer_init(void) {
   VSYNC_FREQ = msx_get_vsync_frequency();
+  count_per_vsync = COUNT_PER_SECOND / VSYNC_FREQ;
   main_fps = VSYNC_FREQ;
   user_fps = VSYNC_FREQ;
   timer_set_user_freq(30);
@@ -49,6 +53,7 @@ void timer_init(void) {
 
 void timer_set_user_freq(uint8_t Hz) {
   user_freq = Hz;
+  count_per_user_tick = COUNT_PER_SECOND / user_freq;
 }
 
 void timer_reset(void) {
@@ -60,7 +65,7 @@ void timer_reset(void) {
   prev_sys_tick2 = 0;
 }
 
-static void timer_update_fps(void) {
+inline void timer_update_fps(void) {
   const uint16_t t0 = JIFFY;
   const uint16_t dt = t0 - prev_sys_tick;
   /* if (dt < VSYNC_FREQ) return; */
@@ -76,18 +81,18 @@ static void timer_update_fps(void) {
   prev_user_tick = user_tick;
 }
 
-static void timer_update_user_tick(void) {
-  const uint16_t t0 = JIFFY;
-  const uint16_t dt = t0 - prev_sys_tick2;
-  prev_sys_tick2 = t0;
-  const uint16_t count_per_user_tick = COUNT_PER_SECOND / user_freq;
+inline void timer_update_user_tick(void) {
+  {
+    const uint16_t t0 = JIFFY;
+    user_accum += count_per_vsync * (t0 - prev_sys_tick2);
+    prev_sys_tick2 = t0;
+  }
   user_tick_delta = 0;
   while (count_per_user_tick <= user_accum) {
     user_accum -= count_per_user_tick;
     user_tick_delta++;
     user_tick++;
   }
-  user_accum += (COUNT_PER_SECOND / VSYNC_FREQ * dt);
 }
 
 #define timer_update_main_tick()   (++tick)
