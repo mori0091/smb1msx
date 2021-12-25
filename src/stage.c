@@ -71,16 +71,25 @@ inline void map_renderer_task_begin(void) {
   p = smb1map + STAGEMAP_PAGE_ROWS * col + 1;
   ix = (TILE_WIDTH * col) & 255;
   pp = (map_next & 0x10) << 4; // page #0 (0) or page #1 (256)
+  // --
+  renderer_state = 1;
 }
 
-static void map_renderer_task_do(const int row) {
-  const uint16_t iy = TILE_HEIGHT * row + pp;
+inline void map_renderer_task_do(void) {
+  const uint16_t iy = TILE_HEIGHT * renderer_state + pp;
   // tile := c|y|y|y|x|x|x|x ... 'c': collision bit
   const uint8_t tile = *p++;
   // tile position on VRAM page #3
   const uint16_t x = (tile & 0x0f) << 4;
   const uint16_t y = (tile & 0x70) + 3 * LINES_PER_VRAM_PAGE;
   vdp_cmd_execute_HMMM(x, y, TILE_WIDTH, TILE_HEIGHT, ix, iy);
+  // --
+  renderer_state++;
+}
+
+inline void map_renderer_task_end(void) {
+  renderer_state = 0;
+  map_next++;
 }
 
 inline bool map_renderer_task_is_buffer_full(void) {
@@ -88,42 +97,44 @@ inline bool map_renderer_task_is_buffer_full(void) {
   return (camera_get_x() / TILE_WIDTH + 2 * STAGEMAP_PAGE_COLS <= map_next);
 }
 
-static void map_renderer_task(void) {
+inline void map_renderer_task(void) {
   // if (map_cols <= map_next) return;         /* no more map page */
 
   if (!renderer_state) {
     if (map_renderer_task_is_buffer_full()) {
       return;
     }
-
     map_renderer_task_begin();
-    renderer_state = 1;
   }
-  map_renderer_task_do(renderer_state++);
+  {
+    map_renderer_task_do();
+  }
   if (renderer_state >= STAGEMAP_VISIBLE_ROWS) {
-    renderer_state = 0;
-    map_next++;
+    map_renderer_task_end();
   }
 }
 
-// #define MAX_PIXELS_PER_FRAME  (4) // highest value of scroll speed
+// #define MAX_PIXELS_PER_FRAME  (3) // highest value of scroll speed
 // #define TIMESLOT_1 (MAX_PIXELS_PER_FRAME * (STAGEMAP_VISIBLE_ROWS - 1))
 // #define TIMESLOT_2 (TILE_WIDTH)
-// #define MIN_TILES_PER_FRAME (TIMESLOT_1 / TIMESLOT_2)     // = 3.25 (@60fps)
-// #define MAX_TILES_PER_FRAME (2 * TIMESLOT_1 / TIMESLOT_2) // = 6.50 (@30fps)
+// #define MIN_TILES_PER_FRAME (TIMESLOT_1 / TIMESLOT_2)     // = 39/16 (@60fps)
+// #define MAX_TILES_PER_FRAME (2 * TIMESLOT_1 / TIMESLOT_2) // = 39/8 (@30fps)
 
 void stage_update_map(void) {
+  static int16_t timeslot_counter = 0;
   {
-    int8_t n = 5;
-    while (n--) {
-      map_renderer_task();
+    const uint16_t x1 = camera_get_x() + PIXELS_PER_LINE;
+    const uint16_t x2 = map_next * TILE_WIDTH;
+    if (x2 < x1) {
+      timeslot_counter += (x1 - x2) * (STAGEMAP_VISIBLE_ROWS - 1);
     }
   }
-  // {
-  //   // const uint16_t col = (camera_get_x() + PIXELS_PER_LINE) / TILE_WIDTH;
-  //   const uint16_t col = camera_get_x() / TILE_WIDTH + STAGEMAP_PAGE_COLS;
-  //   while (map_next <= col) {
-  //     map_renderer_task();
-  //   }
-  // }
+  {
+#   define VX  (camera.speed >> 7) // @60fps ; Sim.freq = 30Hz
+    timeslot_counter += VX * (STAGEMAP_VISIBLE_ROWS - 1);
+  }
+  while (0 < timeslot_counter) {
+    timeslot_counter -= TILE_WIDTH;
+    map_renderer_task();
+  }
 }
