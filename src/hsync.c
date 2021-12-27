@@ -55,6 +55,7 @@ static void interrupt_handler(void) {
       vsync_handler_epilogue();
       __asm__("ei");
       sound_player();
+      anime_on_vsync();
       return;
     }
     __asm__("ei");
@@ -66,6 +67,7 @@ static void interrupt_handler(void) {
     vsync_handler_epilogue();
     __asm__("ei");
     sound_player();
+    anime_on_vsync();
   }
 }
 

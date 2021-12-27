@@ -8,16 +8,19 @@ static const palette_t coin_colors[] = {
   RGB(7,4,1), RGB(7,4,1), RGB(7,4,1), RGB(7,4,1),
 };
 
-static void coin_palette_animate(void) {
+inline void coin_palette_animate(void) {
   /* palette animation (coin / ?-block) */
-  if (!(tick & 7)) {
-    const uint8_t j = (tick >> 3) & 7;
+  if (!(JIFFY & 7)) {
+    const uint8_t j = (JIFFY >> 3) & 7;
     vdp_set_palette(7, coin_colors[j]);
   }
 }
 
-void anime_update(void) {
+void anime_on_vsync(void) {
   coin_palette_animate();
+}
+
+void anime_update(void) {
   if (!(tick & 1)) {
     return;
   }

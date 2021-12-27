@@ -5,6 +5,8 @@
 
 #pragma once
 
+void anime_on_vsync(void);
+
 void anime_update(void);
 
 void anime_reset_palette(void);
