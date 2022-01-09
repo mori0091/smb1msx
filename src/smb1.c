@@ -118,15 +118,11 @@ static void get_ready(void) {
   show_hud();
 }
 
-static bool game_main(void) {
+bool game_main(void) {
   // wait for VSYNC interrupt and interrupt handler finished
   await_vsync();
   set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
   timer_update();
-  // ---- (optional) frame rate / sim.frequency display ----
-  if (!(tick & 31)) {
-    fps_display_update();
-  }
   // ---- sound / visual output task ----
   anime_update();
   // ---- stage map rendering task ----
@@ -160,6 +156,10 @@ static bool game_main(void) {
     mario_died();
     sleep_millis(2000);
     return false;
+  }
+  // ---- (optional) frame rate / sim.frequency display ----
+  if (!(tick & 31)) {
+    fps_display_update();
   }
   return true;
 }
