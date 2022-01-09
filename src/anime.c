@@ -16,8 +16,45 @@ inline void coin_palette_animate(void) {
   }
 }
 
+static const uint8_t invincible_colors[][3] = {
+  { 1, 2, 3, },
+  { 13, 15, 14, },
+  { 5, 15, 14, },
+  { 9, 11, 10, },
+};
+
+static void invincible_palette_animate(void) {
+  const uint8_t i = (JIFFY >> 1) & 3;
+  vdp_set_palette(1, color_palette[invincible_colors[i][0]]);
+  vdp_set_palette(2, color_palette[invincible_colors[i][1]]);
+  vdp_set_palette(3, color_palette[invincible_colors[i][2]]);
+}
+
+static const uint8_t weakened_colors[][3] = {
+  { 1, 2, 3, },
+  { 12, 12, 12, },
+};
+
+static void weakened_palette_animate(void) {
+  const uint8_t i = JIFFY & 1;
+  vdp_set_palette(1, color_palette[weakened_colors[i][0]]);
+  vdp_set_palette(2, color_palette[weakened_colors[i][1]]);
+  vdp_set_palette(3, color_palette[weakened_colors[i][2]]);
+}
+
 void anime_on_vsync(void) {
-  coin_palette_animate();
+  // palette animations
+  {
+    coin_palette_animate();
+  }
+  if (mario_is_invincible()) {
+    // multi-color blinking
+    invincible_palette_animate();
+  }
+  if (mario_is_weakened()) {
+    // (pseudo) transparent visual effect
+    weakened_palette_animate();
+  }
 }
 
 void anime_update(void) {

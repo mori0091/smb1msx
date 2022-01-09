@@ -169,8 +169,10 @@ void mario_init(void) {
   // mario_state.life = 3;
   mario_state.input = 0;
   mario_state.speed = 0;
-  mario_state.facing = FACING_RIGHT;
-  mario_state.pose = STANDING;
+  mario_set_facing(FACING_RIGHT);
+  mario_set_pose(STANDING);
+  mario_reset_physical_status();
+  mario_reset_ability();
 
   /* SDCC does not support ISO C99 compound literal */
   mario_state.dynamics_state.pos.x.i = 40;
@@ -221,8 +223,8 @@ void mario_animate(void) {
 }
 
 void mario_animate_die(void) {
-  mario_state.pose = DEAD;
-  mario_state.facing = 0;
+  mario_set_pose(DEAD);
+  mario_set_facing(0);
   mario_state.input = A_BUTTON;
   mario_state.speed = 0;
   if (212 - 16 < mario_state.dynamics_state.pos.y.i) {
@@ -267,10 +269,10 @@ void mario_update_input_state(void) {
 static void mario_update_speed_on_floor(void) {
   {
     if (mario_state.dynamics_state.vel.x < 0) {
-      mario_state.facing = FACING_LEFT;
+      mario_set_facing(FACING_LEFT);
     }
     if (0 < mario_state.dynamics_state.vel.x) {
-      mario_state.facing = FACING_RIGHT;
+      mario_set_facing(FACING_RIGHT);
     }
     mario_state.speed = abs(mario_state.dynamics_state.vel.x);
   }
@@ -316,10 +318,10 @@ static void mario_update_speed_on_floor(void) {
 
   if (!mario_state.speed) {
     if (LR_KEY == VK_LEFT) {
-      mario_state.facing = FACING_LEFT;
+      mario_set_facing(FACING_LEFT);
     }
     if (LR_KEY == VK_RIGHT) {
-      mario_state.facing = FACING_RIGHT;
+      mario_set_facing(FACING_RIGHT);
     }
   }
 
@@ -375,16 +377,16 @@ static void mario_update_speed(void) {
       }
       mario_state.dynamics_state.acc.y = gravity_lo;
       // estimate mario's pose
-      mario_state.pose = JUMPING;
+      mario_set_pose(JUMPING);
       // ---- sound effect ----
       sound_effect(&se_jump);
     }
     // estimate mario's pose
     else if (mario_state.speed == 0) {
-      mario_state.pose = STANDING;
+      mario_set_pose(STANDING);
     }
     else {
-      mario_state.pose = WALKING;
+      mario_set_pose(WALKING);
     }
   } else {
     // update horizontal speed
