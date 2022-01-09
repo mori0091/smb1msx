@@ -34,9 +34,11 @@ void assets_setup(void) {
   vdp_write_palette(color_palette);
 
   /* Copy sprite patterns and sprite colors to VRAM */
+  vmem_write(REF_SPRITE_PATTERNS, smb1spt, smb1spt_size);
   vmem_write(SPRITE_PATTERNS, smb1spt, smb1spt_size);
   for (int i = 0; i < 16; ++i) {
-    assets_set_sprite_palette(SPRITES, i*2, sp[i]);
+    assets_set_sprite_palette(SPRITES_0, i*2, sp[i]);
+    assets_set_sprite_palette(SPRITES_1, i*2, sp[i]);
   }
 
   /* Copy tileset image to VRAM page #3 */

@@ -79,11 +79,11 @@ static void set_visible(bool visible) {
 }
 
 static void clear_screen(void) {
+  anime_set_enable_on_vsync(false);
   set_hscroll(0);
   await_vsync();
   vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
   graphics_hide_all_sprites();
-  anime_reset_palette();
 }
 
 static void show_hud(void) {
@@ -116,6 +116,7 @@ static void get_ready(void) {
   // ---- hud ----
   set_text_color(14,12);
   show_hud();
+  anime_set_enable_on_vsync(true);
 }
 
 bool game_main(void) {
@@ -214,14 +215,18 @@ static void draw_title_logo(void) {
   draw_title_dot(BX   +2, BY+BH-5);
   draw_title_dot(BX+BW-6, BY+BH-5);
 
-  set_text_color(9,11);
-  locate(0,512);
-  text_puts(title_logo);
-  vdp_cmd_execute_LMMM(0,512,20*8,9*8,6*8+5,3*8+4, VDP_CMD_TIMP);
-  set_text_color(10,0);
-  locate(0,512);
-  text_puts(title_logo);
-  vdp_cmd_execute_LMMM(0,512,20*8,9*8,6*8+4,3*8, VDP_CMD_TIMP);
+  {
+    const uint16_t x = VRAM_FREE_AREA_X;
+    const uint16_t y = VRAM_FREE_AREA_Y;
+    set_text_color(9,11);
+    locate(x, y);
+    text_puts(title_logo);
+    vdp_cmd_execute_LMMM(x,y,20*8,9*8,6*8+5,3*8+4, VDP_CMD_TIMP);
+    set_text_color(10,0);
+    locate(x,y);
+    text_puts(title_logo);
+    vdp_cmd_execute_LMMM(x,y,20*8,9*8,6*8+4,3*8, VDP_CMD_TIMP);
+  }
 
   set_text_color(10,12);
   locate(13*8+4,13*8);
@@ -308,14 +313,10 @@ static void show_level_intro(void) {
     text_putc('0' + mario_get_life() % 10);
   }
   {
-    struct sprite s;
-    s.x = 124-24;
-    s.y = 104-16-1;
-    s.pat = 0 * 4;
-    graphics_set_sprite(0, &s);
-    s.pat = 1 * 4;
-    graphics_set_sprite(1, &s);
-    graphics_set_sprite_pat(0, smb1spt + 64 * (STANDING + FACING_RIGHT), 64);
+    mario_set_pose(STANDING);
+    mario_set_facing(FACING_RIGHT);
+    mario_animate();
+    mario_show(100, 87);
   }
 
   set_visible(true);
@@ -349,6 +350,7 @@ static void play_game(void) {
   while (!mario_is_over()) {
     show_level_intro();
     set_visible(false);
+    clear_screen();
     get_ready();
     set_visible(true);
     set_pilot(MANUAL_PILOT);

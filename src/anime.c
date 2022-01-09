@@ -42,7 +42,32 @@ static void weakened_palette_animate(void) {
   vdp_set_palette(3, color_palette[weakened_colors[i][2]]);
 }
 
+static volatile bool enable_on_vsync;
+
+void anime_set_enable_on_vsync(bool enable) __critical {
+  enable_on_vsync = enable;
+  if (!enable) {
+    vdp_write_palette(color_palette);
+    vdp_set_sprite_attribute_table(SPRITES_0);
+  }
+}
+
 void anime_on_vsync(void) {
+  if (!enable_on_vsync) {
+    return;
+  }
+
+  // // flip pair of sprite attribute table and sprite color table
+  // // \TODO implement sprite engine
+  // // - dubble buffer of sprite attribute / color table
+  // //   - blinking sprite
+  // //   - transparent sprite
+  // //   - color blending
+  // //   - etc.
+  // vdp_set_sprite_attribute_table((JIFFY & 1)
+  //                                ? SPRITES_0
+  //                                : SPRITES_1);
+
   // palette animations
   {
     coin_palette_animate();
@@ -61,9 +86,6 @@ void anime_update(void) {
   if (!(tick & 1)) {
     return;
   }
+  mario_move_sprite();
   mario_animate();
-}
-
-void anime_reset_palette(void) {
-  vdp_set_palette(7, coin_colors[0]);
 }

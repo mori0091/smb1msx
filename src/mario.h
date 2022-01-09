@@ -96,6 +96,18 @@ int16_t mario_get_prev_x(void);
 int16_t mario_get_x(void);
 void mario_set_x(int16_t x);
 
+void mario_show(int x, int y);
+
+inline void mario_hide(void) {
+  mario_show(0, 240);
+}
+
+inline void mario_move_sprite(void) {
+  const int16_t x = mario_state.dynamics_state.pos.x.i - camera_get_x();
+  const int16_t y = mario_state.dynamics_state.pos.y.i;
+  mario_show(x, y);
+}
+
 inline void mario_set_pose(enum mario_pose pose) {
   mario_state.pose = pose;
 }

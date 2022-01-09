@@ -144,24 +144,24 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
 
 struct mario_state mario_state;
 
-static const vec2i_t W16H16D2[] = {
-  /* layer #1 */
-  {0,0},
-  /* layer #2 */
-  {0,0},
+const vec2i_t W16H32D2[] = {
+  {0,0},                        // layer #1 (lower body #1)
+  {0,0},                        // layer #2 (lower body #2)
+  {0,-16},                      // layer #3 (upper body #1)
+  {0,-16},                      // layer #4 (upper body #2)
 };
 
-static const uint8_t mario_pats[] = {
-  /* layer #1 */
-  0,
-  /* layer #2 */
-  4,
+const uint8_t mario_pats[] = {
+  0,                            // layer #1 (lower body #1)
+  4,                            // layer #2 (lower body #2)
+  8,                            // layer #3 (upper body #1)
+  12,                           // layer #4 (upper body #2)
 };
 
-static const metasprite_t mario_metasprite = {
-  .n = 2,
+const metasprite_t mario_metasprite = {
+  .n = 4,
   .anchor = {0,0},
-  .layouts = W16H16D2,
+  .layouts = W16H32D2,
   .pats = mario_pats,
 };
 
@@ -188,38 +188,57 @@ void mario_init(void) {
   /* assets_set_sprite_palette(SPRITES, 0, MARIO_PALETTE); */
 }
 
-#define SPT(pat)    (smb1spt + 64 * (pat))
-inline void mario_set_sprite_pat(uint8_t pat) {
-  graphics_set_sprite_pat(0, SPT(pat), 64);
+#define MARIO_PAT1_DX  (X_FROM_VMEMPTR(SPRITE_PATTERNS))
+#define MARIO_PAT1_DY  (Y_FROM_VMEMPTR(SPRITE_PATTERNS))
+#define MARIO_PAT2_DX  (MARIO_PAT1_DX+128)
+#define MARIO_PAT2_DY  (MARIO_PAT1_DY)
+
+#define BLANK_PAT_SX   (X_FROM_VMEMPTR(REF_SPRITE_PATTERNS)+128)
+#define BLANK_PAT_SY   (Y_FROM_VMEMPTR(REF_SPRITE_PATTERNS)+255)
+
+#define SPRITE_PAT_SX(idx)                                  \
+  (X_FROM_VMEMPTR(REF_SPRITE_PATTERNS) + ((idx) & 1) * 128)
+
+#define SPRITE_PAT_SY(idx)                                  \
+  (Y_FROM_VMEMPTR(REF_SPRITE_PATTERNS) + ((idx) / 2))
+
+static void mario_set_sprite_pat(uint8_t idx) {
+  // layer #0, #1 (lower body)
+  vdp_cmd_execute_HMMM(SPRITE_PAT_SX(idx),
+                       SPRITE_PAT_SY(idx),
+                       128, 1,
+                       MARIO_PAT1_DX,
+                       MARIO_PAT1_DY);
+  // layer #2, #3 (upper body)
+  vdp_cmd_execute_HMMM(BLANK_PAT_SX,
+                       BLANK_PAT_SY,
+                       128, 1,
+                       MARIO_PAT2_DX,
+                       MARIO_PAT2_DY);
 }
 
-inline void mario_move_sprite(void) {
-  const int16_t x = mario_state.dynamics_state.pos.x.i - camera_get_x();
-  const int16_t y = mario_state.dynamics_state.pos.y.i;
-  vmem_set_metasprite_a(SPRITES, 0, x, y, &mario_metasprite);
+void mario_show(int x, int y) {
+  vmem_set_metasprite_a(SPRITES_0, 0, x, y, &mario_metasprite);
 }
 
 static uint8_t anim_tick;
 
 void mario_animate(void) {
-  if (mario_state.pose == WALKING) {
-    if (speed_lo < mario_state.speed) {
-      anim_tick += 2;
-    }
-    else {
-      anim_tick++;
-    }
-    if (6 <= anim_tick) {
-      anim_tick = 0;
-    }
-    const uint8_t t = anim_tick & ~1;
-    mario_set_sprite_pat(t + WALKING + mario_state.facing);
+  uint8_t idx = mario_state.pose + mario_state.facing;
+  if (mario_state.pose != WALKING) {
+    mario_set_sprite_pat(idx);
+    return;
   }
-  else {
-    mario_set_sprite_pat(mario_state.pose + mario_state.facing);
+  /* pose == WALKING */
+  anim_tick++;
+  if (speed_lo < mario_state.speed) {
+    anim_tick++;
   }
-
-  mario_move_sprite();
+  if (6 <= anim_tick) {
+    anim_tick = 0;
+  }
+  const uint8_t t = anim_tick & ~1;
+  mario_set_sprite_pat(t + idx);
 }
 
 void mario_animate_die(void) {
@@ -242,11 +261,13 @@ void mario_animate_die(void) {
 
   await_vsync();
   mario_animate();
+  mario_move_sprite();
   sleep_millis(500);
   do {
     tick++;
     await_vsync();
-    mario_animate();
+    // mario_animate();
+    mario_move_sprite();
     if (tick & 1) continue;
     dynamics_state_update(&mario_state.dynamics_state);
     if (mario_state.dynamics_state.pos.y.i < -32) {

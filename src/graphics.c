@@ -28,17 +28,22 @@ void graphics_init_vdp(void) {
   vdp_set_adjust(-4, 0);           /* centering visible display area */
 }
 
+#define VRAM_PAGE_FILL(pp, byte)                              \
+  vdp_cmd_execute_HMMV(0,                                     \
+                       (pp)*LINES_PER_VRAM_PAGE,              \
+                       PIXELS_PER_LINE,                       \
+                       LINES_PER_VRAM_PAGE,                   \
+                       (byte))
+
 void graphics_clear_vram(void) {
-  /* Fill the pattern name table */
-  vdp_cmd_execute_HMMV(0, 0, PIXELS_PER_LINE, 2 * LINES_PER_VRAM_PAGE, 0x00);
+  /* clear VRAM page #0 and #1 */
+  VRAM_PAGE_FILL(0, 0x00);
+  VRAM_PAGE_FILL(1, 0x00);
 
   // In rare cases, access to VRAM may fail or may be omitted depending on the
   // timing of the access. This occurs during a VDP command is executing.
   // Therefore, waits for VDP command finished before accsess to VRAM.
   vdp_cmd_await();
-  /* Clear sprite pattern table and sprite color table */
-  vmem_memset(SPRITE_PATTERNS, 0, SIZE_OF_SPRITE_PATTERNS);
-  vmem_memset(SPRITE_COLORS, 0, SIZE_OF_SPRITE_COLORS);
   /* Clear sprites */
   graphics_hide_all_sprites();
 }
@@ -46,11 +51,12 @@ void graphics_clear_vram(void) {
 static const struct sprite hidden_sprite = { .y = 217 };
 
 void graphics_hide_sprite(uint8_t plane) {
-  vmem_set_sprite(SPRITES, plane, &hidden_sprite);
+  vmem_set_sprite(SPRITES_0, plane, &hidden_sprite);
+  vmem_set_sprite(SPRITES_1, plane, &hidden_sprite);
 }
 
 void graphics_hide_all_sprites(void) {
-  for (int i = 0; i < 32; ++i) {
+  for (uint8_t i = 0; i < 32; ++i) {
     graphics_hide_sprite(i);
   }
 }
@@ -64,5 +70,6 @@ void graphics_set_sprite_pat(uint8_t pat, const uint8_t* p, uint8_t n_bytes) {
 }
 
 void graphics_set_sprite(uint8_t plane, const struct sprite* s) {
-  vmem_set_sprite(SPRITES, plane, s);
+  vmem_set_sprite(SPRITES_0, plane, s);
+  vmem_set_sprite(SPRITES_1, plane, s);
 }

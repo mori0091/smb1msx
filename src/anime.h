@@ -5,10 +5,10 @@
 
 #pragma once
 
+void anime_set_enable_on_vsync(bool enable);
+
 void anime_on_vsync(void);
 
 void anime_update(void);
-
-void anime_reset_palette(void);
 
 #endif
