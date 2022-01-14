@@ -1,0 +1,118 @@
+# -*- coding: utf-8-unix -*-
+#+STARTUP: indent showall
+#+AUTHOR: Daishi Mori (mori0091)
+#+DATE: 15th, Jan. 2022
+
+* DESIGN NOTE : Tileset - Matix of tile image
+
+In my MSX game design, I use the following *Tile* and *Tileset* for rendering
+the stage map.
+
+- Tileset :: A matrix of 8x16 (8 rows, 16 columns) tiles.
+- Tile :: A 16x16 pixel, 4bpp image.
+
+Thus, a tileset image is a 256x128 pixel, 4bpp image, with a data size of 16KiB.
+It is placed on page 3 of VRAM and is referenced to render the stage map.
+
+However, it is too large to be stored in the 32KiB of an MSX ROM cartridge, so
+it must be placed in the ROM image as compressed data.
+
+
+* Reduced colors for a tile
+
+Note that not so many colors are needed for a tile.\\
+Almost tiles are colored at most 3 or 4 colors.
+
+So, in order to compress the image data size, we introduced a *4-colors
+tile-palette* and decided to *encode each tile pattern as a 2bpp image*.
+
+
+** 4-colors tile-palette
+
+A tile-palette consists of four colors.
+
+One color is coded with 4 bits. (4bpp).
+
+Therefore, one tile-palette is encoded in 16 bits (4 bits x 4 colors) as
+follows:
+
+| bit #15..#12 | bit #11..#8 | bit #7..#4 | bit #3..#0 |
+|--------------+-------------+------------+------------|
+| color #3     | color #2    | color #1   | color #0   |
+
+A maximum of 16 tile-palettes can be defined.
+
+Therefore, the maximum size of the tile-palette table is 32 bytes (16 bits x 16
+tile palettes).
+
+
+** Color encoding of a tile
+
+A tile will be colored in two tile palettes.
+- One for the top half and
+- The other for the bottom half.
+
+Thus, the colors of one tile can be encoded in one byte as follows:
+
+| bit #7..#4                  | bit #3..#0                     |
+|-----------------------------+--------------------------------|
+| tile-palette # for top-half | tile-palette # for bottom-half |
+
+
+Since the tile palette consists of four colors, as described above, a tile can
+have its top half colored with four colors and its bottom half colored with
+another four colors.
+
+A pixel in a tile can only be one of the four colors. Therefore, the bitmap
+pattern of a tile can be encoded as a 2 bits per pixel (2bpp) image.
+
+
+* Tileset as a sparce matrix of tiles
+
+Tileset is a matrix consisting of 8 rows and 16 columns of tiles, where each
+tile is indexed by its ~(row, column)~ tuple.
+
+Note, however, that the tileset is not a dense matrix. Many elements of the
+matrix are not used and some elements are duplicated. Since tiles are components
+for drawing a stage map, a minimal tileset is sufficient.
+
+Therefore, a tileset can be regarded as a sparse matrix of tiles, or it can be a
+list of tiles indices. (i.e., a list of ~(row, column)~ tuples)
+
+A ~(row, column)~ tuple can be encoded in 1 byte (7 bits are enough) since the
+tileset is a 8x16 matrix.
+
+#+begin_quote
+Or, maybe, a *8x16x1 bits bitmap* (16 bytes total) is enough instead of a list
+of ~(row, column)~ tuples.
+#+end_quote
+
+
+* Conclusion
+
+To reduce the size of tileset data:
+
+- Tileset can be represented as a list of tiles and the tile-palette table.
+
+- A tile can be represented by the following three things
+  - tile_id      :: ~(row, column)~ index (1 byte)
+  - tile_color   :: A pair of tile-palette numbers for the top and bottom halves (1 byte total)
+  - tile_pattern :: A 16x16 pixel, 2 bpp bitmap image (64 bytes)
+
+- The tile-palette table contains a maximum of 16 tile palettes. (Maximum 32 bytes)
+  - The tile-palette consists of 4 colors x 4 bits.
+    - ~(color#3, color#2, color#1, color#0)~ (2 bytes total)
+
+
+Currently, 75 tiles are there.
+
+So the size of tileset data is as follows:
+
+| Table              | element                            | # of elements | Table Size [bytes] |
+|--------------------+------------------------------------+---------------+--------------------|
+| tile_id_table      | ~(row, column)~ index              |            75 |                 75 |
+| tile_color_table   | A pair of tile-palette numbers     |            75 |                 75 |
+| tile_pattern_table | 2 bpp bitmap image of tile         |            75 |               4800 |
+| tile_palette_table | A tile-palette (4 colors x 4 bits) |            16 |                 32 |
+
+Total *4.9 KiB*, about *70% reduced* against to raw tileset image!
