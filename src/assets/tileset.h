@@ -20,8 +20,8 @@ void tileset_decompress_into_vram(void);
  * \param b    4-color set (in 4 hex-digits) for bottom 8 lines
  */
 #define TILE_COLOR(a, b)                        \
-  TILE_COLOR0(FOUR_COLOR_SET_ID(a),             \
-              FOUR_COLOR_SET_ID(b))
+  TILE_COLOR0(TILE_PALETTE_ID(a),               \
+              TILE_PALETTE_ID(b))
 #define TILE_COLOR0(id_a, id_b)                 \
   (((id_a) & 15) << 4 | ((id_b) & 15))
 
@@ -30,28 +30,28 @@ void tileset_decompress_into_vram(void);
  *
  * \param x    4-color set (in 4 hex-digits)
  */
-#define FOUR_COLOR_SET_ID(x)   FOUR_COLOR_SET_ID0(x)
-#define FOUR_COLOR_SET_ID0(x)  FOUR_COLOR_SET_ID_ ## x
+#define TILE_PALETTE_ID(x)   TILE_PALETTE_ID0(x)
+#define TILE_PALETTE_ID0(x)  TILE_PALETTE_ID_ ## x
 
-#define FOUR_COLOR_SET_ID_C540  (0)  // C540 (C5*0 C*40 *5*0 *540)
-#define FOUR_COLOR_SET_ID_C970  (1)  // C970
-#define FOUR_COLOR_SET_ID_C97B  (2)  // C97B (C9*B)
-#define FOUR_COLOR_SET_ID_C980  (3)  // C98*
-#define FOUR_COLOR_SET_ID_C98B  (4)  // C98B (C9*B)
-#define FOUR_COLOR_SET_ID_C9AB  (5)  // C9AB (C9*B)
-#define FOUR_COLOR_SET_ID_C9FB  (6)  // C9FB (C9*B)
-#define FOUR_COLOR_SET_ID_C9FD  (7)  // C9FD
-#define FOUR_COLOR_SET_ID_CBA0  (8)  // CBA0 (CB*0 *BA0 *B*0 C*A*)
-#define FOUR_COLOR_SET_ID_CBD0  (9)  // CBD0 (*BD0)
-#define FOUR_COLOR_SET_ID_CE50  (10) // CE50 (CE5*)
-#define FOUR_COLOR_SET_ID_CE5F  (11) // CE5F
-#define FOUR_COLOR_SET_ID_CE60  (12) // CE60 (CE*0 CE6*)
-#define FOUR_COLOR_SET_ID_CEDF  (13) // CEDF
+#define TILE_PALETTE_ID_C540  (0)  // C540 (C5*0 C*40 *5*0 *540)
+#define TILE_PALETTE_ID_C970  (1)  // C970
+#define TILE_PALETTE_ID_C97B  (2)  // C97B (C9*B)
+#define TILE_PALETTE_ID_C980  (3)  // C98*
+#define TILE_PALETTE_ID_C98B  (4)  // C98B (C9*B)
+#define TILE_PALETTE_ID_C9AB  (5)  // C9AB (C9*B)
+#define TILE_PALETTE_ID_C9FB  (6)  // C9FB (C9*B)
+#define TILE_PALETTE_ID_C9FD  (7)  // C9FD
+#define TILE_PALETTE_ID_CBA0  (8)  // CBA0 (CB*0 *BA0 *B*0 C*A*)
+#define TILE_PALETTE_ID_CBD0  (9)  // CBD0 (*BD0)
+#define TILE_PALETTE_ID_CE50  (10) // CE50 (CE5*)
+#define TILE_PALETTE_ID_CE5F  (11) // CE5F
+#define TILE_PALETTE_ID_CE60  (12) // CE60 (CE*0 CE6*)
+#define TILE_PALETTE_ID_CEDF  (13) // CEDF
 
 /**
- * List of four color combinations.
+ * Tile-palette table (List of four color combinations).
  */
-extern const uint16_t four_color_set[16];
+extern const uint16_t tile_palette_table[16];
 
 /**
  * List of (tile-id, tile-color) 2 byte tuples.
