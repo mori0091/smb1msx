@@ -154,14 +154,29 @@ void mario_animate_die(void) {
   } while (mario_state.dynamics_state.pos.y.i <= 240);
 }
 
-void mario_backup_input_state(void) {
-  mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
-  mario_state.input <<= 2;
+uint8_t no_controller(void) {
+  return 0;
+}
+
+uint8_t joystick1(void) {
+  return joypad_get_state(1);
+}
+
+static controller_t controller = joystick1;
+
+void mario_set_controller(controller_t c) {
+  if (c) {
+    controller = c;
+  }
+  else {
+    controller = no_controller;
+  }
 }
 
 void mario_update_input_state(void) {
-  mario_backup_input_state();
-  mario_state.input |= joypad_get_state(1);
+  mario_state.input &= (VK_FIRE_0 | VK_FIRE_1);
+  mario_state.input <<= 2;
+  mario_state.input |= controller();
 }
 
 static void mario_update_speed_on_floor(void) {

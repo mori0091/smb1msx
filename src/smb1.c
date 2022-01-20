@@ -4,73 +4,50 @@
 
 #define SIM_FREQ         (30)
 #define TITLE_DURATION   (5 * SIM_FREQ)
-
-#define MANUAL_PILOT     (mario_update_input_state)
-#define NONE_PILOT       (0)
-
-#define AUTO_PILOT_1     (mario_update_input_state_autopilot_1)
 #define DEMO_DURATION_1  (8 * SIM_FREQ)
-
-#define AUTO_PILOT_2     (mario_update_input_state_autopilot_2)
 #define DEMO_DURATION_2  (17 * SIM_FREQ)
 
-typedef void (*pilot_func)(void);
-
-static pilot_func pilot;
-
-static void set_pilot(pilot_func f) {
-  pilot = f;
-}
-
-static void run_pilot(void) {
-  if (pilot) pilot();
-  else {
-    mario_state.input = 0;
-  }
-}
-
 // short version demo
-static void mario_update_input_state_autopilot_1(void) {
-  mario_backup_input_state();
+static uint8_t auto_pilot_1(void) {
+  uint8_t ret = 0;
   uint16_t x = mario_get_x();
-  mario_state.input |= VK_RIGHT;
-  if (x < 256+10) return;
-  if (x < 256+76 && mario_state.speed < f10q6i(1)) return;
+  ret |= VK_RIGHT;
+  if (x < 256+10) return ret;
+  if (x < 256+76 && mario_state.speed < f10q6i(1)) return ret;
   if (user_tick < 133) {
     if (0 < mario_state.speed) {
-      mario_state.input = 0;
-      return;
+      return 0;
     }
     if (x == 256+80) {
-      mario_state.input = VK_FIRE_0;
-      return;
+      return VK_FIRE_0;
     }
   }
-  if (x < 256+94 && mario_state.speed < f10q6i(1)) return;
-  mario_state.input &= ~VK_RIGHT;
+  if (x < 256+94 && mario_state.speed < f10q6i(1)) return ret;
+  ret &= ~VK_RIGHT;
+  return ret;
 }
 
 // long version demo
-static void mario_update_input_state_autopilot_2(void) {
-  mario_backup_input_state();
-  mario_state.input |= VK_FIRE_1 | VK_RIGHT;
+static uint8_t auto_pilot_2(void) {
+  uint8_t ret = VK_FIRE_1 | VK_RIGHT;
   if (mario_state.collision_state & COLLISION_RIGHT) {
-    mario_state.input |= VK_FIRE_0;
-    return;
+    return ret | VK_FIRE_0;
   }
   if (mario_state.dynamics_state.vel.y < 0) {
-    mario_state.input |= VK_FIRE_0;
-    return;
+    return ret | VK_FIRE_0;
   }
+  return ret;
 }
 
-const pilot_func AUTO_PILOT[] = {
-  AUTO_PILOT_1,
-  AUTO_PILOT_2,
+struct demo_conf {
+  controller_t controller;
+  uint16_t duration;
 };
-const uint16_t DEMO_DURATION[] = {
-  DEMO_DURATION_1,
-  DEMO_DURATION_2,
+
+const struct demo_conf demos[] = {
+  { .controller = no_controller, .duration = TITLE_DURATION },
+  { .controller = auto_pilot_1 , .duration = DEMO_DURATION_1},
+  { .controller = auto_pilot_2 , .duration = DEMO_DURATION_2},
 };
 
 static void set_visible(bool visible) {
@@ -135,7 +112,7 @@ bool game_main(void) {
     uint8_t n = user_tick_delta;
     while (n--) {
       // update mario's input
-      run_pilot();
+      mario_update_input_state();
       // update mario's state
       mario_move();
       // update camera position and speed
@@ -245,8 +222,29 @@ static void play_music(void) {
   sound_start();                // start BGM
 }
 
+static bool demo(uint8_t version) {
+  msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
+  mario_set_controller(demos[version].controller);
+  countdown_timer_set_visible(false);
+  fps_display_reset();
+  timer_reset();
+  bool triggered = false;
+  while (user_tick < demos[version].duration) {
+    if (!game_main()) {
+      break;                  // (mario died) return to title
+    }
+    // ----
+    if (joypad_get_state(1) & VK_FIRE_0) {
+      triggered = true;
+      break;
+    }
+  }
+  msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
+  return triggered;
+}
+
 static void show_title_demo(void) {
-  uint8_t demo_version = 0;
+  uint8_t demo_version = 1;
   mario_set_life(3);
   for (;;) {
     // ---- Title screen ----
@@ -256,42 +254,12 @@ static void show_title_demo(void) {
     draw_title_logo();
     vdp_cmd_await();
     set_visible(true);
+    if (demo(0)) return;        // start the game!
     // ---- auto pilot demo ----
-    msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
-    set_pilot(NONE_PILOT);
-    countdown_timer_set_visible(false);
-    fps_display_reset();
-    timer_reset();
-    while (user_tick < TITLE_DURATION) {
-      if (!game_main()) {
-        break;                  // (mario died) return to title
-      }
-      // ----
-      if (joypad_get_state(1) & VK_FIRE_0) {
-        return;                 // start the game!
-      }
-    }
-    msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
-    // ----
     play_music();
-    msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
-    set_pilot(AUTO_PILOT[demo_version]);
-    countdown_timer_set_visible(false);
-    fps_display_reset();
-    timer_reset();
-    while (user_tick < DEMO_DURATION[demo_version]) {
-      if (!game_main()) {
-        break;                  // (mario died) return to title
-      }
-      // ----
-      if (joypad_get_state(1) & VK_FIRE_0) {
-        break;                  // return to title
-      }
-    }
-    msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
-    sound_stop();               // stop BGM
-
-    demo_version ^= 1;
+    demo(demo_version);
+    sound_stop();
+    demo_version = demo_version % 2 + 1;
   }
 }
 
@@ -358,7 +326,7 @@ static void play_game(void) {
 
     play_music();
     msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
-    set_pilot(MANUAL_PILOT);
+    mario_set_controller(joystick1);
     countdown_timer_set_visible(true);
     fps_display_reset();
     timer_reset();

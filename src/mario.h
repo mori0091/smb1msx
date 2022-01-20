@@ -7,6 +7,13 @@
 
 #include "physics.h"
 
+typedef uint8_t (* controller_t)(void);
+
+uint8_t no_controller(void);
+uint8_t joystick1(void);
+
+void mario_set_controller(controller_t c);
+
 enum mario_pose {
   STANDING    = 0,
   STANDING_L  = 0,
@@ -67,7 +74,6 @@ extern struct mario_state mario_state;
 void mario_init(void);
 void mario_animate(void);
 void mario_animate_die(void);
-void mario_backup_input_state(void);
 void mario_update_input_state(void);
 void mario_move(void);
 
