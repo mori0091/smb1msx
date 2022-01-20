@@ -8,6 +8,7 @@ static bool visible;
 
 void countdown_timer_set_visible(bool b) {
   visible = b;
+  countdown_timer_print();
 }
 
 void countdown_timer_print(void) {

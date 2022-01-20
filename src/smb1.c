@@ -238,9 +238,15 @@ static void draw_title_logo(void) {
        "2 PLAYER GAME");
 }
 
+static void play_music(void) {
+  sound_set_repeat(true);
+  sound_set_speed(SOUND_SPEED_1X); // 1.0x
+  sound_set_bgm(&bgm_over_world);
+  sound_start();                // start BGM
+}
+
 static void show_title_demo(void) {
   uint8_t demo_version = 0;
-  countdown_timer_set_visible(false);
   mario_set_life(3);
   for (;;) {
     // ---- Title screen ----
@@ -253,7 +259,7 @@ static void show_title_demo(void) {
     // ---- auto pilot demo ----
     msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
     set_pilot(NONE_PILOT);
-    // countdown_timer_print();
+    countdown_timer_set_visible(false);
     fps_display_reset();
     timer_reset();
     while (user_tick < TITLE_DURATION) {
@@ -267,14 +273,10 @@ static void show_title_demo(void) {
     }
     msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
     // ----
-    sound_set_repeat(true);
-    sound_set_speed(SOUND_SPEED_1X); // 1.0x
-    sound_set_bgm(&bgm_over_world);
-    sound_start();              // start BGM
-
+    play_music();
     msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
     set_pilot(AUTO_PILOT[demo_version]);
-    // countdown_timer_print();
+    countdown_timer_set_visible(false);
     fps_display_reset();
     timer_reset();
     while (user_tick < DEMO_DURATION[demo_version]) {
@@ -287,9 +289,9 @@ static void show_title_demo(void) {
       }
     }
     msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
-    demo_version ^= 1;
-
     sound_stop();               // stop BGM
+
+    demo_version ^= 1;
   }
 }
 
@@ -353,22 +355,17 @@ static void play_game(void) {
     clear_screen();
     get_ready();
     set_visible(true);
-    set_pilot(MANUAL_PILOT);
 
-    sound_set_repeat(true);
-    sound_set_speed(SOUND_SPEED_1X); // 1.0x
-    sound_set_bgm(&bgm_over_world);
-    sound_start();              // start BGM
-
+    play_music();
     msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
+    set_pilot(MANUAL_PILOT);
     countdown_timer_set_visible(true);
-    countdown_timer_print();
     fps_display_reset();
     timer_reset();
     while (game_main());        // main-loop (until mario die)
     msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
-
     sound_stop();
+
     if (countdown_is_time_up()) {
       time_up();
     }
