@@ -27,6 +27,7 @@
 #include "anime.h"
 #include "stage.h"
 #include "camera.h"
+#include "physics.h"
 #include "mario.h"
 
 #endif
