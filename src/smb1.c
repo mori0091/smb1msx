@@ -39,15 +39,50 @@ static uint8_t auto_pilot_2(void) {
   return ret;
 }
 
-struct demo_conf {
-  controller_t controller;
-  uint16_t duration;
+typedef bool (* callback_t)(void * arg);
+
+struct scene_conf {
+  controller_t controller;      // input controller
+  uint16_t duration;            // duration of scene (tick count in 30Hz)
+  bool countdown;               // visibility of countdown timer
+  callback_t on_after;          // callback called on every after frame
 };
 
-const struct demo_conf demos[] = {
-  { .controller = no_controller, .duration = TITLE_DURATION },
-  { .controller = auto_pilot_1 , .duration = DEMO_DURATION_1},
-  { .controller = auto_pilot_2 , .duration = DEMO_DURATION_2},
+static bool demo_canceler(void * arg) {
+  (void)arg;
+  if (joypad_get_state(1) & VK_FIRE_0) {
+    return true;                // break
+  }
+  return false;                 // continue
+}
+
+const struct scene_conf title_scene = {
+  .controller = no_controller,
+  .duration   = TITLE_DURATION,
+  .countdown  = false,
+  .on_after   = demo_canceler,
+};
+
+const struct scene_conf demo_scenes[] = {
+  {
+    .controller = auto_pilot_1,
+    .duration   = DEMO_DURATION_1,
+    .countdown  = false,
+    .on_after   = demo_canceler,
+  },
+  {
+    .controller = auto_pilot_2,
+    .duration   = DEMO_DURATION_2,
+    .countdown  = false,
+    .on_after   = demo_canceler,
+  },
+};
+
+const struct scene_conf game_scene = {
+  .controller = joystick1,
+  .duration   = 0,              // infinite
+  .countdown  = true,
+  .on_after   = NULL,
 };
 
 static void set_visible(bool visible) {
@@ -76,7 +111,6 @@ static void show_hud(void) {
   locate(204,0);
   text_puts("TIME\n"
             "    ");
-  // countdown_timer_print();
   locate(92,8);
   // mini-coin
   set_foreground_color(7);
@@ -94,52 +128,6 @@ static void get_ready(void) {
   set_text_color(14,12);
   show_hud();
   anime_set_enable_on_vsync(true);
-}
-
-bool game_main(void) {
-  // wait for VSYNC interrupt and interrupt handler finished
-  await_vsync();
-  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
-  timer_update();
-  // ---- sound / visual output task ----
-  anime_update();
-  // ---- stage map rendering task ----
-  stage_update_map();
-  // ---- event dispatch ----
-  switch (event_get()) {
-  default:;
-    // ---- game core task ----
-    uint8_t n = user_tick_delta;
-    while (n--) {
-      // update mario's input
-      mario_update_input_state();
-      // update mario's state
-      mario_move();
-      // update camera position and speed
-      camera_move();
-      // To avoid overflow and to keep invariant,
-      // correct camera position and next column to be rendered.
-      stage_test_and_fix_wraparound();
-      // time
-      countdown_timer_update();
-    }
-    break;
-  case EV_PLAYER_DIES:
-    sound_set_repeat(false);         // turn off the auto-repeat of the BGM.
-    sound_set_speed(SOUND_SPEED_1X); // 1.0x
-    sound_set_bgm(&bgm_player_down); // stop the BGM and then replace it.
-    sound_start();                   // start the BGM.
-    // CUT IN ANIMATION: MARIO DIES
-    mario_animate_die();
-    mario_died();
-    sleep_millis(2000);
-    return false;
-  }
-  // ---- (optional) frame rate / sim.frequency display ----
-  if (!(tick & 31)) {
-    fps_display_update();
-  }
-  return true;
 }
 
 static const char title_logo[] =
@@ -222,22 +210,69 @@ static void play_music(void) {
   sound_start();                // start BGM
 }
 
-typedef bool (* frame_task_t)(void * arg);
+bool game_main(void) {
+  // wait for VSYNC interrupt and interrupt handler finished
+  await_vsync();
+  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
+  timer_update();
+  // ---- sound / visual output task ----
+  anime_update();
+  // ---- stage map rendering task ----
+  stage_update_map();
+  // ---- event dispatch ----
+  switch (event_get()) {
+  default:;
+    // ---- game core task ----
+    uint8_t n = user_tick_delta;
+    while (n--) {
+      // update mario's input
+      mario_update_input_state();
+      // update mario's state
+      mario_move();
+      // update camera position and speed
+      camera_move();
+      // To avoid overflow and to keep invariant,
+      // correct camera position and next column to be rendered.
+      stage_test_and_fix_wraparound();
+      // time
+      countdown_timer_update();
+    }
+    break;
+  case EV_PLAYER_DIES:
+    sound_set_repeat(false);         // turn off the auto-repeat of the BGM.
+    sound_set_speed(SOUND_SPEED_1X); // 1.0x
+    sound_set_bgm(&bgm_player_down); // stop the BGM and then replace it.
+    sound_start();                   // start the BGM.
+    // CUT IN ANIMATION: MARIO DIES
+    mario_animate_die();
+    mario_died();
+    sleep_millis(2000);
+    return false;
+  }
+  // ---- (optional) frame rate / sim.frequency display ----
+  if (!(tick & 31)) {
+    fps_display_update();
+  }
+  return true;
+}
 
-static bool demo(uint8_t version, frame_task_t on_after_frame, void * arg) {
+bool game_main_loop(const struct scene_conf * scene) {
   msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
-  mario_set_controller(demos[version].controller);
-  countdown_timer_set_visible(false);
+  mario_set_controller(scene->controller);
+  countdown_timer_set_visible(scene->countdown);
   fps_display_reset();
   timer_reset();
   bool canceled = false;
-  while (user_tick < demos[version].duration) {
+  for (;;) {
     if (!game_main()) {
       break;                  // (mario died) return to title
     }
     // ----
-    if (on_after_frame && on_after_frame(arg)) {
+    if (scene->on_after && scene->on_after(scene)) {
       canceled = true;
+      break;
+    }
+    if (scene->duration && scene->duration <= user_tick) {
       break;
     }
   }
@@ -245,16 +280,8 @@ static bool demo(uint8_t version, frame_task_t on_after_frame, void * arg) {
   return canceled;
 }
 
-static bool demo_canceler(void * arg) {
-  (void)arg;
-  if (joypad_get_state(1) & VK_FIRE_0) {
-    return true;                // break
-  }
-  return false;                 // continue
-}
-
-static void show_title_demo(void) {
-  uint8_t demo_version = 1;
+void title_demo(void) {
+  uint8_t demo_version = 0;
   mario_set_life(3);
   for (;;) {
     // ---- Title screen ----
@@ -264,18 +291,18 @@ static void show_title_demo(void) {
     draw_title_logo();
     vdp_cmd_await();
     set_visible(true);
-    if (demo(0, demo_canceler, NULL)) {
+    if (game_main_loop(&title_scene)) {
       return;                   // start the game!
     }
     // ---- auto pilot demo ----
     play_music();
-    demo(demo_version, demo_canceler, NULL);
+    game_main_loop(&demo_scenes[demo_version]);
     sound_stop();
-    demo_version = demo_version % 2 + 1;
+    demo_version = (demo_version + 1) % 2;
   }
 }
 
-static void show_level_intro(void) {
+void level_intro(void) {
   set_visible(false);
 
   clear_screen();
@@ -319,38 +346,24 @@ static void show_message(const char* msg) {
   sleep_millis(3000);
 }
 
-static void time_up(void) {
-  show_message(" TIME UP ");
-}
-
-static void game_over(void) {
-  show_message("GAME OVER");
-}
-
-static void play_game(void) {
+void play_game(void) {
   mario_set_life(3);
   while (!mario_is_over()) {
-    show_level_intro();
+    level_intro();
     set_visible(false);
     clear_screen();
     get_ready();
     set_visible(true);
 
     play_music();
-    msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
-    mario_set_controller(joystick1);
-    countdown_timer_set_visible(true);
-    fps_display_reset();
-    timer_reset();
-    while (game_main());        // main-loop (until mario die)
-    msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
+    game_main_loop(&game_scene);
     sound_stop();
 
     if (countdown_is_time_up()) {
-      time_up();
+      show_message(" TIME UP ");
     }
   }
-  // game over
+  show_message("GAME OVER");
 }
 
 /** key click beep swith (0:off, non-zero:on) */
@@ -371,8 +384,7 @@ void main(void) {
   setup_interrupt();
 
   for (;;) {
-    show_title_demo();
+    title_demo();
     play_game();
-    game_over();
   }
 }
