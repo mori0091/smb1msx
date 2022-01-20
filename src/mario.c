@@ -434,6 +434,7 @@ void mario_move(void) {
     if (mario_state.dynamics_state.pos.x.i < x0) {
       mario_state.dynamics_state.pos.x.i = x0;
       mario_state.dynamics_state.pos.x.d = 0;
+      mario_state.dynamics_state.vel.x = 0;
     }
     if (mario_state.dynamics_state.vel.y < f10q6i(-16)) {
       mario_state.dynamics_state.vel.y = f10q6i(-16);
@@ -456,12 +457,6 @@ void mario_move(void) {
                          &mario_state.dynamics_state);
 
   mario_update_speed();
-
-  // ---- !? Mario can go back to the left of starting page...??
-  if (mario_state.dynamics_state.pos.x.i <= 8) {
-    mario_state.dynamics_state.pos.x.i = 8;
-    mario_state.dynamics_state.pos.x.d = 0;
-  }
 }
 
 int16_t mario_get_prev_x(void) {
