@@ -222,25 +222,35 @@ static void play_music(void) {
   sound_start();                // start BGM
 }
 
-static bool demo(uint8_t version) {
+typedef bool (* frame_task_t)(void * arg);
+
+static bool demo(uint8_t version, frame_task_t on_after_frame, void * arg) {
   msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
   mario_set_controller(demos[version].controller);
   countdown_timer_set_visible(false);
   fps_display_reset();
   timer_reset();
-  bool triggered = false;
+  bool canceled = false;
   while (user_tick < demos[version].duration) {
     if (!game_main()) {
       break;                  // (mario died) return to title
     }
     // ----
-    if (joypad_get_state(1) & VK_FIRE_0) {
-      triggered = true;
+    if (on_after_frame && on_after_frame(arg)) {
+      canceled = true;
       break;
     }
   }
   msx_set_cpu_mode(0x80);     // Z80 mode (if MSXturboR)
-  return triggered;
+  return canceled;
+}
+
+static bool demo_canceler(void * arg) {
+  (void)arg;
+  if (joypad_get_state(1) & VK_FIRE_0) {
+    return true;                // break
+  }
+  return false;                 // continue
 }
 
 static void show_title_demo(void) {
@@ -254,10 +264,12 @@ static void show_title_demo(void) {
     draw_title_logo();
     vdp_cmd_await();
     set_visible(true);
-    if (demo(0)) return;        // start the game!
+    if (demo(0, demo_canceler, NULL)) {
+      return;                   // start the game!
+    }
     // ---- auto pilot demo ----
     play_music();
-    demo(demo_version);
+    demo(demo_version, demo_canceler, NULL);
     sound_stop();
     demo_version = demo_version % 2 + 1;
   }
