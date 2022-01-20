@@ -80,18 +80,34 @@ void mario_init(void) {
   (Y_FROM_VMEMPTR(REF_SPRITE_PATTERNS) + ((idx) / 2))
 
 static void mario_set_sprite_pat(uint8_t idx) {
-  // layer #0, #1 (lower body)
-  vdp_cmd_execute_HMMM(SPRITE_PAT_SX(idx),
-                       SPRITE_PAT_SY(idx),
-                       128, 1,
-                       MARIO_PAT1_DX,
-                       MARIO_PAT1_DY);
-  // layer #2, #3 (upper body)
-  vdp_cmd_execute_HMMM(BLANK_PAT_SX,
-                       BLANK_PAT_SY,
-                       128, 1,
-                       MARIO_PAT2_DX,
-                       MARIO_PAT2_DY);
+  if (mario_has_super_ability()) {
+    // layer #0, #1 (lower body)
+    vdp_cmd_execute_HMMM(SPRITE_PAT_SX(idx),
+                         SPRITE_PAT_SY(idx),
+                         128, 1,
+                         MARIO_PAT1_DX,
+                         MARIO_PAT1_DY);
+    // layer #2, #3 (upper body)
+    vdp_cmd_execute_HMMM(SPRITE_PAT_SX(idx),
+                         SPRITE_PAT_SY(idx),
+                         128, 1,
+                         MARIO_PAT2_DX,
+                         MARIO_PAT2_DY);
+  }
+  else {
+    // layer #0, #1 (lower body)
+    vdp_cmd_execute_HMMM(SPRITE_PAT_SX(idx),
+                         SPRITE_PAT_SY(idx),
+                         128, 1,
+                         MARIO_PAT1_DX,
+                         MARIO_PAT1_DY);
+    // layer #2, #3 (upper body ; blank)
+    vdp_cmd_execute_HMMM(BLANK_PAT_SX,
+                         BLANK_PAT_SY,
+                         128, 1,
+                         MARIO_PAT2_DX,
+                         MARIO_PAT2_DY);
+  }
 }
 
 void mario_show(int x, int y) {
