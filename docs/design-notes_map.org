@@ -1,0 +1,165 @@
+# -*- coding: utf-8-unix -*-
+#+STARTUP: indent showall
+#+AUTHOR: Daishi Mori (mori0091)
+#+DATE: 22th, Jan. 2022
+
+* DESIGN NOTE : Map
+
+In the Super Mario Bros.,
+- The stage map consists of *8 worlds*,
+- A *wolrd* consists of *4 areas*,
+- An *area* consists of one or more *rooms*,
+- A *room* is a series of *pages*,
+- A *page* is 13x16 (13 rows and 16 columns) matrix of tiles.
+
+A stage is specified by a pair of world number and area number. For example,
+"WORLD 8-4" means world number 8, area number 4.
+
+A *room* is a sub-stage within an *area*. For example, WORLD 1-1 in the Super
+Mario Bros. consists of two rooms. One is an overworld room, and the other is an
+underworld room (bonus stage).
+
+A *page* is a division of the room into one screen. So the bonus stage of the
+WORLD 1-1 in Super Mario Bros. is a room with just one page.
+
+
+* World attribute
+- pointer to 4 areas
+
+  
+* Area attribute
+- time-limit
+- pointer to the first room
+
+
+* Room attribute
+- starting position
+- secondary starting page and position ; for restart after died.
+- color theme ; color palette setting
+- basic floor pattern
+- landscape ; the landscape consists of 3 pages of base bacground.
+  - over world / fine day
+  - over world / athletic
+  - over sky
+  - under water
+  - under world
+  - koopa castle
+- pointer to a series of object layer commands
+- pointer ot a series of enemy layer commands
+
+
+* Pages and map commands
+Contents of a room is represented as three streams of map commands:
+- A stream of landscape layer commands (3 pages, refered cyclic),
+- A stream of object layer commands, and
+- A stream of enemy layer commands.
+
+In a stream of map commands, each page is delimitted by page delimiter embedded
+in a map command.
+
+Each map command is encoded in 1, 2, or 3 bytes code as follows:
+
+1 byte code:
+| opcode |
+|--------|
+| 8 bits |
+
+2 byte code:
+| opcode | ~p~   | operand |
+|--------+-------+---------|
+| 8 bits | 1 bit | 7 bits  |
+
+3 byte code:
+| opcode | ~p~   | operand |
+|--------+-------+---------|
+| 8 bits | 1 bit | 15 bits |
+
+Where, ~p~ is the page delimiter that means a new page starts from there if the
+~p~ bit was ~1~.
+
+
+** Landscape layer commands
+- over world / fine day ::
+  - mountain (pos, size)
+  - cloud (pos, size)
+  - glasses (pos, size)
+- over world / athletic ::
+  - ...
+  - ...
+- over sky :: 
+  - ...
+  - ...
+- under water ::
+  - ...
+  - ...
+- under world ::
+  - ...
+  - ...
+- koopa castle ::
+  - ...
+  - ...
+
+
+** Object layer commands
+
+| opcode           | category                     |
+|------------------+------------------------------|
+| ~0x00~ .. ~0xaf~ | Foreground object commands A |
+| ~0xb0~ .. ~0xbf~ | Foreground object commands B |
+| ~0xc0~ .. ~0xcf~ | Background object commands   |
+| ~0xd0~ .. ~0xdf~ | Floor commands               |
+| ~0xe0~ .. ~0xef~ | (reserved)                   |
+| ~0xf0~ .. ~0xfe~ | Control commands             |
+| ~0xff~           | end of stream                |
+
+
+*** Foreground object commands A
+- 3D block
+- fixed block
+- ~?~ block
+  - coin
+  - mushroom / fireflower
+  - 1up mushroom
+  - starman
+- brick
+  - empty
+  - coin
+  - 10 coins
+- hidden brick
+  - coin
+  - 10 coins
+
+
+*** Foreground object commands B
+- flag pole
+- pipe (pos, height)
+- enter pipe (pos, height)
+- 3D block up stairs (pos, size)
+- 3D block down stairs (pos, size)
+- 3D block wall (pos, height)
+- row bricks (pos, width)
+- column bricks (pos, height)
+
+
+*** Background object commands
+- castle (pos, size)
+- castle wall (height) ; changes background pattern from here
+- restore background   ; restore default background pattern from here
+
+
+*** Floor commands
+- change floor pattern
+- valley (pos, width) ; erases floor
+- river / magma (pos, width) ; erases floor
+
+
+*** Control commands
+- Jump to other wolrd
+- Jump to other area in the current world
+- Jump to other room in the current area (e.g. pipe in/out)
+- Jump to other page in the current room (e.g. seamless loop / teleport)
+
+
+** Enemy layer commands
+
+T.B.D.
