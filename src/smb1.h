@@ -25,6 +25,7 @@
 #include "countdown.h"
 
 #include "anime.h"
+#include "mapld.h"
 #include "stage.h"
 #include "camera.h"
 #include "physics.h"

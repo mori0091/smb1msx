@@ -34,7 +34,7 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
     return;
   }
 
-  const uint16_t x0 = ds->pos.x.i % stage_get_width();
+  const uint16_t x0 = ds->pos.x.i;
   yy.i = ds->pos.y.i;
   yy.d = ds->pos.y.d;
   vy = ds->vel.y;
@@ -49,8 +49,8 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
       const int lx = x0 + box.pos.x;
       const int rx = lx + box.size.x - 1;
       const int ty = ds->pos.y.i + box.pos.y - 1;
-      c1 = stage_get_object_at(lx, ty);
-      c2 = stage_get_object_at(rx, ty);
+      c1 = mapld_get_object_at(lx, ty);
+      c2 = mapld_get_object_at(rx, ty);
       if ((c1 | c2) & 0x80) {
         *cs |= COLLISION_CEIL;
         yy.i = (ds->pos.y.i + 15) & 240;
@@ -67,8 +67,8 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
       const int lx = x0 + box.pos.x;
       const int rx = lx + box.size.x - 1;
       const int by = ds->pos.y.i + box.pos.y + box.size.y;
-      c1 = stage_get_object_at(lx, by);
-      c2 = stage_get_object_at(rx, by);
+      c1 = mapld_get_object_at(lx, by);
+      c2 = mapld_get_object_at(rx, by);
       if ((c1 | c2) & 0x80) {
         *cs |= COLLISION_FLOOR;
         yy.i = ds->pos.y.i & 240;
@@ -106,8 +106,8 @@ void collision_state_update(collision_state_t* cs, dynamics_state_t* ds) {
       a = c2;
       b = COLLISION_LEFT;
     }
-    const uint8_t c = (stage_get_object_at(xa, yy.i + 0 ) |
-                       stage_get_object_at(xa, yy.i + 15));
+    const uint8_t c = (mapld_get_object_at(xa, yy.i + 0 ) |
+                       mapld_get_object_at(xa, yy.i + 15));
     if (c & 0x080) {
       ds->pos.x.i = xb;
       ds->pos.x.d = 0;

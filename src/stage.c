@@ -2,46 +2,23 @@
 
 #include "smb1.h"
 
-/* number of columns of stage map */
-static uint16_t map_cols;
-
 /* next map column to be written */
 static uint16_t map_next;
 
 /* state of renderer coroutine (indicates next row of tile to be rendered) */
 static uint8_t renderer_state;
 
-/* width of stage map in pixels */
-static uint16_t map_width;
-
 void stage_init(void) {
-  map_cols = smb1map_size / STAGEMAP_PAGE_ROWS;
   map_next = STAGEMAP_VISIBLE_COLS;
   renderer_state = 0;
-  map_width = map_cols * TILE_WIDTH;
-}
-
-uint16_t stage_get_columns(void) {
-  return map_cols;
-}
-
-uint16_t stage_get_width(void) {
-  return map_width;
-}
-
-uint8_t stage_get_object_at(int x, int y) {
-  while (map_width <= x) x -= map_width;
-  y /= TILE_HEIGHT;
-  if (y < 0) y = 0;
-  if (y > 13) y = 13;
-  return *(smb1map + (x & 0x0fff0) + y);
 }
 
 void stage_setup_map(void) {
   /* Render the 1st page of the stage map */
   for (int j = 0; j < STAGEMAP_PAGE_COLS; ++j) {
+    const uint8_t * p = mapld_get_buffer_ptr_at(0, j);
     for (int i = 0; i < STAGEMAP_VISIBLE_ROWS; ++i) {
-      uint8_t c = smb1map[STAGEMAP_PAGE_ROWS*j+i];
+      const uint8_t c = *p++;
       uint16_t x1 = (c & 0x0f) << 4;
       uint16_t y1 = (c & 0x70) + 3 * LINES_PER_VRAM_PAGE;
       uint16_t x2 = 16 * j;
@@ -53,6 +30,8 @@ void stage_setup_map(void) {
 }
 
 void stage_test_and_fix_wraparound(void) {
+  const uint16_t map_width = mapld_get_width();
+  const uint16_t map_cols = mapld_get_columns();
   if (camera_get_x() >= map_width) {
     mario_set_x(mario_get_x() - map_width);
     camera_set_x(camera_get_x() - map_width);
@@ -60,15 +39,14 @@ void stage_test_and_fix_wraparound(void) {
   }
 }
 
-
 static const uint8_t * p;
 static uint16_t ix;
 static uint16_t pp;
 
 inline void map_renderer_task_begin(void) {
+  const uint16_t map_cols = mapld_get_columns();
   const uint16_t col = map_next % map_cols; // wrap around (loop the stage map)
-  /* p = smb1map + STAGEMAP_PAGE_ROWS * col; */
-  p = smb1map + STAGEMAP_PAGE_ROWS * col + 1;
+  p = mapld_get_buffer_ptr_at(1, col);
   ix = (TILE_WIDTH * col) & 255;
   pp = (map_next & 0x10) << 4; // page #0 (0) or page #1 (256)
   // --
@@ -90,6 +68,9 @@ inline void map_renderer_task_do(void) {
 inline void map_renderer_task_end(void) {
   renderer_state = 0;
   map_next++;
+  if (!(map_next & 15)) {
+    mapld_load_next_page();
+  }
 }
 
 inline bool map_renderer_task_is_buffer_full(void) {
@@ -98,8 +79,6 @@ inline bool map_renderer_task_is_buffer_full(void) {
 }
 
 inline void map_renderer_task(void) {
-  // if (map_cols <= map_next) return;         /* no more map page */
-
   if (!renderer_state) {
     if (map_renderer_task_is_buffer_full()) {
       return;
