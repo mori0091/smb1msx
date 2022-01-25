@@ -4,43 +4,35 @@
 
 #include <string.h>
 
-/* number of columns of stage map */
-static uint16_t map_cols;
+#include "map/map_ld.h"
 
-/* width of stage map in pixels */
-static uint16_t map_width;
+#define PAGES     STAGEMAP_BUFFER_PAGES
+#define PAGE_ROWS STAGEMAP_PAGE_ROWS
+#define PAGE_COLS STAGEMAP_PAGE_COLS
 
 /* ring buffer of loaded map pages */
-uint8_t map_buffer[STAGEMAP_BUFFER_PAGES][STAGEMAP_PAGE_COLS][STAGEMAP_PAGE_ROWS];
+uint8_t map_buffer[PAGES][PAGE_COLS][PAGE_ROWS];
 
 /* next page of buffer to be updated */
 static uint8_t next_buffer_page;
 
-/* the 1st column of the next page to be loaded */
-static uint16_t next_page_col;
-
 void mapld_init(void) {
-  //
-  map_cols = smb1map_size / STAGEMAP_PAGE_ROWS;
-  map_width = map_cols * TILE_WIDTH;
+  map_ld_init();
+  map_ld_set_bg_theme(0);       // \todo
+  map_ld_set_bg_layer(map_bg_layers[0], 0x1800);
+  map_ld_set_fg_layer(map_fg_layers[0]);
   //
   next_buffer_page = 0;
-  next_page_col = 0;
   mapld_load_next_page();
   mapld_load_next_page();
 }
 
 void mapld_load_next_page(void) {
-  const uint8_t * src = &(smb1map[STAGEMAP_PAGE_ROWS * next_page_col]);
-  uint8_t * dst = &(map_buffer[next_buffer_page][0][0]);
-  memcpy(dst, src, STAGEMAP_PAGE_COLS * STAGEMAP_PAGE_ROWS);
+  // map_ld_load_page(map_buffer[next_buffer_page]);
+  map_ld_load_page(&(map_buffer[next_buffer_page][0][1]));
   next_buffer_page++;
-  if (STAGEMAP_BUFFER_PAGES <= next_buffer_page) {
+  if (PAGES <= next_buffer_page) {
     next_buffer_page = 0;
-  }
-  next_page_col += STAGEMAP_PAGE_COLS;
-  if (map_cols <= next_page_col) {
-    next_page_col = 0;
   }
 }
 
@@ -48,17 +40,7 @@ uint8_t* mapld_get_buffer_ptr_at(uint8_t row, uint16_t col) {
   return &(map_buffer[mapld_get_buffer_page_at(col)][col & 15][row]);
 }
 
-uint16_t mapld_get_columns(void) {
-  return map_cols;
-}
-
-uint16_t mapld_get_width(void) {
-  return map_width;
-}
-
 uint8_t mapld_get_object_at(int x, int y) {
-  const uint16_t map_width = mapld_get_width();
-  while (map_width <= x) x -= map_width;
   x /= TILE_WIDTH;
   y /= TILE_HEIGHT;
   if (y < 0) y = 0;

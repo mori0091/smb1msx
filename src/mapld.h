@@ -39,20 +39,6 @@ inline uint8_t mapld_get_buffer_page_at(uint16_t col) {
 uint8_t* mapld_get_buffer_ptr_at(uint8_t row, uint16_t col);
 
 /**
- * Returns number of columns of the current stage.
- *
- * \return number of columns of the current stage.
- */
-uint16_t mapld_get_columns(void);
-
-/**
- * Returns number of horizontal pixels of the current stage.
- *
- * \return TILE_WIDTH * mapld_get_columns()
- */
-uint16_t mapld_get_width(void);
-
-/**
  * Returns an object at the given position.
  *
  * \param x  x-coordinate in the stage. [pix]

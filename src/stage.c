@@ -26,16 +26,18 @@ void stage_setup_map(void) {
       vdp_cmd_execute_HMMM(x1, y1, 16, 16, x2, y2);
     }
   }
+  vdp_cmd_execute_HMMV(0,   0, 256, 16, 0xcc);
   vdp_cmd_execute_HMMV(0, 256, 256, 16, 0xcc);
 }
 
+#define BUFFER_COLS   (STAGEMAP_BUFFER_PAGES * STAGEMAP_PAGE_COLS)
+#define BUFFER_WIDTH  (BUFFER_COLS * TILE_WIDTH)
+
 void stage_test_and_fix_wraparound(void) {
-  const uint16_t map_width = mapld_get_width();
-  const uint16_t map_cols = mapld_get_columns();
-  if (camera_get_x() >= map_width) {
-    mario_set_x(mario_get_x() - map_width);
-    camera_set_x(camera_get_x() - map_width);
-    map_next -= map_cols;
+  if (camera_get_x() >= BUFFER_WIDTH) {
+    mario_set_x(mario_get_x() - BUFFER_WIDTH);
+    camera_set_x(camera_get_x() - BUFFER_WIDTH);
+    map_next -= BUFFER_COLS;
   }
 }
 
@@ -44,10 +46,8 @@ static uint16_t ix;
 static uint16_t pp;
 
 inline void map_renderer_task_begin(void) {
-  const uint16_t map_cols = mapld_get_columns();
-  const uint16_t col = map_next % map_cols; // wrap around (loop the stage map)
-  p = mapld_get_buffer_ptr_at(1, col);
-  ix = (TILE_WIDTH * col) & 255;
+  p = mapld_get_buffer_ptr_at(1, map_next);
+  ix = (TILE_WIDTH * map_next) & 255;
   pp = (map_next & 0x10) << 4; // page #0 (0) or page #1 (256)
   // --
   renderer_state = 1;
