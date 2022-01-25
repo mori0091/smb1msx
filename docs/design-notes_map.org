@@ -33,19 +33,33 @@ WORLD 1-1 in Super Mario Bros. is a room with just one page.
 
 
 * Room attribute
-- starting position
-- secondary starting page and position ; for restart after died.
-- color theme ; color palette setting
-- basic floor pattern
-- landscape ; the landscape consists of 3 pages of base bacground.
+*T.B.D.*
+
+- ~CT~ color theme ; color palette setting
+- ~SP~ starting position
+- ~FLP~ basic floor pattern
+- ~LND~ landscape ; the landscape consists of 3 pages of base bacground.
   - over world / fine day
   - over world / athletic
   - over sky
   - under water
   - under world
   - koopa castle
-- pointer to a series of object layer commands
-- pointer ot a series of enemy layer commands
+- ~SP2~ secondary starting page and position ; for restart after died.
+- ~O_STREAM~ pointer to a series of object layer commands
+- ~E_STREAM~ pointer ot a series of enemy layer commands
+
+| ~CT~   | ~SP~   | ~FLP~  | -     | ~LND~  | ~SP2~  |
+|--------+--------+--------+-------+--------+--------|
+| 2 bits | 2 bits | 4 bits | 1 bit | 3 bits | 4 bits |
+
+| ~O_STREAM~ |
+|------------|
+| 16 bits    |
+
+| ~E_STREAM~ |
+|------------|
+| 16 bits    |
 
 
 * Pages and map commands
@@ -74,15 +88,18 @@ Each map command is encoded in 1, 2, or 3 bytes code as follows:
 |--------+-------+---------|
 | 8 bits | 1 bit | 15 bits |
 
-Where, ~p~ is the page delimiter that means a new page starts from there if the
-~p~ bit was ~1~.
+Here, ~p~ is the page delimiter, and if the ~p~ bit is ~1~, it means that a new
+page starts there.
+
+If the ~p~ bit is set, the command will be the first command on the next page.
+Therefore, the ~p~ bit must not be set for the command on page #0.
 
 
 ** Landscape layer commands
 - over world / fine day ::
   - mountain (pos, size)
   - cloud (pos, size)
-  - glasses (pos, size)
+  - grasses (pos, size)
 - over world / athletic ::
   - ...
   - ...
@@ -102,55 +119,93 @@ Where, ~p~ is the page delimiter that means a new page starts from there if the
 
 ** Object layer commands
 
-| opcode           | category                     |
-|------------------+------------------------------|
-| ~0x00~ .. ~0xaf~ | Foreground object commands A |
-| ~0xb0~ .. ~0xbf~ | Foreground object commands B |
-| ~0xc0~ .. ~0xcf~ | Background object commands   |
-| ~0xd0~ .. ~0xdf~ | Floor commands               |
-| ~0xe0~ .. ~0xef~ | (reserved)                   |
-| ~0xf0~ .. ~0xfe~ | Control commands             |
-| ~0xff~           | end of stream                |
+| opcode           | category                         |
+|------------------+----------------------------------|
+| ~0x00~ .. ~0xcf~ | Foreground object commands A / B |
+| ~0xd0~ .. ~0xdf~ | Background object commands       |
+| ~0xe0~ .. ~0xef~ | Floor commands                   |
+| ~0xf0~ .. ~0xfe~ | Control commands                 |
+| ~0xff~           | end of stream                    |
 
 
 *** Foreground object commands A
-- 3D block
-- fixed block
 - ~?~ block
-  - coin
-  - mushroom / fireflower
-  - 1up mushroom
-  - starman
-- brick
-  - empty
-  - coin
-  - 10 coins
+  - mushroom / fireflower (id=0)
+  - coin                  (id=1)
 - hidden brick
-  - coin
-  - 10 coins
+  - coin                  (id=2)
+  - 1up mushroom          (1d=3)
+- brick
+  - mushroom / fireflower (id=4)
+  - vine plant            (id=5)
+  - starman               (id=6)
+  - 10 coins              (id=7)
+  - 1up mushroom          (id=8)
+- H-pipe W1               (id=9) \\
+  ; horizontal enter pipe w/ 1 width. for under water.
+- fixed block             (id=10) \\
+  ; fire bar base or empty ~?~ block
+- spring board            (id=11)
+- inverse L-shaped pipe   (id=12) \\
+  ; for entering to underworld
+- flag pole               (id=13)
+- (reserved)              (id=14)
+- (reserved)              (id=15)
+
+| opcode  | ~p~   | -      | ~id~   |
+|---------+-------+--------+--------|
+| 8 bits  | 1 bit | 3 bits | 4 bits |
+|---------+-------+--------+--------|
+| XY(x,y) | ~p~   | 0      | 0..15  |
 
 
 *** Foreground object commands B
-- flag pole
-- pipe (pos, height)
-- enter pipe (pos, height)
-- 3D block up stairs (pos, size)
-- 3D block down stairs (pos, size)
-- 3D block wall (pos, height)
-- row bricks (pos, width)
-- column bricks (pos, height)
+- (reserved)   (opcode=XY(x,y), id=1, len=?)
+- H-coins      (opcode=XY(x,y), id=2, len= width-1)   ; 1 ≦ width ≦ 16
+- H-blocks     (opcode=XY(x,y), id=3, len= width-1)   ; 1 ≦ width ≦ 16
+- V-blocks     (opcode=XY(x,y), id=4, len=height-1)   ; 1 ≦ height ≦ 16
+- H-bricks     (opcode=XY(x,y), id=5, len= width-1)   ; 1 ≦ width ≦ 16
+- V-bricks     (opcode=XY(x,y), id=6, len=height-1)   ; 1 ≦ height ≦ 16
+- V-pipe       (opcode=XY(x,y), id=7, len=  height-1) ; 1 ≦ height ≦ 8
+- enter V-pipe (opcode=XY(x,y), id=7, len=8+height-1) ; 1 ≦ height ≦ 8
+
+| opcode  | ~p~   | ~id~   | ~len~  |
+|---------+-------+--------+--------|
+| 8 bits  | 1 bit | 3 bits | 4 bits |
+|---------+-------+--------+--------|
+| XY(x,y) | ~p~   | 1..7   | 0..15  |
 
 
 *** Background object commands
-- castle (pos, size)
-- castle wall (height) ; changes background pattern from here
-- restore background   ; restore default background pattern from here
+- (reserved)   (opcode=XY(x,13), id=0, len=?)
+- up stairs    (opcode=XY(x,13), id=1, len=height-1)
+- down stairs  (opcode=XY(x,13), id=2, len=height-1)
+- castle       (opcode=XY(x,13), id=3, len=height-1)
+- castle wall \\
+  ; changes background pattern from here
+- restore background \\
+  ; restore default background pattern from here
+
+| opcode   | ~p~   | ~id~   | ~len~  |
+|----------+-------+--------+--------|
+| 8 bits   | 1 bit | 3 bits | 4 bits |
+|----------+-------+--------+--------|
+| XY(x,13) | ~p~   | 0..7   | 0..15  |
 
 
 *** Floor commands
-- change floor pattern
-- valley (pos, width) ; erases floor
-- river / magma (pos, width) ; erases floor
+- (reserved)            (opcode=XY(x,14), id=0, len=?)
+- valley                (opcode=XY(x,14), id=1, len=width-1) \\
+  ; erases floor
+- river / magma         (opcode=XY(x,14), id=2, len=width-1) \\
+  ; erases floor
+- change floor pattern  (opcode=XY(x,14), id=3, len=floor_pattern)
+
+| opcode   | ~p~   | ~id~   | ~len~  |
+|----------+-------+--------+--------|
+| 8 bits   | 1 bit | 3 bits | 4 bits |
+|----------+-------+--------+--------|
+| XY(x,14) | ~p~   | 0..7   | 0..15  |
 
 
 *** Control commands
@@ -162,4 +217,4 @@ Where, ~p~ is the page delimiter that means a new page starts from there if the
 
 ** Enemy layer commands
 
-T.B.D.
+*T.B.D.*
