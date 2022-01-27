@@ -18,9 +18,14 @@ static void map_ld_fetch(struct map_ptr * mp) {
   mp->cmd[1] = *mp->ptr++;
 }
 
+static void map_ld_rewind(struct map_ptr * mp) {
+  mp->ptr = mp->head;
+  map_ld_fetch(mp);
+}
+
 void map_ld_set_bg_layer(const uint8_t * bg_data, uint16_t block_layout) {
-  ctx.bg.head = ctx.bg.ptr = bg_data;
-  map_ld_fetch(&ctx.bg);
+  ctx.bg.head = bg_data;
+  map_ld_rewind(&ctx.bg);
   for (uint8_t i = 0; i < 13; ++i) {
     ctx.block_layout[i] = (block_layout & 1) ? (0x70 | 0x80) : 0x7f;
     block_layout >>= 1;
@@ -28,8 +33,8 @@ void map_ld_set_bg_layer(const uint8_t * bg_data, uint16_t block_layout) {
 }
 
 void map_ld_set_fg_layer(const uint8_t * fg_data) {
-  ctx.fg.head = ctx.fg.ptr = fg_data;
-  map_ld_fetch(&ctx.fg);
+  ctx.fg.head = fg_data;
+  map_ld_rewind(&ctx.fg);
 }
 
 inline
@@ -64,14 +69,11 @@ void map_ld_load_fg_page(uint8_t * canvas) {
 
 void map_ld_load_page(uint8_t * canvas) {
   if (ctx.bg.cmd[0] == 0xff) {
-    // rewind
-    ctx.bg.ptr = ctx.bg.head;
-    map_ld_fetch(&ctx.bg);
+    map_ld_rewind(&ctx.bg);
     // -- optional (loop / sync) --
-    if (ctx.fg.cmd[0] == 0xff) {
-      // rewind
-      ctx.fg.ptr = ctx.fg.head;
-      map_ld_fetch(&ctx.fg);
+    if (32 <= ctx.page && ctx.fg.cmd[0] == 0xff) {
+      map_ld_rewind(&ctx.fg);
+      ctx.page = 0;
     }
   }
   uint8_t * p = ((uint8_t *)canvas);
