@@ -35,7 +35,7 @@ void stage_setup_map(void) {
 
 void stage_test_and_fix_wraparound(void) {
   if (camera_get_x() >= BUFFER_WIDTH) {
-    mario_set_x(mario_get_x() - BUFFER_WIDTH);
+    player_set_x(player_get_x() - BUFFER_WIDTH);
     camera_set_x(camera_get_x() - BUFFER_WIDTH);
     map_next -= BUFFER_COLS;
   }

@@ -20,16 +20,16 @@ void camera_init(void) {
 /* follow mario */
 void camera_move(void) {
   const int16_t sx = camera_get_x();
-  const int16_t x0 = mario_get_prev_x();
-  const int16_t x = mario_get_x();
+  const int16_t x0 = player_get_prev_x();
+  const int16_t x = player_get_x();
   const int16_t u = x - x0;
   if (x <= sx + 50 || u <= 0) {
     camera_set_speed(0);
   }
   else if (sx + 124 <= x) {
     camera.x.i = (x - 124 + sx + u) / 2;
-    camera.x.d = mario_state.dynamics_state.pos.x.d;
-    camera_set_speed(mario_state.speed);
+    camera.x.d = player->pos.x.d;
+    camera_set_speed(player_get_speed());
   }
   else if (u <= 4) {
     camera.x.i++;

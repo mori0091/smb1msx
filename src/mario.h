@@ -7,13 +7,6 @@
 
 #include "physics.h"
 
-typedef uint8_t (* controller_t)(void);
-
-uint8_t no_controller(void);
-uint8_t joystick1(void);
-
-void mario_set_controller(controller_t c);
-
 enum mario_pose {
   STANDING    = 0,
   STANDING_L  = 0,
@@ -56,17 +49,9 @@ enum physical_status {
 
 struct mario_state {
   int8_t life;
-  uint8_t input;
-  f10q6_t speed;
-  enum facing {
-    FACING_LEFT  = 0,
-    FACING_RIGHT = 1,
-  } facing;
   enum mario_pose pose;
   uint8_t status;
   uint8_t status_timer;         // countdown timer for INVINCIBLE / WEAKENED status
-  dynamics_state_t dynamics_state;
-  collision_state_t collision_state;
 };
 
 extern struct mario_state mario_state;
@@ -74,12 +59,6 @@ extern struct mario_state mario_state;
 void mario_init(void);
 void mario_animate(void);
 void mario_animate_die(void);
-void mario_update_input_state(void);
-void mario_move(void);
-
-int16_t mario_get_prev_x(void);
-int16_t mario_get_x(void);
-void mario_set_x(int16_t x);
 
 void mario_show(int x, int y);
 
@@ -88,17 +67,13 @@ inline void mario_hide(void) {
 }
 
 inline void mario_move_sprite(void) {
-  const int16_t x = mario_state.dynamics_state.pos.x.i - camera_get_x();
-  const int16_t y = mario_state.dynamics_state.pos.y.i;
+  const int16_t x = player->pos.x.i - camera_get_x();
+  const int16_t y = player->pos.y.i;
   mario_show(x, y);
 }
 
 inline void mario_set_pose(enum mario_pose pose) {
   mario_state.pose = pose;
-}
-
-inline void mario_set_facing(enum facing facing) {
-  mario_state.facing = facing;
 }
 
 inline enum physical_status mario_get_physical_status(void) {

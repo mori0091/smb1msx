@@ -10,19 +10,20 @@
 // short version demo
 static uint8_t auto_pilot_1(void) {
   uint8_t ret = 0;
-  uint16_t x = mario_get_x();
+  uint16_t x = player_get_x();
+  f10q6_t speed = player_get_speed();
   ret |= VK_RIGHT;
   if (x < 256+10) return ret;
-  if (x < 256+76 && mario_state.speed < f10q6i(1)) return ret;
+  if (x < 256+76 && speed < f10q6i(1)) return ret;
   if (user_tick < 133) {
-    if (0 < mario_state.speed) {
+    if (0 < speed) {
       return 0;
     }
     if (x == 256+80) {
       return VK_FIRE_0;
     }
   }
-  if (x < 256+94 && mario_state.speed < f10q6i(1)) return ret;
+  if (x < 256+94 && speed < f10q6i(1)) return ret;
   ret &= ~VK_RIGHT;
   return ret;
 }
@@ -30,10 +31,10 @@ static uint8_t auto_pilot_1(void) {
 // long version demo
 static uint8_t auto_pilot_2(void) {
   uint8_t ret = VK_FIRE_1 | VK_RIGHT;
-  if (mario_state.collision_state & COLLISION_RIGHT) {
+  if (player->collision & COLLISION_RIGHT) {
     return ret | VK_FIRE_0;
   }
-  if (mario_state.dynamics_state.vel.y < 0) {
+  if (player->vel.y < 0) {
     return ret | VK_FIRE_0;
   }
   return ret;
@@ -226,10 +227,8 @@ bool game_main(void) {
     // ---- game core task ----
     uint8_t n = user_tick_delta;
     while (n--) {
-      // update mario's input
-      mario_update_input_state();
-      // update mario's state
-      mario_move();
+      // update entities' state
+      entity_update();
       // update camera position and speed
       camera_move();
       // To avoid overflow and to keep invariant,
@@ -259,7 +258,7 @@ bool game_main(void) {
 
 bool game_main_loop(const struct scene_conf * scene) {
   msx_set_cpu_mode(0x82);     // R800 DRAM mode (if MSXturboR)
-  mario_set_controller(scene->controller);
+  entity_set_controller(player, scene->controller);
   countdown_timer_set_visible(scene->countdown);
   fps_display_reset();
   timer_reset();
@@ -324,7 +323,7 @@ void level_intro(void) {
   }
   {
     mario_set_pose(STANDING);
-    mario_set_facing(FACING_RIGHT);
+    entity_set_facing(player, FACING_RIGHT);
     mario_animate();
     mario_show(100, 87);
   }
