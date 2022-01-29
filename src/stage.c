@@ -13,7 +13,7 @@ void stage_init(void) {
   renderer_state = 0;
 }
 
-void stage_setup_map(void) {
+void stage_setup(void) {
   /* Render the 1st page of the stage map */
   for (int j = 0; j < STAGEMAP_PAGE_COLS; ++j) {
     const uint8_t * p = mapld_get_buffer_ptr_at(0, j);
@@ -48,7 +48,7 @@ static uint16_t pp;
 inline void map_renderer_task_begin(void) {
   p = mapld_get_buffer_ptr_at(1, map_next);
   ix = (TILE_WIDTH * map_next) & 255;
-  pp = (map_next & 0x10) << 4; // page #0 (0) or page #1 (256)
+  pp = (TILE_WIDTH * map_next) & 256; // page #0 (0) or page #1 (256)
   // --
   renderer_state = 1;
 }
@@ -83,6 +83,7 @@ inline void map_renderer_task(void) {
     if (map_renderer_task_is_buffer_full()) {
       return;
     }
+    stage_test_and_fix_wraparound();
     map_renderer_task_begin();
   }
   {
@@ -99,7 +100,7 @@ inline void map_renderer_task(void) {
 // #define MIN_TILES_PER_FRAME (TIMESLOT_1 / TIMESLOT_2)     // = 39/16 (@60fps)
 // #define MAX_TILES_PER_FRAME (2 * TIMESLOT_1 / TIMESLOT_2) // = 39/8 (@30fps)
 
-void stage_update_map(void) {
+void stage_update(void) {
   static int16_t timeslot_counter = 0;
   {
     const uint16_t x1 = camera_get_x() + PIXELS_PER_LINE;

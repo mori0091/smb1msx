@@ -124,7 +124,7 @@ static void get_ready(void) {
   stage_init();
   camera_init();
   mario_init();
-  stage_setup_map();
+  stage_setup();
   countdown_timer_set(0x400);
   // ---- hud ----
   set_text_color(14,12);
@@ -220,7 +220,7 @@ bool game_main(void) {
   // ---- sound / visual output task ----
   anime_update();
   // ---- stage map rendering task ----
-  stage_update_map();
+  stage_update();
   // ---- event dispatch ----
   switch (event_get()) {
   default:;
@@ -231,9 +231,6 @@ bool game_main(void) {
       entity_update();
       // update camera position and speed
       camera_move();
-      // To avoid overflow and to keep invariant,
-      // correct camera position and next column to be rendered.
-      stage_test_and_fix_wraparound();
       // time
       countdown_timer_update();
     }
