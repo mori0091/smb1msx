@@ -17,7 +17,7 @@ extern struct camera camera;
 
 void camera_init(void);
 
-void camera_move(void);
+void camera_update(void);
 
 inline f10q6_t camera_get_speed(void) {
   return camera.speed;

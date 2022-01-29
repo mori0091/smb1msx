@@ -10,15 +10,8 @@ void camera_init(void) {
   camera.speed = 0;             /* scroll speed ; 10.6 fixedpoint [pix] */
 }
 
-// /* auto scroll */
-// void camera_move(void) {
-//   camera.x.d += camera.speed;
-//   camera.x.i += (camera.x.d >> 6);
-//   camera.x.d &= ((1 << 6) - 1);
-// }
-
 /* follow mario */
-void camera_move(void) {
+void camera_update(void) {
   const int16_t sx = camera_get_x();
   const int16_t x0 = player_get_prev_x();
   const int16_t x = player_get_x();
@@ -39,6 +32,7 @@ void camera_move(void) {
     camera.x.i += u - 4;
     camera_set_speed(f10q6i(u - 4));
   }
+  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
 }
 
 void camera_set_speed(f10q6_t speed) {

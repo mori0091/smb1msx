@@ -215,36 +215,35 @@ static void play_music(void) {
 bool game_main(void) {
   // wait for VSYNC interrupt and interrupt handler finished
   await_vsync();
-  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
   timer_update();
   // ---- sound / visual output task ----
   anime_update();
   // ---- stage map rendering task ----
   stage_update();
-  // ---- event dispatch ----
-  switch (event_get()) {
-  default:;
-    // ---- game core task ----
-    uint8_t n = user_tick_delta;
-    while (n--) {
+  // ---- game core task ----
+  uint8_t n = user_tick_delta;
+  while (n--) {
+    // ---- event dispatch ----
+    switch (event_get()) {
+    default:;
       // update entities' state
       entity_update();
       // update camera position and speed
-      camera_move();
+      camera_update();
       // time
       countdown_timer_update();
+      break;
+    case EV_PLAYER_DIES:
+      sound_set_repeat(false);         // turn off the auto-repeat of the BGM.
+      sound_set_speed(SOUND_SPEED_1X); // 1.0x
+      sound_set_bgm(&bgm_player_down); // stop the BGM and then replace it.
+      sound_start();                   // start the BGM.
+      // CUT IN ANIMATION: MARIO DIES
+      mario_animate_die();
+      mario_died();
+      sleep_millis(2000);
+      return false;
     }
-    break;
-  case EV_PLAYER_DIES:
-    sound_set_repeat(false);         // turn off the auto-repeat of the BGM.
-    sound_set_speed(SOUND_SPEED_1X); // 1.0x
-    sound_set_bgm(&bgm_player_down); // stop the BGM and then replace it.
-    sound_start();                   // start the BGM.
-    // CUT IN ANIMATION: MARIO DIES
-    mario_animate_die();
-    mario_died();
-    sleep_millis(2000);
-    return false;
   }
   // ---- (optional) frame rate / sim.frequency display ----
   if (!(tick & 31)) {

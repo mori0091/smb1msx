@@ -68,7 +68,7 @@ inline void map_renderer_task_do(void) {
 inline void map_renderer_task_end(void) {
   renderer_state = 0;
   map_next++;
-  if (!(map_next & 15)) {
+  if (!(map_next % STAGEMAP_PAGE_COLS)) {
     mapld_load_next_page();
   }
 }
@@ -94,11 +94,8 @@ inline void map_renderer_task(void) {
   }
 }
 
-// #define MAX_PIXELS_PER_FRAME  (3) // highest value of scroll speed
-// #define TIMESLOT_1 (MAX_PIXELS_PER_FRAME * (STAGEMAP_VISIBLE_ROWS - 1))
-// #define TIMESLOT_2 (TILE_WIDTH)
-// #define MIN_TILES_PER_FRAME (TIMESLOT_1 / TIMESLOT_2)     // = 39/16 (@60fps)
-// #define MAX_TILES_PER_FRAME (2 * TIMESLOT_1 / TIMESLOT_2) // = 39/8 (@30fps)
+#define PIXELS_PER_FRAME  (camera_get_speed() >> 7) // @60fps ; Sim.freq = 30Hz
+#define ROWS              (STAGEMAP_VISIBLE_ROWS - 1)
 
 void stage_update(void) {
   static int16_t timeslot_counter = 0;
@@ -106,12 +103,11 @@ void stage_update(void) {
     const uint16_t x1 = camera_get_x() + PIXELS_PER_LINE;
     const uint16_t x2 = map_next * TILE_WIDTH;
     if (x2 < x1) {
-      timeslot_counter += (x1 - x2) * (STAGEMAP_VISIBLE_ROWS - 1);
+      timeslot_counter += (x1 - x2) * ROWS;
     }
   }
   {
-#   define VX  (camera.speed >> 7) // @60fps ; Sim.freq = 30Hz
-    timeslot_counter += VX * (STAGEMAP_VISIBLE_ROWS - 1);
+    timeslot_counter += PIXELS_PER_FRAME * ROWS;
   }
   while (0 < timeslot_counter) {
     timeslot_counter -= TILE_WIDTH;

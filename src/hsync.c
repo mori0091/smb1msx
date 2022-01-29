@@ -4,7 +4,21 @@
 
 #define HSYNC_LINE (13)
 
-inline void vsync_handler(void) {
+inline uint8_t is_vsync(void) {
+  return (VDP_GET_STATUS_REGISTER_VALUE() & 0x80);
+}
+
+inline uint8_t is_hsync(void) {
+  VDP_SET_STATUS_REGISTER_POINTER(1);
+  uint8_t hsync = (VDP_GET_STATUS_REGISTER_VALUE() & 1);
+  VDP_SET_STATUS_REGISTER_POINTER(0);
+  return hsync;
+}
+
+/**
+ * Timing-critical VSYNC interrupt handler.
+ */
+inline void tc_vsync_handler(void) {
   // vdp_set_hscroll(0);
   {
     VDP_SET_CONTROL_REGISTER(26, 0);
@@ -12,14 +26,25 @@ inline void vsync_handler(void) {
   }
 }
 
-static void vsync_handler_epilogue(void) {
+/**
+ * VSYNC interrupt handler.
+ */
+static void vsync_handler(void) {
   vsync_busy = false;
   JIFFY++;
-  __asm__("ei");
+}
+
+/**
+ * Non-critical VSYNC handler (called with interrupts enabled).
+ */
+static void on_vsync(void) {
   anime_on_vsync();
 }
 
-inline void hsync_handler(void) {
+/**
+ * Timing-critical HSYNC interrupt handler.
+ */
+inline void tc_hsync_handler(void) {
   // ---- HSYNC ----
   // vdp_set_hscroll(...);
   {
@@ -28,30 +53,35 @@ inline void hsync_handler(void) {
   }
 }
 
+/**
+ * Non-critical HSYNC handler (called with interrupts enabled).
+ */
+static void on_hsync(void) {
+  sound_player();
+}
+
 static void interrupt_handler(void) {
-  // Checking if HSYNC is caught.
-  VDP_SET_STATUS_REGISTER_POINTER(1);
-  const uint8_t hsync = (VDP_GET_STATUS_REGISTER_VALUE() & 1);
-  // Don't forget reset the status register pointer to 0
-  VDP_SET_STATUS_REGISTER_POINTER(0);
-  if (hsync) {
-    hsync_handler();
+  if (is_hsync()) {
+    tc_hsync_handler();
     // ---- override BIOS VSYNC routine
-    if (VDP_GET_STATUS_REGISTER_VALUE() & 0x80) {
-      // Catching up on delayed VSYNC.
-      // Note that we do not call `vsync_handler()` here.
-      vsync_handler_epilogue();
-      sound_player();
+    if (is_vsync()) {
+      // tc_vsync_handler();    // Don't call `vsync_handler()` here. (too late)
+      vsync_handler();          // Catching up on delayed VSYNC.
+      __asm__("ei");
+      on_vsync();
+      on_hsync();
       return;
     }
     __asm__("ei");
-    sound_player();
+    on_hsync();
     return;
   }
   // ---- override BIOS VSYNC routine
-  if (VDP_GET_STATUS_REGISTER_VALUE() & 0x80) {
+  if (is_vsync()) {
+    tc_vsync_handler();
     vsync_handler();
-    vsync_handler_epilogue();
+    __asm__("ei");
+    on_vsync();
   }
 }
 
