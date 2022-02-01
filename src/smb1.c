@@ -5,7 +5,8 @@
 #define SIM_FREQ         (30)
 #define TITLE_DURATION   (5 * SIM_FREQ)
 #define DEMO_DURATION_1  (8 * SIM_FREQ)
-#define DEMO_DURATION_2  (17 * SIM_FREQ)
+// #define DEMO_DURATION_2  (17 * SIM_FREQ)
+#define DEMO_DURATION_2  (140 * SIM_FREQ)
 
 // short version demo
 static uint8_t auto_pilot_1(void) {
@@ -33,6 +34,16 @@ static uint8_t auto_pilot_2(void) {
   uint8_t ret = VK_FIRE_1 | VK_RIGHT;
   if (player->collision & COLLISION_RIGHT) {
     return ret | VK_FIRE_0;
+  }
+  if ((player->collision & COLLISION_FLOOR)) {
+    if (((player->c1 == 0xf0) || (player->c1 == 0xb5)) &&
+        (player->c2 < 0x80)) {
+      return VK_FIRE_0 | VK_RIGHT;
+    }
+    if (mapld_get_object_at(player->pos.x.i + 40,
+                            player->pos.y.i - 48) > 0x7f) {
+      return VK_FIRE_0 | VK_LEFT;
+    }
   }
   if (player->vel.y < 0) {
     return ret | VK_FIRE_0;
@@ -285,6 +296,7 @@ void title_demo(void) {
     set_visible(false);
     clear_screen();
     get_ready();
+    countdown_timer_set(0x200);
     draw_title_logo();
     vdp_cmd_await();
     set_visible(true);
