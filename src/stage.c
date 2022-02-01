@@ -42,19 +42,20 @@ void stage_test_and_fix_wraparound(void) {
 }
 
 static const uint8_t * p;
-static uint16_t ix;
 static uint16_t pp;
+static uint16_t ix;
+static uint16_t iy;
 
 inline void map_renderer_task_begin(void) {
   p = mapld_get_buffer_ptr_at(1, map_next);
-  ix = (TILE_WIDTH * map_next) & 255;
   pp = (TILE_WIDTH * map_next) & 256; // page #0 (0) or page #1 (256)
+  ix = (TILE_WIDTH * map_next) & 255;
+  iy = TILE_HEIGHT + pp;
   // --
   renderer_state = 1;
 }
 
 inline void map_renderer_task_do(void) {
-  const uint16_t iy = TILE_HEIGHT * renderer_state + pp;
   // tile := c|y|y|y|x|x|x|x ... 'c': collision bit
   const uint8_t tile = *p++;
   // tile position on VRAM page #3
@@ -63,6 +64,7 @@ inline void map_renderer_task_do(void) {
   vdp_cmd_execute_HMMM(x, y, TILE_WIDTH, TILE_HEIGHT, ix, iy);
   // --
   renderer_state++;
+  iy += TILE_HEIGHT;
 }
 
 inline void map_renderer_task_end(void) {
@@ -94,7 +96,14 @@ inline void map_renderer_task(void) {
   }
 }
 
-#define PIXELS_PER_FRAME  (camera_get_speed() >> 7) // @60fps ; Sim.freq = 30Hz
+// Sim.freq = 30Hz @ 60fps
+// Sim.freq = 25Hz @ 50fps
+#define PIXELS_PER_FRAME  (camera_get_speed() >> 7)
+// Sim.freq = 30Hz @ 50fps
+// #define PIXELS_PER_FRAME  ((camera_get_speed() * 30 / 50) >> 6)
+// Sim.freq = 25Hz @ 60fps
+// #define PIXELS_PER_FRAME  ((camera_get_speed() * 25 / 60) >> 6)
+
 #define ROWS              (STAGEMAP_VISIBLE_ROWS - 1)
 
 void stage_update(void) {
