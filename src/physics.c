@@ -2,8 +2,58 @@
 
 #include "smb1.h"
 
-entity_t entities[8];
-entity_t * const player = &entities[0];
+#define ENTITY_MAX  (8)
+
+struct {
+  uint8_t length;
+  entity_t * list[ENTITY_MAX];
+} entities;
+
+entity_t player_entity;
+entity_t * const player = &player_entity;
+
+const struct sprite hidden_sprite = {.y = 240, };
+
+void entity_show_sprite(const entity_t * e) {
+  const int16_t x = e->pos.x.i - camera_get_x();
+  const int16_t y = e->pos.y.i;
+  vmem_set_metasprite_a(SPRITES_0, e->plane, x, y, e->metasprite);
+}
+
+void entity_hide_sprite(const entity_t * e) {
+  uint8_t plane = e->plane;
+  uint8_t n = e->metasprite->n;
+  while (n--) {
+    vmem_set_sprite(SPRITES_0, plane++, &hidden_sprite);
+  }
+}
+
+void entity_init(void) {
+  entities.length = 1;
+  entities.list[0] = player;
+}
+
+void entity_add(entity_t * const e) {
+  if (ENTITY_MAX <= entities.length || !e) return;
+  entities.list[entities.length++] = e;
+  // entity_show_sprite(e);
+}
+
+void entity_remove(entity_t * const e) {
+  if (!entities.length || !e) return;
+  entity_hide_sprite(e);
+  entity_t ** p = &(entities.list[entities.length - 1]);
+  entity_t * const last = *p;
+  uint8_t n = entities.length;
+  while (n--) {
+    if (*p == e) {
+      entities.length--;
+      *p = last;
+      return;
+    }
+    p--;
+  }
+}
 
 uint8_t no_controller(void) {
   return 0;
@@ -112,7 +162,8 @@ void entity_update_collision(entity_t * e) {
       const int by = e->pos.y.i + box.pos.y + box.size.y;
       c1 = mapld_get_object_at(lx, by);
       c2 = mapld_get_object_at(rx, by);
-      if ((c1 | c2) & 0x80) {
+      // if ((c1 | c2) & 0x80) {
+      if ((0x7f < c1 && c1 < 0xff) || (0x7f < c2 && c2 < 0xff)) {
         e->collision |= COLLISION_FLOOR;
         yy.i = e->pos.y.i & 240;
         yy.d = 0;
@@ -149,9 +200,12 @@ void entity_update_collision(entity_t * e) {
       a = c2;
       b = COLLISION_LEFT;
     }
-    const uint8_t obj = (mapld_get_object_at(xa, yy.i + 0 ) |
-                         mapld_get_object_at(xa, yy.i + 15));
-    if (obj & 0x080) {
+    // const uint8_t obj = (mapld_get_object_at(xa, yy.i + 0 ) |
+    //                      mapld_get_object_at(xa, yy.i + 15));
+    // if (obj & 0x080) {
+    const uint8_t o1 = mapld_get_object_at(xa, yy.i + 0 );
+    const uint8_t o2 = mapld_get_object_at(xa, yy.i + 15);
+    if ((0x7f < o1 && o1 < 0xff) || (0x7f < o2 && o2 < 0xff)) {
       e->pos.x.i = xb;
       e->pos.x.d = 0;
       e->vel.x = 0;
@@ -166,6 +220,8 @@ void entity_update_collision(entity_t * e) {
   e->pos.y.i = yy.i;
   e->pos.y.d = yy.d;
   e->vel.y = vy;
+  e->c1 = c1;
+  e->c2 = c2;
 }
 
 static void entity_update_speed_on_floor(entity_t * e) {
@@ -302,16 +358,72 @@ inline void player_correct_position(void) {
   }
 }
 
+static void foreach_active_entity(void (* f)(entity_t *)) {
+  entity_t ** es = entities.list;
+  uint8_t n = entities.length;
+  while (n--) {
+    f(*es++);
+  }
+}
+
+static bool updated;
+
 void entity_update(void) {
   // Action planning task
-  entity_update_input(player);
+  foreach_active_entity(entity_update_input);
   // Dynamics state update task (position)
-  entity_update_dynamics(player);
+  foreach_active_entity(entity_update_dynamics);
   player_correct_position();
   // Collision test task
-  entity_update_collision(player);
+  foreach_active_entity(entity_update_collision);
   // Dynamics state update task (velocity / acceleration)
-  entity_update_speed(player);
+  foreach_active_entity(entity_update_speed);
+  // update camera position and speed
+  camera_update();
   // Pose update & Sound / Visual effects, etc.
-  entity_run_post_step(player);
+  foreach_active_entity(entity_run_post_step);
+  //
+  updated = true;
 }
+// void entity_update(void) {
+//   // Action planning task
+//   entity_update_input(player);
+//   // Dynamics state update task (position)
+//   foreach_active_entity(entity_update_dynamics);
+//   player_correct_position();
+//   // Collision test task
+//   entity_update_collision(player);
+//   // Dynamics state update task (velocity / acceleration)
+//   entity_update_speed(player);
+//   // update camera position and speed
+//   camera_update();
+//   // Pose update & Sound / Visual effects, etc.
+//   foreach_active_entity(entity_run_post_step);
+//   //
+//   updated = true;
+// }
+
+void entity_update_sprites(void) {
+  if (updated) {
+    // vdp_cmd_await();
+    foreach_active_entity(entity_show_sprite);
+    updated = false;
+  }
+}
+
+// void entity_update_sprites(void) {
+//   entity_t ** es = entities.list;
+//   uint8_t n = entities.length;
+//   uint8_t plane = 0;
+//   while (n--) {
+//     entity_t * e = *es++;
+//     if (!e->metasprite) continue;
+//     assert(plane + e->metasprite->n <= 32);
+//     if (e->plane != plane) {
+//       e->plane = plane;
+//       assets_set_sprite_palette(SPRITES_0, plane, e->sp_palette);
+//     }
+//     plane += e->metasprite->n;
+//     entity_show_sprite(e);
+//   }
+// }

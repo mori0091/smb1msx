@@ -32,7 +32,6 @@ void camera_update(void) {
     camera.x.i += u - 4;
     camera_set_speed(f10q6i(u - 4));
   }
-  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
 }
 
 void camera_set_speed(f10q6_t speed) {

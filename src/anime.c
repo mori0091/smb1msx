@@ -86,6 +86,5 @@ void anime_update(void) {
   if (!(tick & 1)) {
     return;
   }
-  mario_move_sprite();
   mario_animate();
 }

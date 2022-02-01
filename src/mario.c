@@ -29,13 +29,18 @@ static void mario_post_step(entity_t * e);
 
 void mario_init(void) {
   // mario_state.life = 3;
+  mario_set_pose(STANDING);
+  mario_reset_physical_status();
+  mario_reset_ability();
+
   player->input = 0;
   entity_set_controller(player, joystick1);
   entity_set_post_step(player, mario_post_step);
   entity_set_facing(player, FACING_RIGHT);
-  mario_set_pose(STANDING);
-  mario_reset_physical_status();
-  mario_reset_ability();
+  entity_set_metasprite(player, &mario_metasprite);
+  // entity_set_sprite_palette(player, MARIO_PALETTE);
+  assets_set_sprite_palette(SPRITES_0, 0, MARIO_PALETTE);
+  player->plane = 0;
 
   /* SDCC does not support ISO C99 compound literal */
   player->pos.x.i = 40;
@@ -48,7 +53,6 @@ void mario_init(void) {
   player->acc.y = 0;
 
   player->collision = COLLISION_FLOOR;
-  /* assets_set_sprite_palette(SPRITES, 0, MARIO_PALETTE); */
 }
 
 #define MARIO_PAT1_DX  (X_FROM_VMEMPTR(SPRITE_PATTERNS))
@@ -140,15 +144,14 @@ void mario_animate_die(void) {
 
   await_vsync();
   mario_animate();
-  mario_move_sprite();
+  entity_show_sprite(player);
   sleep_millis(500);
   do {
     tick++;
     await_vsync();
     if (tick & 1) continue;
     entity_update_dynamics(player);
-    // mario_animate();
-    mario_move_sprite();
+    entity_show_sprite(player);
   } while (player->pos.y.i < 240);
   sleep_millis(100);
 }
@@ -171,6 +174,29 @@ static void mario_post_step(entity_t * e) {
   }
   else {
     if (player->collision & COLLISION_CEIL) {
+      uint8_t obj;
+      uint8_t col = player->pos.x.i / TILE_WIDTH;
+      uint8_t row = player->pos.y.i / TILE_HEIGHT - 1;
+      if ((player->c1 < 0x80) ||
+          ((player->c2 > 0x7f) && (8 <= (player->pos.x.i & 15)))) {
+        obj = player->c2;
+        col++;
+      }
+      else {
+        obj = player->c1;
+      }
+      switch (obj) {
+      case 0xb0:                // '?' block
+        entity_add_block(row, col);
+        break;
+      case 0xd1:                // brick #1
+      case 0xd2:                // brick #2
+        entity_add_brick(row, col);
+        break;
+      case 0xff:                // hidden
+        entity_add_block(row, col);
+        break;
+      }
       sound_effect(&se_block);
     }
   }

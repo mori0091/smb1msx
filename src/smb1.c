@@ -123,6 +123,7 @@ static void get_ready(void) {
   mapld_init();
   stage_init();
   camera_init();
+  entity_init();
   mario_init();
   stage_setup();
   countdown_timer_set(0x400);
@@ -213,10 +214,12 @@ static void play_music(void) {
 }
 
 bool game_main(void) {
+  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
   // wait for VSYNC interrupt and interrupt handler finished
   await_vsync();
   timer_update();
   // ---- sound / visual output task ----
+  entity_update_sprites();
   anime_update();
   // ---- stage map rendering task ----
   stage_update();
@@ -228,9 +231,7 @@ bool game_main(void) {
     default:;
       // update entities' state
       entity_update();
-      // update camera position and speed
-      camera_update();
-      // time
+      // update countdown timer
       countdown_timer_update();
       break;
     case EV_PLAYER_DIES:
@@ -371,12 +372,13 @@ void main(void) {
   graphics_clear_vram();
   assets_setup();
   timer_init();
+  timer_set_user_freq(30);
   fps_display_set_visible(true);
 
   sound_init();
   /* Register software envelope patterns */
   sound_set_eg_table(envelope_table);
-  /* sound_set_volume(12); */
+  sound_set_volume(12);
   setup_interrupt();
 
   for (;;) {

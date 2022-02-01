@@ -29,6 +29,7 @@
 #include "stage.h"
 #include "camera.h"
 #include "physics.h"
+#include "entity.h"
 #include "mario.h"
 
 #endif
