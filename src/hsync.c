@@ -56,32 +56,29 @@ inline void tc_hsync_handler(void) {
 /**
  * Non-critical HSYNC handler (called with interrupts enabled).
  */
-static void on_hsync(void) {
+inline void on_hsync(void) {
   sound_player();
 }
 
 static void interrupt_handler(void) {
   if (is_hsync()) {
     tc_hsync_handler();
+    on_hsync();
     // ---- override BIOS VSYNC routine
     if (is_vsync()) {
       // tc_vsync_handler();    // Don't call `vsync_handler()` here. (too late)
       vsync_handler();          // Catching up on delayed VSYNC.
-      __asm__("ei");
       on_vsync();
-      on_hsync();
-      return;
     }
     __asm__("ei");
-    on_hsync();
     return;
   }
   // ---- override BIOS VSYNC routine
   if (is_vsync()) {
     tc_vsync_handler();
     vsync_handler();
-    __asm__("ei");
     on_vsync();
+    __asm__("ei");
   }
 }
 
