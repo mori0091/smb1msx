@@ -30,6 +30,7 @@
 #include "camera.h"
 #include "physics.h"
 #include "entity.h"
+#include "sm2.h"
 #include "mario.h"
 
 #endif

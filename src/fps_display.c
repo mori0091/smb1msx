@@ -6,8 +6,10 @@
 #define FPS_SPRITE_PAT_1   (252) /* top-left 8x8 pix */
 #define FPS_SPRITE_PAT_2   (253) /* bottom-left 8x8 pix */
 #define FPS_SPRITE_PLANE   FPS_SPRITE_PLANE_1
-#define FPS_SPRITE_PLANE_1 (30)
-#define FPS_SPRITE_PLANE_2 (31)
+/* #define FPS_SPRITE_PLANE_1 (30) */
+/* #define FPS_SPRITE_PLANE_2 (31) */
+#define FPS_SPRITE_PLANE_1 (0)
+#define FPS_SPRITE_PLANE_2 (1)
 
 static bool fps_visible;
 
@@ -19,6 +21,7 @@ static const struct sprite fps_sprite[2] = {
 void fps_display_set_visible(bool visible) {
   vdp_cmd_await();
   if (visible) {
+    assets_set_sprite_palette(SPRITES_0, FPS_SPRITE_PLANE, TEXT_1_PALETTE);
     graphics_set_sprite(FPS_SPRITE_PLANE  , &fps_sprite[0]);
     graphics_set_sprite(FPS_SPRITE_PLANE+1, &fps_sprite[1]);
   } else {

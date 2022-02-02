@@ -225,13 +225,17 @@ static void play_music(void) {
 }
 
 bool game_main(void) {
-  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
   // wait for VSYNC interrupt and interrupt handler finished
   await_vsync();
-  timer_update();
-  // ---- sound / visual output task ----
+  // apply camera position for the next VSYNC/HSYNC.
+  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
+  // updates the internal sprite attribute table.
   entity_update_sprites();
-  anime_update();
+  // writes the internal sprite attribute table to VRAM.
+  // (and sprite animation)
+  entity_apply_sprites();
+  // update tick counter
+  timer_update();
   // ---- stage map rendering task ----
   stage_update();
   // ---- game core task ----

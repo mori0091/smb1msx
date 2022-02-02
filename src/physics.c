@@ -1,6 +1,7 @@
 // -*- coding: utf-8-unix -*-
 
 #include "smb1.h"
+#include "sm2.h"
 
 #define ENTITY_MAX  (8)
 
@@ -8,6 +9,8 @@ struct {
   uint8_t length;
   entity_t * list[ENTITY_MAX];
 } entities;
+
+static bool updated;
 
 entity_t player_entity;
 entity_t * const player = &player_entity;
@@ -31,6 +34,7 @@ void entity_hide_sprite(const entity_t * e) {
 void entity_init(void) {
   entities.length = 1;
   entities.list[0] = player;
+  // entity_hide_sprites();
 }
 
 void entity_add(entity_t * const e) {
@@ -41,7 +45,7 @@ void entity_add(entity_t * const e) {
 
 void entity_remove(entity_t * const e) {
   if (!entities.length || !e) return;
-  entity_hide_sprite(e);
+  // entity_hide_sprite(e);
   entity_t ** p = &(entities.list[entities.length - 1]);
   entity_t * const last = *p;
   uint8_t n = entities.length;
@@ -366,8 +370,6 @@ static void foreach_active_entity(void (* f)(entity_t *)) {
   }
 }
 
-static bool updated;
-
 void entity_update(void) {
   // Action planning task
   foreach_active_entity(entity_update_input);
@@ -385,30 +387,24 @@ void entity_update(void) {
   //
   updated = true;
 }
-// void entity_update(void) {
-//   // Action planning task
-//   entity_update_input(player);
-//   // Dynamics state update task (position)
-//   foreach_active_entity(entity_update_dynamics);
-//   player_correct_position();
-//   // Collision test task
-//   entity_update_collision(player);
-//   // Dynamics state update task (velocity / acceleration)
-//   entity_update_speed(player);
-//   // update camera position and speed
-//   camera_update();
-//   // Pose update & Sound / Visual effects, etc.
-//   foreach_active_entity(entity_run_post_step);
-//   //
-//   updated = true;
-// }
+
+static void entity_set_sprites(entity_t * e) {
+  if (!e->metasprite) return;
+  const int x = e->pos.x.i - camera_get_x();
+  const int y = e->pos.y.i;
+  sm2_add_sprites(e->plane, e->metasprite, x, y);
+}
 
 void entity_update_sprites(void) {
   if (updated) {
-    // vdp_cmd_await();
-    foreach_active_entity(entity_show_sprite);
+    sm2_init();
+    foreach_active_entity(entity_set_sprites);
     updated = false;
   }
+}
+
+void entity_apply_sprites(void) {
+  sm2_apply_sprites();
 }
 
 // void entity_update_sprites(void) {

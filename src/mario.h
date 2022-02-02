@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "event.h"
 #include "physics.h"
 
 enum mario_pose {

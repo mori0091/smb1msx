@@ -30,17 +30,17 @@ static void invincible_palette_animate(void) {
   vdp_set_palette(3, color_palette[invincible_colors[i][2]]);
 }
 
-static const uint8_t weakened_colors[][3] = {
-  { 1, 2, 3, },
-  { 12, 12, 12, },
-};
+// static const uint8_t weakened_colors[][3] = {
+//   { 1, 2, 3, },
+//   { 12, 12, 12, },
+// };
 
-static void weakened_palette_animate(void) {
-  const uint8_t i = JIFFY & 1;
-  vdp_set_palette(1, color_palette[weakened_colors[i][0]]);
-  vdp_set_palette(2, color_palette[weakened_colors[i][1]]);
-  vdp_set_palette(3, color_palette[weakened_colors[i][2]]);
-}
+// static void weakened_palette_animate(void) {
+//   const uint8_t i = JIFFY & 1;
+//   vdp_set_palette(1, color_palette[weakened_colors[i][0]]);
+//   vdp_set_palette(2, color_palette[weakened_colors[i][1]]);
+//   vdp_set_palette(3, color_palette[weakened_colors[i][2]]);
+// }
 
 static volatile bool enable_on_vsync;
 
@@ -76,15 +76,12 @@ void anime_on_vsync(void) {
     // multi-color blinking
     invincible_palette_animate();
   }
-  if (mario_is_weakened()) {
-    // (pseudo) transparent visual effect
-    weakened_palette_animate();
-  }
+  // if (mario_is_weakened()) {
+  //   // (pseudo) transparent visual effect
+  //   weakened_palette_animate();
+  // }
 }
 
 void anime_update(void) {
-  if (!(tick & 1)) {
-    return;
-  }
   mario_animate();
 }

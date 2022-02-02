@@ -39,8 +39,8 @@ void mario_init(void) {
   entity_set_facing(player, FACING_RIGHT);
   entity_set_metasprite(player, &mario_metasprite);
   // entity_set_sprite_palette(player, MARIO_PALETTE);
-  assets_set_sprite_palette(SPRITES_0, 0, MARIO_PALETTE);
-  player->plane = 0;
+  assets_set_sprite_palette(SPRITES_0, 2, MARIO_PALETTE);
+  player->plane = 2;
 
   /* SDCC does not support ISO C99 compound literal */
   player->pos.x.i = 40;

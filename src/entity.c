@@ -12,8 +12,8 @@
 #define TILE_BLOCK     (0xb4)   // #14 (#112, #116)
 #define TILE_BRICK     (0xd1)   // #15 (#120, #124)
 
-#define PLANE_BLOCKS   (4)
-#define PLANE_ITEMS    (6)
+#define PLANE_BLOCKS   (6)
+#define PLANE_ITEMS    (8)
 
 static void put_tile(uint8_t row, uint8_t col, uint8_t tile) {
   const uint16_t pp = (TILE_WIDTH * col) & 256; // page #0 (0) or page #1 (256)
