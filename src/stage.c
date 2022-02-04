@@ -99,11 +99,11 @@ inline void map_renderer_task(void) {
 
 // Sim.freq = 30Hz @ 60fps
 // Sim.freq = 25Hz @ 50fps
-#define PIXELS_PER_FRAME  (camera_get_speed() >> 7)
+#define PIXELS_PER_FRAME  (camera_get_speed() >> 9)
 // Sim.freq = 30Hz @ 50fps
-// #define PIXELS_PER_FRAME  ((camera_get_speed() * 30 / 50) >> 6)
+// #define PIXELS_PER_FRAME  ((camera_get_speed() * 30 / 50) >> 8)
 // Sim.freq = 25Hz @ 60fps
-// #define PIXELS_PER_FRAME  ((camera_get_speed() * 25 / 60) >> 6)
+// #define PIXELS_PER_FRAME  ((camera_get_speed() * 25 / 60) >> 8)
 
 #define ROWS              (STAGEMAP_VISIBLE_ROWS - 1)
 

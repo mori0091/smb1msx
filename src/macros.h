@@ -58,7 +58,7 @@
 #define VRAM_FREE_AREA_Y        Y_FROM_VMEMPTR(VRAM_FREE_AREA)
 #define SIZE_OF_VRAM_FREE_AREA  (SIZE_OF_VRAM_PAGE / 2)
 
-#define SCROLL_SPEED_MAX (f10q6i(112))
+#define SCROLL_SPEED_MAX        (f8q8i(112))
 
 
 

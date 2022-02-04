@@ -15,17 +15,15 @@
 #define PREV_A_BUTTON  (VK_FIRE_0 << 2)
 #define PREV_B_BUTTON  (VK_FIRE_1 << 2)
 
-// #define speed_hi       f10q6i(8)
-// #define speed_lo       f10q6(4.8)
-#define speed_hi       f10q6i(6)
-#define speed_lo       f10q6(3.6)
-#define accel_hi       ((uint8_t)20)
-#define accel          ((uint8_t)10)
-#define brake          ((uint8_t)24)
-#define initial_vy_hi  f10q6(-8.25)
-#define initial_vy_lo  f10q6(-8.0)
-#define gravity_hi     f10q6(2.0)
-#define gravity_lo     f10q6(0.5)
+#define speed_hi       f8q8i(6)
+#define speed_lo       f8q8(3.6)
+#define accel_hi       ((uint8_t)80)
+#define accel          ((uint8_t)40)
+#define brake          ((uint8_t)96)
+#define initial_vy_hi  f8q8(-8.25)
+#define initial_vy_lo  f8q8(-8.0)
+#define gravity_hi     f8q8(2.0)
+#define gravity_lo     f8q8(0.5)
 
 typedef struct entity entity_t;
 
@@ -51,13 +49,13 @@ struct entity {
   /** Input signals. */
   uint8_t input;
   /** Previous position. */
-  vec2f16q6_t prev_pos;
+  vec2f16q8_t prev_pos;
   /** Position. */
-  vec2f16q6_t pos;
+  vec2f16q8_t pos;
   /** Velocity. */
-  vec2f10q6_t vel;
+  vec2f8q8_t vel;
   /** Acceleration. */
-  vec2f10q6_t acc;
+  vec2f8q8_t acc;
   /** Collision flags. */
   uint8_t collision;
   /** Objects that the entity collided with. */
@@ -88,7 +86,7 @@ inline void player_set_x(int16_t x) {
   player->pos.x.i = x;
 }
 
-inline f10q6_t player_get_speed(void) {
+inline f8q8_t player_get_speed(void) {
   return abs(player->vel.x);
 }
 

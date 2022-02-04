@@ -15,11 +15,11 @@
 #define PLANE_BLOCKS   (6)
 #define PLANE_ITEMS    (8)
 
-#define MUSHROOM_VX    f10q6(2.0)
+#define MUSHROOM_VX    f8q8(2.0)
 #define MUSHROOM_AY    gravity_hi;
 
-#define BLOCK_VY       f10q6(5.0)
-#define BLOCK_AY       f10q6(2.0)
+#define BLOCK_VY       f8q8(5.0)
+#define BLOCK_AY       f8q8(2.0)
 
 static void put_tile(uint8_t row, uint8_t col, uint8_t tile) {
   const uint16_t pp = (TILE_WIDTH * col) & 256; // page #0 (0) or page #1 (256)

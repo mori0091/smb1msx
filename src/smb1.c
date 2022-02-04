@@ -12,10 +12,10 @@
 static uint8_t auto_pilot_1(void) {
   uint8_t ret = 0;
   uint16_t x = player_get_x();
-  f10q6_t speed = player_get_speed();
+  f8q8_t speed = player_get_speed();
   ret |= VK_RIGHT;
   if (x < 256+10) return ret;
-  if (x < 256+76 && speed < f10q6i(1)) return ret;
+  if (x < 256+76 && speed < f8q8i(1)) return ret;
   if (user_tick < 133) {
     if (0 < speed) {
       return 0;
@@ -24,7 +24,7 @@ static uint8_t auto_pilot_1(void) {
       return VK_FIRE_0;
     }
   }
-  if (x < 256+94 && speed < f10q6i(1)) return ret;
+  if (x < 256+94 && speed < f8q8i(1)) return ret;
   ret &= ~VK_RIGHT;
   return ret;
 }

@@ -131,12 +131,12 @@ void mario_animate_die(void) {
   player->vel.x = 0;
   if (212 - 16 < player->pos.y.i) {
     // falling down
-    player->vel.y = f10q6(0.0);
+    player->vel.y = f8q8(0.0);
     player->acc.y = gravity_lo;
   }
   else {
     // ouch!
-    player->vel.y = f10q6(-20.0);
+    player->vel.y = f8q8(-20.0);
     player->acc.y = gravity_hi;
   }
   player->vel.x = 0;

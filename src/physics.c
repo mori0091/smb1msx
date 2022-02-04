@@ -95,23 +95,29 @@ void entity_update_dynamics(entity_t * e) {
   e->prev_pos.y.i = e->pos.y.i;
   e->prev_pos.y.d = e->pos.y.d;
 
-  e->pos.x.d += e->vel.x;
-  e->pos.x.i += e->pos.x.d >> 6;
-  e->pos.x.d &= ((1 << 6) - 1);
+  f8q8_t f;
 
-  e->pos.y.d += e->vel.y;
-  e->pos.y.i += e->pos.y.d >> 6;
-  e->pos.y.d &= ((1 << 6) - 1);
+  f = e->pos.x.d + e->vel.x;
+  // e->pos.x.i += f >> 6;
+  // e->pos.x.d = f & ((1 << 6) - 1);
+  e->pos.x.i += f >> 8;
+  e->pos.x.d = f & 255;
+
+  f = e->pos.y.d + e->vel.y;
+  // e->pos.y.i += f >> 6;
+  // e->pos.y.d = f & ((1 << 6) - 1);
+  e->pos.y.i += f >> 8;
+  e->pos.y.d = f & 255;
 
   e->vel.x += e->acc.x;
   e->vel.y += e->acc.y;
 
   /* correct y-axis position and velocity */
-  if (e->vel.y < f10q6i(-16)) {
-    e->vel.y = f10q6i(-16);
+  if (e->vel.y < f8q8i(-16)) {
+    e->vel.y = f8q8i(-16);
   }
-  if (f10q6i(16) < e->vel.y) {
-    e->vel.y = f10q6i(16);
+  if (f8q8i(16) < e->vel.y) {
+    e->vel.y = f8q8i(16);
   }
   if (e->pos.y.i < -32) {
     e->pos.y.i = -32;
@@ -124,10 +130,10 @@ void entity_update_dynamics(entity_t * e) {
 }
 
 void entity_update_collision(entity_t * e) {
-  static uint8_t c1;            // ceil / floor object #1
-  static uint8_t c2;            // ceil / floor object #2
-  static f16q6_t yy;            // Candidate for corrected Y-coordinate position.
-  static f10q6_t vy;            // Candidate for corrected Y-coordinate velocity.
+  static uint8_t c1;           // ceil / floor object #1
+  static uint8_t c2;           // ceil / floor object #2
+  static f16q8_t yy;           // Candidate for corrected Y-coordinate position.
+  static f8q8_t vy;            // Candidate for corrected Y-coordinate velocity.
 
   c1 = 0;
   c2 = 0;
@@ -237,7 +243,7 @@ static void entity_update_speed_on_floor(entity_t * e) {
       entity_set_facing(e, FACING_RIGHT);
     }
   }
-  f10q6_t speed = abs(e->vel.x);
+  f8q8_t speed = abs(e->vel.x);
 
   uint8_t FORWARD_KEY;
   uint8_t BACKWARD_KEY;

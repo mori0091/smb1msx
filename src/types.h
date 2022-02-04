@@ -16,48 +16,48 @@ typedef struct rect {
 } rect_t;
 
 /**
- * Type of 16 bit signed Q6 fixed point number.
- * - integer part : 10 bits
- * - decimal part : 6 bits
+ * Type of 16 bit signed Q8 fixed point number.
+ * - integer part : 8 bits
+ * - decimal part : 8 bits
  */
-typedef int16_t f10q6_t;
+typedef int16_t f8q8_t;
 
 /**
- * Constructs a f10q6_t value from integer.
+ * Constructs a f8q8_t value from integer.
  * \param i   an integer, that shall be 10 bits signed integer.
  */
-#define f10q6i(i)    ((f10q6_t)((i) << 6))
+#define f8q8i(i)    ((f8q8_t)((i) << 8))
 
 /**
- * Constructs a f10q6_t value from floating number.
+ * Constructs a f8q8_t value from floating number.
  * \param f   a floating number.
  */
-#define f10q6(f)     ((f10q6_t)((f) * (1 << 6)))
+#define f8q8(f)     ((f8q8_t)((f) * (1 << 8)))
 
 /**
- * 2D vector of f10q6_t
+ * 2D vector of f8q8_t
  */
-typedef struct vec2f10q6 {
-  f10q6_t x;
-  f10q6_t y;
-} vec2f10q6_t;
+typedef struct vec2f8q8 {
+  f8q8_t x;
+  f8q8_t y;
+} vec2f8q8_t;
 
 /**
- * Type of 22 bit signed fixed point number.
+ * Type of 24 bit signed fixed point number.
  * - integer part : 16 bits
- * - decimal part : 6 bits
+ * - decimal part : 8 bits
  */
-typedef struct f16q6_t {
+typedef struct f16q8_t {
   int16_t i;                    /* integer part */
-  f10q6_t d;                    /* decimal part */
-} f16q6_t;
+  uint8_t d;                    /* decimal part */
+} f16q8_t;
 
 /**
- * 2D vector of f16q6_t
+ * 2D vector of f16q8_t
  */
-typedef struct vec2f16q6 {
-  f16q6_t x;
-  f16q6_t y;
-} vec2f16q6_t;
+typedef struct vec2f16q8 {
+  f16q8_t x;
+  f16q8_t y;
+} vec2f16q8_t;
 
 #endif

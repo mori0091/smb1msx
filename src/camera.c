@@ -26,15 +26,15 @@ void camera_update(void) {
   }
   else if (u <= 4) {
     camera.x.i++;
-    camera_set_speed(f10q6i(1));
+    camera_set_speed(f8q8i(1));
   }
   else {
     camera.x.i += u - 4;
-    camera_set_speed(f10q6i(u - 4));
+    camera_set_speed(f8q8i(u - 4));
   }
 }
 
-void camera_set_speed(f10q6_t speed) {
+void camera_set_speed(f8q8_t speed) {
   camera.speed = speed;
   if (SCROLL_SPEED_MAX < camera.speed) {
     camera.speed = SCROLL_SPEED_MAX;
