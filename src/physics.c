@@ -22,7 +22,7 @@ const struct sprite hidden_sprite = {.y = 240, };
 
 void entity_show_sprite(const entity_t * e) {
   const int16_t x = e->pos.x.i - camera_get_x();
-  const int16_t y = e->pos.y.i;
+  const int16_t y = e->pos.y.i - 1;
   vmem_set_metasprite_a(SPRITES_0, e->plane, x, y, e->metasprite);
 }
 
@@ -391,7 +391,7 @@ void entity_update(void) {
 static void entity_set_sprites(entity_t * e) {
   if (!e->metasprite) return;
   const int x = e->pos.x.i - camera_get_x();
-  const int y = e->pos.y.i;
+  const int y = e->pos.y.i - 1;
   sm2_show_sprites(e->plane, e->metasprite, x, y);
 }
 
