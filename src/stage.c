@@ -30,14 +30,15 @@ void stage_setup(void) {
   vdp_cmd_execute_HMMV(0, 256, 256, 16, 0xcc);
 }
 
-#define BUFFER_COLS   (STAGEMAP_BUFFER_PAGES * STAGEMAP_PAGE_COLS)
-#define BUFFER_WIDTH  (BUFFER_COLS * TILE_WIDTH)
+#define MAX_PAGES_TO_WRAPAROUND    (32)
+#define MAX_COLUMNS_TO_WRAPAROUND  (MAX_PAGES_TO_WRAPAROUND * STAGEMAP_PAGE_COLS)
+#define MAX_PIXELS_TO_WRAPAROUND   (MAX_COLUMNS_TO_WRAPAROUND * TILE_WIDTH)
 
-void stage_test_and_fix_wraparound(void) {
-  if (camera_get_x() >= BUFFER_WIDTH) {
-    player_set_x(player_get_x() - BUFFER_WIDTH);
-    camera_set_x(camera_get_x() - BUFFER_WIDTH);
-    map_next -= BUFFER_COLS;
+static void stage_test_and_fix_wraparound(void) {
+  if (camera_get_x() >= MAX_PIXELS_TO_WRAPAROUND) {
+    player_set_x(player_get_x() - MAX_PIXELS_TO_WRAPAROUND);
+    camera_set_x(camera_get_x() - MAX_PIXELS_TO_WRAPAROUND);
+    map_next -= MAX_COLUMNS_TO_WRAPAROUND;
   }
 }
 
@@ -72,6 +73,7 @@ inline void map_renderer_task_end(void) {
   map_next++;
   if (!(map_next % STAGEMAP_PAGE_COLS)) {
     mapld_load_next_page();
+    stage_test_and_fix_wraparound();
   }
 }
 
@@ -85,7 +87,6 @@ inline void map_renderer_task(void) {
     if (map_renderer_task_is_buffer_full()) {
       return;
     }
-    stage_test_and_fix_wraparound();
     map_renderer_task_begin();
   }
   {

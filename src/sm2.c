@@ -3,8 +3,8 @@
 #include "smb1.h"
 
 static void sprites_from_metasprite(struct sprite * sp,
-                                    const metasprite_t * ms
-                                    , int x, int y) {
+                                    const metasprite_t * ms,
+                                    int x, int y) {
   const uint8_t n = ms->n;
   const int dx = x - ms->anchor.x;
   const int dy = y - ms->anchor.y;
@@ -40,13 +40,23 @@ static void on_modified(uint8_t plane, uint8_t n) {
   dirty = true;
 }
 
-void sm2_init(void) {
+void sm2_clear_sprites(void) {
   beg = 255;
   end = 0;
   dirty = false;
 }
 
-void sm2_add_sprites(uint8_t plane, const metasprite_t * ms, int x, int y) {
+void sm2_hide_sprites(uint8_t plane, const metasprite_t * ms) {
+  struct sprite * sp = sprites + plane;
+  uint8_t n = ms->n;
+  while (n--) {
+    sp->y = 217;
+    sp++;
+  }
+  on_modified(plane, ms->n);
+}
+
+void sm2_show_sprites(uint8_t plane, const metasprite_t * ms, int x, int y) {
   // assert(ms && plane + ms->n <= 32);
   sprites_from_metasprite(sprites + plane, ms, x, y);
   on_modified(plane, ms->n);

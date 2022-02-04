@@ -15,6 +15,12 @@
 #define PLANE_BLOCKS   (6)
 #define PLANE_ITEMS    (8)
 
+#define MUSHROOM_VX    f10q6(2.0)
+#define MUSHROOM_AY    gravity_hi;
+
+#define BLOCK_VY       f10q6(5.0)
+#define BLOCK_AY       f10q6(2.0)
+
 static void put_tile(uint8_t row, uint8_t col, uint8_t tile) {
   const uint16_t pp = (TILE_WIDTH * col) & 256; // page #0 (0) or page #1 (256)
   const uint16_t ix = (TILE_WIDTH * col) & 255;
@@ -27,9 +33,20 @@ static void put_tile(uint8_t row, uint8_t col, uint8_t tile) {
 
 const vec2i_t W16H16D2[] = { {0,0}, {0,0}, };
 
+const uint8_t mushroom_pats[] = { 88, 92, };
+const uint8_t fireflower_pats[] = { 96, 100, };
+const uint8_t starman_pats[] = { 104, 108, };
+
 const uint8_t block_pats[] = { 112, 116, };
 const uint8_t brick_pats[] = { 120, 124, };
 const uint8_t debris_pats[] = { 128, 132, };
+
+const metasprite_t mushroom_metasprite = {
+  .n = 2,
+  .anchor = {0,0},
+  .layouts = W16H16D2,
+  .pats = mushroom_pats,
+};
 
 static metasprite_t block_metasprite = {
   .n = 2,
@@ -38,12 +55,64 @@ static metasprite_t block_metasprite = {
   // .pats = block_pats,
 };
 
+static entity_t item_entity;
+static uint8_t item0;
+
 static entity_t block_entity;
 static uint8_t row0, col0;
 static uint8_t tile0;
 
-#define BLOCK_VY   f10q6(5.0)
-#define BLOCK_AY   f10q6(2.0)
+static uint8_t mushroom_controller(void) {
+  if (item_entity.collision & COLLISION_LEFT) {
+    item_entity.vel.x = MUSHROOM_VX;
+  }
+  if (item_entity.collision & COLLISION_RIGHT) {
+    item_entity.vel.x = -MUSHROOM_VX;
+  }
+  return (item_entity.vel.x < 0 ? VK_LEFT : VK_RIGHT);
+}
+
+static void mushroom_post_step(entity_t * e) {
+  uint16_t x0 = camera_get_x();
+  if ((e->pos.x.i < x0)       ||
+      (x0 + 256 < e->pos.x.i) ||
+      (212 <= e->pos.y.i)) {
+    entity_remove(e);
+    return;
+  }
+  if (e->vel.x < -MUSHROOM_VX) {
+    e->vel.x = -MUSHROOM_VX;
+  }
+  if (e->vel.x > +MUSHROOM_VX) {
+    e->vel.x = +MUSHROOM_VX;
+  }
+}
+
+static void mushroom_entity_new(uint8_t row, uint8_t col) {
+  entity_remove(&item_entity);
+
+  entity_set_controller(&item_entity, mushroom_controller);
+  entity_set_post_step(&item_entity, mushroom_post_step);
+  entity_set_metasprite(&item_entity, &mushroom_metasprite);
+  // entity_set_sprite_palette(&item_entity, MUSHROOM_PALETTE);
+  assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS,
+                            (item0 == ITEM_MUSHROOM)
+                            ? MUSHROOM_PALETTE
+                            : GREEN_MUSHROOM_PALETTE);
+  item_entity.plane = PLANE_ITEMS;
+
+  item_entity.input = 0;
+  item_entity.pos.x.i = col * TILE_WIDTH;
+  item_entity.pos.x.d = 0;
+  item_entity.pos.y.i = row * TILE_HEIGHT;
+  item_entity.pos.y.d = 0;
+  item_entity.vel.x = 0;
+  item_entity.vel.y = 0;
+  item_entity.acc.x = 0;
+  item_entity.acc.y = MUSHROOM_AY;
+
+  entity_add(&item_entity);
+}
 
 static void block_post_step(entity_t * e) {
   if (e->vel.y < +BLOCK_VY) {
@@ -51,6 +120,20 @@ static void block_post_step(entity_t * e) {
   }
   put_tile(row0, col0, tile0);
   entity_remove(e);
+  switch (item0) {
+  case ITEM_NONE:
+    break;
+  case ITEM_COIN:
+    break;
+  case ITEM_MUSHROOM:
+  case ITEM_1UP_MUSHROOM:
+    mushroom_entity_new(row0 - 1, col0);
+    break;
+  case ITEM_FIREFLOWER:
+  case ITEM_STARMAN:
+  default:
+    break;
+  }
 }
 
 static void block_entity_new(uint8_t row, uint8_t col, uint8_t tile) {
@@ -83,10 +166,12 @@ static void block_entity_new(uint8_t row, uint8_t col, uint8_t tile) {
   put_tile(row, col, TILE_EMPTY);
 }
 
-void entity_add_block(uint8_t row, uint8_t col) {
+void entity_add_block(uint8_t row, uint8_t col, uint8_t item) {
+  item0 = item;
   block_entity_new(row, col, TILE_BLOCK);
 }
 
-void entity_add_brick(uint8_t row, uint8_t col) {
+void entity_add_brick(uint8_t row, uint8_t col, uint8_t item) {
+  item0 = item;
   block_entity_new(row, col, TILE_BRICK);
 }

@@ -204,15 +204,6 @@ void entity_remove(entity_t * e);
 void entity_update(void);
 
 /**
- * Clear the buffer of the sprites.
- *
- * \note
- * This function just updates the internal sprite table on RAM. To show, hide,
- * or move the sprites, call entity_apply_sprites() after this function.
- */
-void entity_hide_sprites(void);
-
-/**
  * Updates the buffer of the sprites of all entities according to their status.
  *
  * \note
@@ -225,6 +216,8 @@ void entity_update_sprites(void);
  * Writes the buffer of the sprites to the VRAM.
  */
 void entity_apply_sprites(void);
+
+// -----------
 
 /**
  * Action planning task.

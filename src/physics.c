@@ -17,6 +17,9 @@ entity_t * const player = &player_entity;
 
 const struct sprite hidden_sprite = {.y = 240, };
 
+#define BUFFER_COLS   (STAGEMAP_BUFFER_PAGES * STAGEMAP_PAGE_COLS)
+#define BUFFER_WIDTH  (BUFFER_COLS * TILE_WIDTH)
+
 void entity_show_sprite(const entity_t * e) {
   const int16_t x = e->pos.x.i - camera_get_x();
   const int16_t y = e->pos.y.i;
@@ -34,7 +37,6 @@ void entity_hide_sprite(const entity_t * e) {
 void entity_init(void) {
   entities.length = 1;
   entities.list[0] = player;
-  // entity_hide_sprites();
 }
 
 void entity_add(entity_t * const e) {
@@ -46,6 +48,9 @@ void entity_add(entity_t * const e) {
 void entity_remove(entity_t * const e) {
   if (!entities.length || !e) return;
   // entity_hide_sprite(e);
+  if (e->metasprite) {
+    sm2_hide_sprites(e->plane, e->metasprite);
+  }
   entity_t ** p = &(entities.list[entities.length - 1]);
   entity_t * const last = *p;
   uint8_t n = entities.length;
@@ -387,12 +392,12 @@ static void entity_set_sprites(entity_t * e) {
   if (!e->metasprite) return;
   const int x = e->pos.x.i - camera_get_x();
   const int y = e->pos.y.i;
-  sm2_add_sprites(e->plane, e->metasprite, x, y);
+  sm2_show_sprites(e->plane, e->metasprite, x, y);
 }
 
 void entity_update_sprites(void) {
   if (updated) {
-    sm2_init();
+    sm2_clear_sprites();
     foreach_active_entity(entity_set_sprites);
     updated = false;
   }

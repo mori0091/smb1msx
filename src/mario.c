@@ -101,7 +101,7 @@ static void mario_set_sprite_pat(uint8_t idx) {
 }
 
 void mario_show(int x, int y) {
-  vmem_set_metasprite_a(SPRITES_0, 0, x, y, &mario_metasprite);
+  vmem_set_metasprite_a(SPRITES_0, 2, x, y, &mario_metasprite);
 }
 
 static uint8_t anim_tick;
@@ -187,14 +187,14 @@ static void mario_post_step(entity_t * e) {
       }
       switch (obj) {
       case 0xb0:                // '?' block
-        entity_add_block(row, col);
+        entity_add_block(row, col, ITEM_MUSHROOM);
         break;
       case 0xd1:                // brick #1
       case 0xd2:                // brick #2
-        entity_add_brick(row, col);
+        entity_add_brick(row, col, ITEM_NONE);
         break;
       case 0xff:                // hidden
-        entity_add_block(row, col);
+        entity_add_block(row, col, ITEM_1UP_MUSHROOM);
         break;
       }
       sound_effect(&se_block);
