@@ -131,45 +131,41 @@ void entity_update_collision(entity_t * e) {
     return;
   }
 
-  const uint16_t x0 = e->pos.x.i;
-  yy.i = e->pos.y.i;
+  const uint16_t x = e->pos.x.i;
+  const uint16_t prev_x = e->prev_pos.x.i;
+  const uint16_t y = e->pos.y.i;
+  const uint16_t prev_y = e->prev_pos.y.i;
+  yy.i = y;
   yy.d = e->pos.y.d;
   vy = e->vel.y;
 
   {
-    if (e->pos.y.i < e->prev_pos.y.i) {
+    if (y < prev_y) {
       // - collision check (ceil)
-      static const rect_t box = {
-        .pos  = { 6, 0 },
-        .size = { 4,16 },
-      };
-      const int lx = x0 + box.pos.x;
-      const int rx = lx + box.size.x - 1;
-      const int ty = e->pos.y.i + box.pos.y - 1;
-      c1 = mapld_get_object_at(lx, ty);
-      c2 = mapld_get_object_at(rx, ty);
+      const uint8_t margin_left  = 6;
+      const uint8_t margin_right = 6;
+      const uint8_t margin_top   = 0;
+      const int ty = y + margin_top - 1;
+      c1 = mapld_get_object_at(x + margin_left, ty);
+      c2 = mapld_get_object_at(x + 15 - margin_right, ty);
       if ((c1 | c2) & 0x80) {
         e->collision |= COLLISION_CEIL;
-        yy.i = (e->pos.y.i + 15) & 240;
+        yy.i = (y + 15) & 240;
         yy.d = 0;
         vy = abs(e->vel.y);
       }
     }
     else {
       // - collision check (floor)
-      static const rect_t box = {
-        .pos  = { 3, 0 },
-        .size = { 10,16 },
-      };
-      const int lx = x0 + box.pos.x;
-      const int rx = lx + box.size.x - 1;
-      const int by = e->pos.y.i + box.pos.y + box.size.y;
-      c1 = mapld_get_object_at(lx, by);
-      c2 = mapld_get_object_at(rx, by);
-      // if ((c1 | c2) & 0x80) {
+      const uint8_t margin_left  = 3;
+      const uint8_t margin_right = 3;
+      const uint8_t margin_bottom = 0;
+      const int by = y + 16 - margin_bottom;
+      c1 = mapld_get_object_at(x + margin_left, by);
+      c2 = mapld_get_object_at(x + 15 - margin_right, by);
       if ((0x7f < c1 && c1 < 0xff) || (0x7f < c2 && c2 < 0xff)) {
         e->collision |= COLLISION_FLOOR;
-        yy.i = e->pos.y.i & 240;
+        yy.i = y & 240;
         yy.d = 0;
         vy = 0;
       }
@@ -177,46 +173,45 @@ void entity_update_collision(entity_t * e) {
   }
   {
     // - collision check (left / right)
-    static const rect_t box = {
-      .pos  = { 2, 0 },
-      .size = { 12,16 },
-    };
+    const uint8_t margin_left  = 2;
+    const uint8_t margin_right = 2;
+    const uint8_t margin_top   = 0;
+    const uint8_t margin_bottom = 0;
 
     bool check_right;
-    if (e->prev_pos.x.i == e->pos.x.i) {
-      check_right = (e->pos.x.i & 15) < 8;
-    } else {
-      check_right = e->prev_pos.x.i < e->pos.x.i;
+    if (prev_x == x) {
+      check_right = ((x & 15) < 8);
     }
-
+    else {
+      check_right = (prev_x < x);
+    }
     uint16_t xa;
     uint16_t xb;
     uint8_t a;
     uint8_t b;
     if (check_right) {
-      xa = x0 + box.pos.x + box.size.x - 1;
-      xb = ((e->pos.x.i +  0) & 0x0fff0) - box.pos.x - box.size.x + 16;
+      xa = x + 15 - margin_right;
+      xb = ((x + 0) & ~15) + margin_right;
       a = c1;
       b = COLLISION_RIGHT;
     } else {
-      xa = x0 + box.pos.x;
-      xb = ((e->pos.x.i + 15) & 0x0fff0) - box.pos.x;
+      xa = x + margin_left;
+      xb = ((x + 15) & ~15) - margin_left;
       a = c2;
       b = COLLISION_LEFT;
     }
-    // const uint8_t obj = (mapld_get_object_at(xa, yy.i + 0 ) |
-    //                      mapld_get_object_at(xa, yy.i + 15));
-    // if (obj & 0x080) {
-    const uint8_t o1 = mapld_get_object_at(xa, yy.i + 0 );
-    const uint8_t o2 = mapld_get_object_at(xa, yy.i + 15);
+    const uint8_t o1 = mapld_get_object_at(xa, yy.i + margin_top );
+    const uint8_t o2 = mapld_get_object_at(xa, yy.i + 15 - margin_bottom);
     if ((0x7f < o1 && o1 < 0xff) || (0x7f < o2 && o2 < 0xff)) {
       e->pos.x.i = xb;
       e->pos.x.d = 0;
       e->vel.x = 0;
-      e->collision |= b;
       // recheck ceil/floor, then clear flag or apply y/vy
-      if (!(a & 0x080)) {
-        e->collision &= ~(COLLISION_FLOOR | COLLISION_CEIL);
+      if (a & 0x080) {
+        e->collision |= b;
+      }
+      else {
+        e->collision = b;
         return;
       }
     }
