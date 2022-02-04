@@ -15,9 +15,9 @@
 void mapld_init(void);
 
 /**
- * Load next page of the map.
+ * Load next half page of the map.
  */
-void mapld_load_next_page(void);
+void mapld_load_next_half_page(void);
 
 /**
  * Returns the buffer page number according to the column number of stage map.

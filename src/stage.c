@@ -71,8 +71,8 @@ inline void map_renderer_task_do(void) {
 inline void map_renderer_task_end(void) {
   renderer_state = 0;
   map_next++;
-  if (!(map_next % STAGEMAP_PAGE_COLS)) {
-    mapld_load_next_page();
+  if (!(map_next % (STAGEMAP_PAGE_COLS / 2))) {
+    mapld_load_next_half_page();
     stage_test_and_fix_wraparound();
   }
 }
