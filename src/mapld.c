@@ -53,13 +53,14 @@ void mapld_load_next_half_page(void) {
 }
 
 uint8_t* mapld_get_buffer_ptr_at(uint8_t row, uint16_t col) {
-  return &(map_buffer[mapld_get_buffer_page_at(col)][col & 15][row]);
+  const uint16_t idx = ((col & 0x1f) << 4) + (row & 0x0f);
+  return (uint8_t *)map_buffer + idx;
 }
 
 uint8_t mapld_get_object_at(int x, int y) {
-  x /= TILE_WIDTH;
-  y /= TILE_HEIGHT;
-  if (y < 0) y = 0;
-  if (y > 13) y = 13;
-  return *mapld_get_buffer_ptr_at(y, x);
+  if (y < 0 || 211 < y) {
+    return 0;
+  }
+  const uint16_t idx = (x & 0x1f0) + ((y & 0xf0) >> 4);
+  return *((uint8_t *)map_buffer + idx);
 }
