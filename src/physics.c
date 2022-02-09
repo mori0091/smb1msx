@@ -129,107 +129,119 @@ void entity_update_dynamics(entity_t * e) {
   }
 }
 
+// for ceil collision test
+#define CEIL_MARGIN_L   (6)
+#define CEIL_MARGIN_R   (6)
+#define CEIL_L          (TILE_WIDTH - CEIL_MARGIN_L)
+#define CEIL_R          (CEIL_MARGIN_R)
+// for floor collision test
+#define FLOOR_MARGIN_L  (3)
+#define FLOOR_MARGIN_R  (3)
+#define FLOOR_L         (TILE_WIDTH - FLOOR_MARGIN_L)
+#define FLOOR_R         (FLOOR_MARGIN_R)
+// for side-wall collision test
+#define SIDE_MARGIN_L   (2)
+#define SIDE_MARGIN_R   (2)
+#define SIDE_L          (TILE_WIDTH - SIDE_MARGIN_L)
+#define SIDE_R          (SIDE_MARGIN_R)
+
 void entity_update_collision(entity_t * e) {
-  static uint8_t c1;           // ceil / floor object #1
-  static uint8_t c2;           // ceil / floor object #2
-  static f16q8_t yy;           // Candidate for corrected Y-coordinate position.
-  static f8q8_t vy;            // Candidate for corrected Y-coordinate velocity.
+  uint8_t collision = 0;
+  uint8_t c1 = 0;
+  uint8_t c2 = 0;
 
-  c1 = 0;
-  c2 = 0;
-  e->collision = 0;
-  if (e->pos.y.i <= -16) {
-    return;
+  const int16_t x = e->pos.x.i;
+  const int16_t y = e->pos.y.i;
+  const int8_t diff_y = y - e->prev_pos.y.i;
+  const uint8_t off_x = x & 15;
+  const uint8_t off_y = y & 15;
+
+  // Tiles with overlapping entity `e`.
+  uint8_t o00 = mapld_get_object_at(x   , y);
+  uint8_t o01 = mapld_get_object_at(x+16, y);
+  uint8_t o10 = mapld_get_object_at(x   , y+16);
+  uint8_t o11 = mapld_get_object_at(x+16, y+16);
+
+  // check ceil
+  if (diff_y < 0) {
+    c1 = mapld_get_object_at(x+CEIL_MARGIN_L, y);
+    c2 = mapld_get_object_at(x+15-CEIL_MARGIN_R, y);
+    if ((c1 | c2) & 0x80) {
+      collision |= COLLISION_CEIL;
+      o00 = o10;                // for left / right collision check
+      o01 = o11;
+    }
   }
-
-  const uint16_t x = e->pos.x.i;
-  const uint16_t prev_x = e->prev_pos.x.i;
-  const uint16_t y = e->pos.y.i;
-  const uint16_t prev_y = e->prev_pos.y.i;
-  yy.i = y;
-  yy.d = e->pos.y.d;
-  vy = e->vel.y;
+  // check floor
+  else {
+    c1 = mapld_get_object_at(x+FLOOR_MARGIN_L, y+16);
+    c2 = mapld_get_object_at(x+15-FLOOR_MARGIN_R, y+16);
+    if ((0x7f < c1 && c1 < 0xff) || (0x7f < c2 && c2 < 0xff)) {
+      collision |= COLLISION_FLOOR;
+      o10 = o00;                // for left / right collision check
+      o11 = o01;
+    }
+  }
 
   {
-    if (y < prev_y) {
-      // - collision check (ceil)
-      const uint8_t margin_left  = 6;
-      const uint8_t margin_right = 6;
-      const uint8_t margin_top   = 0;
-      const int ty = y + margin_top - 1;
-      c1 = mapld_get_object_at(x + margin_left, ty);
-      c2 = mapld_get_object_at(x + 15 - margin_right, ty);
-      if ((c1 | c2) & 0x80) {
-        e->collision |= COLLISION_CEIL;
-        yy.i = (y + 15) & 240;
-        yy.d = 0;
-        vy = abs(e->vel.y);
-      }
-    }
-    else {
-      // - collision check (floor)
-      const uint8_t margin_left  = 3;
-      const uint8_t margin_right = 3;
-      const uint8_t margin_bottom = 0;
-      const int by = y + 16 - margin_bottom;
-      c1 = mapld_get_object_at(x + margin_left, by);
-      c2 = mapld_get_object_at(x + 15 - margin_right, by);
-      if ((0x7f < c1 && c1 < 0xff) || (0x7f < c2 && c2 < 0xff)) {
-        e->collision |= COLLISION_FLOOR;
-        yy.i = y & 240;
-        yy.d = 0;
-        vy = 0;
-      }
-    }
-  }
-  {
-    // - collision check (left / right)
-    const uint8_t margin_left  = 2;
-    const uint8_t margin_right = 2;
-    const uint8_t margin_top   = 0;
-    const uint8_t margin_bottom = 0;
+    uint8_t o1 = 0;
+    uint8_t o2 = 0;
 
-    bool check_right;
-    if (prev_x == x) {
-      check_right = ((x & 15) < 8);
-    }
-    else {
-      check_right = (prev_x < x);
-    }
-    uint16_t xa;
-    uint16_t xb;
-    uint8_t a;
-    uint8_t b;
-    if (check_right) {
-      xa = x + 15 - margin_right;
-      xb = ((x + 0) & ~15) + margin_right;
-      a = c1;
-      b = COLLISION_RIGHT;
-    } else {
-      xa = x + margin_left;
-      xb = ((x + 15) & ~15) - margin_left;
-      a = c2;
-      b = COLLISION_LEFT;
-    }
-    const uint8_t o1 = mapld_get_object_at(xa, yy.i + margin_top );
-    const uint8_t o2 = mapld_get_object_at(xa, yy.i + 15 - margin_bottom);
-    if ((0x7f < o1 && o1 < 0xff) || (0x7f < o2 && o2 < 0xff)) {
-      e->pos.x.i = xb;
-      e->pos.x.d = 0;
-      e->vel.x = 0;
-      // recheck ceil/floor, then clear flag or apply y/vy
-      if (a & 0x080) {
-        e->collision |= b;
+    // check left-side wall
+    if (off_x < SIDE_L) {
+      {
+        o1 = o00;
       }
-      else {
-        e->collision = b;
-        return;
+      if (off_y) {
+        o2 = o10;
+      }
+      if ((0x7f < o1 && o1 < 0xff) || (0x7f < o2 && o2 < 0xff)) {
+        if (c2 & 0x80) {
+          collision |= COLLISION_LEFT;
+        }
+        else {
+          collision = COLLISION_LEFT;
+        }
+        e->pos.x.i = (x & ~15) + SIDE_L;
+        e->pos.x.d = 0;
+        e->vel.x = 0;
+      }
+    }
+
+    // check right-side wall
+    if (off_x > SIDE_R) {
+      {
+        o1 = o01;
+      }
+      if (off_y) {
+        o2 = o11;
+      }
+      if ((0x7f < o1 && o1 < 0xff) || (0x7f < o2 && o2 < 0xff)) {
+        if (c1 & 0x80) {
+          collision |= COLLISION_RIGHT;
+        }
+        else {
+          collision = COLLISION_RIGHT;
+        }
+        e->pos.x.i = (x & ~15) + SIDE_R;
+        e->pos.x.d = 0;
+        e->vel.x = 0;
       }
     }
   }
-  e->pos.y.i = yy.i;
-  e->pos.y.d = yy.d;
-  e->vel.y = vy;
+
+  // correct Y-coordinates
+  if (collision & COLLISION_CEIL) {
+    e->pos.y.i = (y & 240) + 16;
+    e->pos.y.d = 0;
+    e->vel.y = abs(e->vel.y);
+  } else if (collision & COLLISION_FLOOR) {
+    e->pos.y.i = (y & 240);
+    e->pos.y.d = 0;
+    e->vel.y = 0;
+  }
+
+  e->collision = collision;
   e->c1 = c1;
   e->c2 = c2;
 }
