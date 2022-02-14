@@ -185,9 +185,11 @@ static void mario_post_step(entity_t * e) {
       else {
         obj = player->c1;
       }
+      sound_effect(&se_block);
       switch (obj) {
       case 0xb0:                // '?' block
         entity_add_block(row, col, ITEM_MUSHROOM);
+        sound_effect(&se_item);
         break;
       case 0xd1:                // brick #1
       case 0xd2:                // brick #2
@@ -195,9 +197,9 @@ static void mario_post_step(entity_t * e) {
         break;
       case 0xff:                // hidden
         entity_add_block(row, col, ITEM_1UP_MUSHROOM);
+        sound_effect(&se_item);
         break;
       }
-      sound_effect(&se_block);
     }
   }
   // Mario fell into the valley?

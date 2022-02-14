@@ -19,6 +19,7 @@ extern const struct sound_clip bgm_over_world;
 extern const struct sound_clip se_jump;
 extern const struct sound_clip se_block;
 extern const struct sound_clip se_hurryup;
+extern const struct sound_clip se_item;
 
 /* defined tileset */
 #include "assets/tileset.h"
