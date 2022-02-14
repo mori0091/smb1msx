@@ -10,29 +10,11 @@ struct {
   entity_t * list[ENTITY_MAX];
 } entities;
 
-static bool updated;
-
 entity_t player_entity;
 entity_t * const player = &player_entity;
 
-const struct sprite hidden_sprite = {.y = 240, };
-
 #define BUFFER_COLS   (STAGEMAP_BUFFER_PAGES * STAGEMAP_PAGE_COLS)
 #define BUFFER_WIDTH  (BUFFER_COLS * TILE_WIDTH)
-
-void entity_show_sprite(const entity_t * e) {
-  const int16_t x = e->pos.x.i - camera_get_x();
-  const int16_t y = e->pos.y.i - 1;
-  vmem_set_metasprite_a(SPRITES_0, e->plane, x, y, e->metasprite);
-}
-
-void entity_hide_sprite(const entity_t * e) {
-  uint8_t plane = e->plane;
-  uint8_t n = e->metasprite->n;
-  while (n--) {
-    vmem_set_sprite(SPRITES_0, plane++, &hidden_sprite);
-  }
-}
 
 void entity_init(void) {
   entities.length = 1;
@@ -42,12 +24,10 @@ void entity_init(void) {
 void entity_add(entity_t * const e) {
   if (ENTITY_MAX <= entities.length || !e) return;
   entities.list[entities.length++] = e;
-  // entity_show_sprite(e);
 }
 
 void entity_remove(entity_t * const e) {
   if (!entities.length || !e) return;
-  // entity_hide_sprite(e);
   if (e->metasprite) {
     sm2_hide_sprites(e->plane, e->metasprite);
   }
@@ -98,14 +78,10 @@ void entity_update_dynamics(entity_t * e) {
   f8q8_t f;
 
   f = e->pos.x.d + e->vel.x;
-  // e->pos.x.i += f >> 6;
-  // e->pos.x.d = f & ((1 << 6) - 1);
   e->pos.x.i += f >> 8;
   e->pos.x.d = f & 255;
 
   f = e->pos.y.d + e->vel.y;
-  // e->pos.y.i += f >> 6;
-  // e->pos.y.d = f & ((1 << 6) - 1);
   e->pos.y.i += f >> 8;
   e->pos.y.d = f & 255;
 
@@ -402,8 +378,6 @@ void entity_update(void) {
   camera_update();
   // Pose update & Sound / Visual effects, etc.
   foreach_active_entity(entity_run_post_step);
-  //
-  updated = true;
 }
 
 static void entity_set_sprites(entity_t * e) {
@@ -414,11 +388,8 @@ static void entity_set_sprites(entity_t * e) {
 }
 
 void entity_update_sprites(void) {
-  if (updated) {
-    sm2_clear_sprites();
-    foreach_active_entity(entity_set_sprites);
-    updated = false;
-  }
+  sm2_clear_sprites();
+  foreach_active_entity(entity_set_sprites);
 }
 
 void entity_apply_sprites(void) {

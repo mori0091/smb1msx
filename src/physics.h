@@ -162,10 +162,6 @@ inline void entity_set_metasprite(entity_t * e, const metasprite_t * ms) {
 //   e->sp_palette = sp_palette;
 // }
 
-void entity_show_sprite(const entity_t * e);
-
-void entity_hide_sprite(const entity_t * e);
-
 /**
  * Initialize physics / entity module.
  */

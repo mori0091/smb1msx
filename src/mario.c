@@ -142,16 +142,17 @@ void mario_animate_die(void) {
   player->vel.x = 0;
   player->acc.x = 0;
 
+  entity_update_sprites();
   await_vsync();
-  mario_animate();
-  entity_show_sprite(player);
+  entity_apply_sprites();
   sleep_millis(500);
   do {
     tick++;
     await_vsync();
+    entity_apply_sprites();
     if (tick & 1) continue;
     entity_update_dynamics(player);
-    entity_show_sprite(player);
+    entity_update_sprites();
   } while (player->pos.y.i < 240);
   sleep_millis(100);
 }
