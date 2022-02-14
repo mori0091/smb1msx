@@ -302,8 +302,10 @@ void title_demo(void) {
     clear_screen();
     get_ready();
     countdown_timer_set(0x200);
+    anime_set_enable_on_vsync(false);
     draw_title_logo();
     vdp_cmd_await();
+    anime_set_enable_on_vsync(true);
     set_visible(true);
     if (game_main_loop(&title_scene)) {
       return;                   // start the game!

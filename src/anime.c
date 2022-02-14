@@ -57,17 +57,6 @@ void anime_on_vsync(void) {
     return;
   }
 
-  // // flip pair of sprite attribute table and sprite color table
-  // // \TODO implement sprite engine
-  // // - dubble buffer of sprite attribute / color table
-  // //   - blinking sprite
-  // //   - transparent sprite
-  // //   - color blending
-  // //   - etc.
-  // vdp_set_sprite_attribute_table((JIFFY & 1)
-  //                                ? SPRITES_0
-  //                                : SPRITES_1);
-
   // palette animations
   {
     coin_palette_animate();
@@ -76,10 +65,13 @@ void anime_on_vsync(void) {
     // multi-color blinking
     invincible_palette_animate();
   }
-  // if (mario_is_weakened()) {
-  //   // (pseudo) transparent visual effect
-  //   weakened_palette_animate();
-  // }
+  if (mario_is_weakened()) {
+    // blinking (pseudo transparent effect)
+    if (!sm2_is_dirty()) {
+      // hide sprite plane #2
+      graphics_hide_sprite(2);
+    }
+  }
 }
 
 void anime_update(void) {

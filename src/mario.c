@@ -32,6 +32,8 @@ void mario_init(void) {
   mario_set_pose(STANDING);
   mario_reset_physical_status();
   mario_reset_ability();
+  // mario_set_physical_status(STATUS_WEAKENED);
+  // mario_set_ability(SUPER_ABILITY_MASK);
 
   player->input = 0;
   entity_set_controller(player, joystick1);
