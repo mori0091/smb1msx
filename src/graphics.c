@@ -48,11 +48,14 @@ void graphics_clear_vram(void) {
   graphics_hide_all_sprites();
 }
 
-static const struct sprite hidden_sprite = { .y = 217 };
+// static const struct sprite hidden_sprite = { .y = 217 };
 
+// void graphics_hide_sprite(uint8_t plane) {
+//   vmem_set_sprite(SPRITES_0, plane, &hidden_sprite);
+// }
 void graphics_hide_sprite(uint8_t plane) {
-  vmem_set_sprite(SPRITES_0, plane, &hidden_sprite);
-  vmem_set_sprite(SPRITES_1, plane, &hidden_sprite);
+  vmem_set_write_address(SPRITES_0 + sizeof(struct sprite) * plane + 0);
+  vmem_set(217);
 }
 
 void graphics_hide_all_sprites(void) {
@@ -71,5 +74,4 @@ void graphics_set_sprite_pat(uint8_t pat, const uint8_t* p, uint8_t n_bytes) {
 
 void graphics_set_sprite(uint8_t plane, const struct sprite* s) {
   vmem_set_sprite(SPRITES_0, plane, s);
-  vmem_set_sprite(SPRITES_1, plane, s);
 }
