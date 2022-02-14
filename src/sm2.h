@@ -35,4 +35,21 @@ void sm2_show_sprites(uint8_t plane, const metasprite_t * ms, int x, int y);
  */
 void sm2_apply_sprites(void);
 
+/**
+ * Return whether the buffer is dirty.
+ *
+ * The module is assumed to have a flag **dirty** and this function returns the
+ * state of the **dirty** flag.
+ *
+ * If the internal buffer of the module has been modified and not yet applied to
+ * VRAM, the buffer is assumed to be dirty.
+ *
+ * The **dirty** flag is set to `true` when sm2_hide_sprites() or
+ * sm2_show_sprites() was called, and is reset to `false` when
+ * sm2_clear_sprites() or sm2_apply_sprites() was called.
+ *
+ * \return  whether the buffer is dirty.
+ */
+bool sm2_is_dirty(void);
+
 #endif

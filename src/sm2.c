@@ -21,13 +21,11 @@ static void sprites_from_metasprite(struct sprite * sp,
   }
 }
 
-struct sprite sprites[32];
+static struct sprite sprites[32];
 
 // dirty range [beg, end)
 static uint8_t beg;
 static uint8_t end;
-// dirty flag
-static bool dirty;
 
 static void on_modified(uint8_t plane, uint8_t n) {
   uint8_t last = plane + n;
@@ -37,13 +35,11 @@ static void on_modified(uint8_t plane, uint8_t n) {
   if (plane < beg) {
     beg = plane;
   }
-  dirty = true;
 }
 
 void sm2_clear_sprites(void) {
   beg = 255;
   end = 0;
-  dirty = false;
 }
 
 void sm2_hide_sprites(uint8_t plane, const metasprite_t * ms) {
@@ -63,7 +59,7 @@ void sm2_show_sprites(uint8_t plane, const metasprite_t * ms, int x, int y) {
 }
 
 void sm2_apply_sprites(void) {
-  if (dirty) {
+  if (sm2_is_dirty()) {
     // \note Don't change [beg, end) range.
     uint8_t endIdx = end;
     if (endIdx < sizeof(sprites)/sizeof(sprites[0])) {
@@ -76,12 +72,10 @@ void sm2_apply_sprites(void) {
                (void*)&(sprites[beg]),
                sizeof(sprites[0]) * (endIdx - beg));
     anime_update();
-    dirty = false;
+    sm2_clear_sprites();
   }
-  else {
-    if (mario_is_weakened()) {
-      vdp_cmd_await();
-      entity_hide_sprite(player);
-    }
-  }
+}
+
+bool sm2_is_dirty(void) {
+  return (beg < end);
 }
