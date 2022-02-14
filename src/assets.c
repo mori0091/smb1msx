@@ -11,22 +11,22 @@ const palette_t color_palette[16] = {
 };
 
 const enum sprite_palette sp[] = {
-  [0] = MARIO_PALETTE,
+  [0] = TEXT_1_PALETTE,
   [1] = MARIO_PALETTE,
-  [2] = GOOMBA_PALETTE,
-  [3] = GOOMBA_PALETTE,
-  [4] = FIRE_MARIO_PALETTE,
-  [5] = FIRE_MARIO_PALETTE,
-  [6] = LUIGI_PALETTE,
+  [2] = MARIO_PALETTE,
+  [3] = BLOCK_PALETTE,
+  [4] = MUSHROOM_PALETTE,
+  [5] = FIREFLOWER_PALETTE,
+  [6] = STARMAN_PALETTE,
   [7] = LUIGI_PALETTE,
-  [8] = SPRITE_PALETTE_1,
-  [9] = SPRITE_PALETTE_2,
-  [10] = SPRITE_PALETTE_3,
-  [11] = MUSHROOM_PALETTE,
-  [12] = FIREFLOWER_PALETTE,
-  [13] = STARMAN_PALETTE,
-  [14] = BLOCK_PALETTE,
-  [15] = TEXT_1_PALETTE,
+  [8] = LUIGI_PALETTE,
+  [9] = FIRE_MARIO_PALETTE,
+  [10] = FIRE_MARIO_PALETTE,
+  [11] = GOOMBA_PALETTE,
+  [12] = GOOMBA_PALETTE,
+  [13] = SPRITE_PALETTE_1,
+  [14] = SPRITE_PALETTE_2,
+  [15] = SPRITE_PALETTE_3,
 };
 
 void assets_setup(void) {

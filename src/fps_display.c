@@ -21,7 +21,7 @@ static const struct sprite fps_sprite[2] = {
 void fps_display_set_visible(bool visible) {
   vdp_cmd_await();
   if (visible) {
-    assets_set_sprite_palette(SPRITES_0, FPS_SPRITE_PLANE, TEXT_1_PALETTE);
+    // assets_set_sprite_palette(SPRITES_0, FPS_SPRITE_PLANE, TEXT_1_PALETTE);
     graphics_set_sprite(FPS_SPRITE_PLANE  , &fps_sprite[0]);
     graphics_set_sprite(FPS_SPRITE_PLANE+1, &fps_sprite[1]);
   } else {
