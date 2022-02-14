@@ -225,22 +225,21 @@ static void play_music(void) {
 }
 
 bool game_main(void) {
-  // wait for VSYNC interrupt and interrupt handler finished
-  await_vsync();
+  // ---- stage map rendering task ----
+  stage_update();
   // apply camera position for the next VSYNC/HSYNC.
   set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
-  // updates the internal sprite attribute table.
-  entity_update_sprites();
+  // wait for VSYNC interrupt and interrupt handler finished
+  await_vsync();
   // writes the internal sprite attribute table to VRAM.
   // (and sprite animation)
   entity_apply_sprites();
   // update tick counter
   timer_update();
-  // ---- stage map rendering task ----
-  stage_update();
   // ---- game core task ----
-  uint8_t n = user_tick_delta;
-  while (n--) {
+  // uint8_t n = user_tick_delta;
+  // while (n--) {
+  if (user_tick_delta) {
     // ---- event dispatch ----
     switch (event_get()) {
     default:;
@@ -260,6 +259,8 @@ bool game_main(void) {
       sleep_millis(2000);
       return false;
     }
+    // updates the internal sprite attribute table.
+    entity_update_sprites();
   }
   // ---- (optional) frame rate / sim.frequency display ----
   if (!(tick & 31)) {
