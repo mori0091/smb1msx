@@ -121,41 +121,45 @@ void entity_update_dynamics(entity_t * e) {
 #define SIDE_L          (TILE_WIDTH - SIDE_MARGIN_L)
 #define SIDE_R          (SIDE_MARGIN_R)
 
+inline bool is_obstacle(uint8_t obj) {
+  return (0x7f < obj && obj < 0xff);
+}
+
 void entity_update_collision(entity_t * e) {
-  uint8_t collision = 0;
-  uint8_t c1 = 0;
-  uint8_t c2 = 0;
+  static rect_t box;
+  entity_get_bounds(e, &box);
 
-  const int16_t x = e->pos.x.i;
-  const int16_t y = e->pos.y.i;
-  const int8_t diff_y = y - e->prev_pos.y.i;
-  const uint8_t off_x = x & 15;
-  const uint8_t off_y = y & 15;
+  const int16_t x = box.pos.x;
+  const int16_t y = box.pos.y;
+  const int16_t w = box.size.x;
+  const int16_t h = box.size.y;
+  const int16_t x2 = x+w;
+  const int16_t y2 = y+h;
 
-  // Tiles with overlapping entity `e`.
-  uint8_t o00 = mapld_get_object_at(x   , y);
-  uint8_t o01 = mapld_get_object_at(x+16, y);
-  uint8_t o10 = mapld_get_object_at(x   , y+16);
-  uint8_t o11 = mapld_get_object_at(x+16, y+16);
+  static uint8_t collision, c1, c2;
+  collision = 0;
+  c1 = 0;
+  c2 = 0;
+
+  static int8_t diff_y;
+  diff_y = e->pos.y.i - e->prev_pos.y.i;
+  static uint8_t off_x;
+  off_x = x & 15;
 
   // check ceil
   if (diff_y < 0) {
     c1 = mapld_get_object_at(x+CEIL_MARGIN_L, y);
-    c2 = mapld_get_object_at(x+15-CEIL_MARGIN_R, y);
+    c2 = mapld_get_object_at(x2-(CEIL_MARGIN_R+1), y);
     if ((c1 | c2) & 0x80) {
       collision |= COLLISION_CEIL;
-      o00 = o10;                // for left / right collision check
-      o01 = o11;
     }
   }
   // check floor
   else {
-    c1 = mapld_get_object_at(x+FLOOR_MARGIN_L, y+16);
-    c2 = mapld_get_object_at(x+15-FLOOR_MARGIN_R, y+16);
-    if ((0x7f < c1 && c1 < 0xff) || (0x7f < c2 && c2 < 0xff)) {
+    c1 = mapld_get_object_at(x+FLOOR_MARGIN_L, y2);
+    c2 = mapld_get_object_at(x2-(FLOOR_MARGIN_R+1), y2);
+    if (is_obstacle(c1) || is_obstacle(c2)) {
       collision |= COLLISION_FLOOR;
-      o10 = o00;                // for left / right collision check
-      o11 = o01;
     }
   }
 
@@ -165,20 +169,26 @@ void entity_update_collision(entity_t * e) {
 
     // check left-side wall
     if (off_x < SIDE_L) {
-      {
-        o1 = o00;
+      if (collision & COLLISION_CEIL) {
+        o1 = mapld_get_object_at(x, y+16);
       }
-      if (off_y) {
-        o2 = o10;
+      else {
+        o1 = mapld_get_object_at(x, y);
       }
-      if ((0x7f < o1 && o1 < 0xff) || (0x7f < o2 && o2 < 0xff)) {
+      if (collision & COLLISION_FLOOR) {
+        o2 = mapld_get_object_at(x, y2-16);
+      }
+      else {
+        o2 = mapld_get_object_at(x, y2-1);
+      }
+      if (is_obstacle(o1) || is_obstacle(o2)) {
         if (c2 & 0x80) {
           collision |= COLLISION_LEFT;
         }
         else {
           collision = COLLISION_LEFT;
         }
-        e->pos.x.i = (x & ~15) + SIDE_L;
+        e->pos.x.i = (e->pos.x.i & ~15) + SIDE_L;
         e->pos.x.d = 0;
         e->vel.x = 0;
       }
@@ -186,20 +196,26 @@ void entity_update_collision(entity_t * e) {
 
     // check right-side wall
     if (off_x > SIDE_R) {
-      {
-        o1 = o01;
+      if (collision & COLLISION_CEIL) {
+        o1 = mapld_get_object_at(x2, y+16);
       }
-      if (off_y) {
-        o2 = o11;
+      else {
+        o1 = mapld_get_object_at(x2, y);
       }
-      if ((0x7f < o1 && o1 < 0xff) || (0x7f < o2 && o2 < 0xff)) {
+      if (collision & COLLISION_FLOOR) {
+        o2 = mapld_get_object_at(x2, y2-16);
+      }
+      else {
+        o2 = mapld_get_object_at(x2, y2-1);
+      }
+      if (is_obstacle(o1) || is_obstacle(o2)) {
         if (c1 & 0x80) {
           collision |= COLLISION_RIGHT;
         }
         else {
           collision = COLLISION_RIGHT;
         }
-        e->pos.x.i = (x & ~15) + SIDE_R;
+        e->pos.x.i = (e->pos.x.i & ~15) + SIDE_R;
         e->pos.x.d = 0;
         e->vel.x = 0;
       }
@@ -208,11 +224,11 @@ void entity_update_collision(entity_t * e) {
 
   // correct Y-coordinates
   if (collision & COLLISION_CEIL) {
-    e->pos.y.i = (y & 240) + 16;
+    e->pos.y.i = (e->pos.y.i & 240) + 16;
     e->pos.y.d = 0;
     e->vel.y = abs(e->vel.y);
   } else if (collision & COLLISION_FLOOR) {
-    e->pos.y.i = (y & 240);
+    e->pos.y.i = (e->pos.y.i & 240);
     e->pos.y.d = 0;
     e->vel.y = 0;
   }
