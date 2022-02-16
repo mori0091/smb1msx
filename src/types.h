@@ -8,14 +8,6 @@
 #include <msx.h>
 
 /**
- * Position and size of a rectangle.
- */
-typedef struct rect {
-  vec2i_t pos;
-  vec2i_t size;
-} rect_t;
-
-/**
  * Type of 16 bit signed Q8 fixed point number.
  * - integer part : 8 bits
  * - decimal part : 8 bits

@@ -12,6 +12,7 @@
 
 #include "macros.h"
 #include "types.h"
+#include "geom.h"
 
 #include "graphics.h"
 
