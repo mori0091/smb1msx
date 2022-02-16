@@ -163,6 +163,8 @@ void mario_animate_die(void) {
 static void mario_post_step(entity_t * e) {
   // assert(e == player);
   (void)e;
+  int16_t x = player->pos.x.i;
+  int16_t y = player->pos.y.i;
   // estimate mario's pose
   if (player->collision & COLLISION_FLOOR) {
     if (player->vel.y < 0) {
@@ -178,11 +180,14 @@ static void mario_post_step(entity_t * e) {
   }
   else {
     if (player->collision & COLLISION_CEIL) {
+      uint8_t col = x / TILE_WIDTH;
+      uint8_t row = y / TILE_HEIGHT - 1;
+      if (mario_has_super_ability()) {
+        row--;
+      }
       uint8_t obj;
-      uint8_t col = player->pos.x.i / TILE_WIDTH;
-      uint8_t row = player->pos.y.i / TILE_HEIGHT - 1;
       if ((player->c1 < 0x80) ||
-          ((player->c2 > 0x7f) && (8 <= (player->pos.x.i & 15)))) {
+          ((player->c2 > 0x7f) && (8 <= (x & 15)))) {
         obj = player->c2;
         col++;
       }
@@ -192,22 +197,22 @@ static void mario_post_step(entity_t * e) {
       sound_effect(&se_block);
       switch (obj) {
       case 0xb0:                // '?' block
-        entity_add_block(row, col, ITEM_MUSHROOM);
+        entity_add_block(row, col, TILE_BLOCK, ITEM_MUSHROOM);
         sound_effect(&se_item);
         break;
       case 0xd1:                // brick #1
       case 0xd2:                // brick #2
-        entity_add_brick(row, col, ITEM_NONE);
+        entity_add_block(row, col, TILE_BRICK, ITEM_NONE);
         break;
       case 0xff:                // hidden
-        entity_add_block(row, col, ITEM_1UP_MUSHROOM);
+        entity_add_block(row, col, TILE_BLOCK, ITEM_1UP_MUSHROOM);
         sound_effect(&se_item);
         break;
       }
     }
   }
   // Mario fell into the valley?
-  if (211 < player->pos.y.i) {
+  if (211 < y) {
     event_set(EV_PLAYER_DIES);
   }
 }

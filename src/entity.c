@@ -8,10 +8,6 @@
 // | blocks | 1        | #4..#5  |
 // | items  | 2        | #6..#7  |
 
-#define TILE_EMPTY     (0x7f)
-#define TILE_BLOCK     (0xb4)   // #14 (#112, #116)
-#define TILE_BRICK     (0xd1)   // #15 (#120, #124)
-
 #define PLANE_BLOCKS   (6)
 #define PLANE_ITEMS    (8)
 
@@ -85,6 +81,28 @@ void default_post_step(entity_t * e) {
   }
 }
 
+bool item_collision_handler(entity_t * e) {
+  static rect_t a, b;
+  entity_get_bounds(e, &a);
+  entity_get_bounds(player, &b);
+  if (!rect_intersects(&a, &b)) {
+    return false;
+  }
+  if (item0 == ITEM_1UP_MUSHROOM) {
+    mario_1up();
+  }
+  else {
+    mario_power_up();
+  }
+  entity_remove(e);
+  return true;
+}
+
+void mushroom_post_step2(entity_t * e) {
+  if (item_collision_handler(e)) return;
+  default_post_step(e);
+}
+
 void mushroom_post_step(entity_t * e) {
   if (item_tick--) {
     e->pos.x.i = item_x0;
@@ -101,7 +119,7 @@ void mushroom_post_step(entity_t * e) {
     e->acc.y = MUSHROOM_AY;
     e->collision = 0;
     entity_set_controller(e, mushroom_controller);
-    entity_set_post_step(e, default_post_step);
+    entity_set_post_step(e, mushroom_post_step2);
   }
 }
 
@@ -121,6 +139,10 @@ static void mushroom_entity_new(uint8_t row, uint8_t col) {
   item_x0 = col * TILE_WIDTH;
   item_y0 = row * TILE_HEIGHT;
   item_tick = 12;
+  item_entity.pos.x.i = item_x0;
+  item_entity.pos.x.d = 0;
+  item_entity.pos.y.i = item_y0 + item_tick;
+  item_entity.pos.y.d = 0;
   entity_add(&item_entity);
 }
 
@@ -158,10 +180,26 @@ static void block_post_step(entity_t * e) {
   entity_remove(e);
 }
 
-static void block_entity_new(uint8_t row, uint8_t col, uint8_t tile) {
+void entity_get_bounds(const entity_t * e, rect_t * rect) {
+  if (e == player && mario_has_super_ability()) {
+    rect->pos.x = player->pos.x.i;
+    rect->pos.y = player->pos.y.i - 16;
+    rect->size.x = 16;
+    rect->size.y = 32;
+  }
+  else {
+    rect->pos.x = e->pos.x.i;
+    rect->pos.y = e->pos.y.i;
+    rect->size.x = 16;
+    rect->size.y = 16;
+  }
+}
+
+void entity_add_block(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
   row0 = row;
   col0 = col;
   tile0 = tile;
+  item0 = item;
   block_metasprite.pats
     = (uint8_t *)((tile == TILE_BLOCK)
                   ? block_pats
@@ -186,14 +224,4 @@ static void block_entity_new(uint8_t row, uint8_t col, uint8_t tile) {
 
   entity_add(&block_entity);
   put_tile(row, col, TILE_EMPTY);
-}
-
-void entity_add_block(uint8_t row, uint8_t col, uint8_t item) {
-  item0 = item;
-  block_entity_new(row, col, TILE_BLOCK);
-}
-
-void entity_add_brick(uint8_t row, uint8_t col, uint8_t item) {
-  item0 = item;
-  block_entity_new(row, col, TILE_BRICK);
 }

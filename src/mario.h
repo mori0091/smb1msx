@@ -63,16 +63,6 @@ void mario_animate_die(void);
 
 void mario_show(int x, int y);
 
-// inline void mario_hide(void) {
-//   mario_show(0, 240);
-// }
-
-// inline void mario_move_sprite(void) {
-//   const int16_t x = player->pos.x.i - camera_get_x();
-//   const int16_t y = player->pos.y.i;
-//   mario_show(x, y);
-// }
-
 inline void mario_set_pose(enum mario_pose pose) {
   mario_state.pose = pose;
 }
@@ -168,6 +158,8 @@ inline void mario_set_life(int8_t life) {
 
 inline void mario_died(void) {
   mario_state.life--;
+  mario_reset_physical_status();
+  mario_reset_ability();
 }
 
 inline void mario_1up(void) {
