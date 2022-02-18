@@ -182,16 +182,16 @@ static void block_post_step(entity_t * e) {
 
 void entity_get_bounds(const entity_t * e, rect_t * rect) {
   if (e == player && mario_has_super_ability()) {
-    rect->pos.x = player->pos.x.i;
-    rect->pos.y = player->pos.y.i - 16;
-    rect->size.x = 16;
-    rect->size.y = 32;
+    rect->left   = player->pos.x.i;
+    rect->top    = player->pos.y.i - 16;
+    rect->right  = rect->left + 15;
+    rect->bottom = rect->top  + 31;
   }
   else {
-    rect->pos.x = e->pos.x.i;
-    rect->pos.y = e->pos.y.i;
-    rect->size.x = 16;
-    rect->size.y = 16;
+    rect->left   = e->pos.x.i;
+    rect->top    = e->pos.y.i;
+    rect->right  = rect->left + 15;
+    rect->bottom = rect->top  + 15;
   }
 }
 
