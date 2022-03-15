@@ -44,11 +44,13 @@ static void invincible_palette_animate(void) {
 
 static volatile bool enable_on_vsync;
 
-void anime_set_enable_on_vsync(bool enable) __critical {
-  enable_on_vsync = enable;
-  if (!enable) {
-    vdp_write_palette(color_palette);
-    vdp_set_sprite_attribute_table(SPRITES_0);
+void anime_set_enable_on_vsync(bool enable) {
+  __critical {
+    enable_on_vsync = enable;
+    if (!enable) {
+      vdp_write_palette(color_palette);
+      vdp_set_sprite_attribute_table(SPRITES_0);
+    }
   }
 }
 
