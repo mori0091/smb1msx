@@ -103,7 +103,6 @@ static void set_visible(bool visible) {
 }
 
 static void clear_screen(void) {
-  anime_set_enable_on_vsync(false);
   set_hscroll(0);
   await_vsync();
   vdp_cmd_execute_HMMV(0, 0, 256, 212, 0x00);
@@ -141,7 +140,6 @@ static void get_ready(void) {
   // ---- hud ----
   set_text_color(14,12);
   show_hud();
-  anime_set_enable_on_vsync(true);
 }
 
 static const char title_logo[] =
