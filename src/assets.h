@@ -20,6 +20,7 @@ extern const struct sound_clip se_jump;
 extern const struct sound_clip se_block;
 extern const struct sound_clip se_hurryup;
 extern const struct sound_clip se_item;
+extern const struct sound_clip se_powup;
 
 /* defined tileset */
 #include "assets/tileset.h"

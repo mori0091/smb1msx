@@ -93,6 +93,7 @@ bool item_collision_handler(entity_t * e) {
   }
   else {
     mario_power_up();
+    sound_effect(&se_powup);
   }
   entity_remove(e);
   return true;
