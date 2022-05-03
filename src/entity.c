@@ -4,9 +4,10 @@
 
 // | entity | entity # | plane # |
 // | ------ | -------- | ------- |
-// | player | 0        | #0..#3  |
-// | blocks | 1        | #4..#5  |
-// | items  | 2        | #6..#7  |
+// | N/A    | N/A      | #0..#1  | ... reserved for fps display
+// | player | 0        | #2..#5  |
+// | blocks | 1        | #6..#7  |
+// | items  | 2        | #8..#9  |
 
 #define PLANE_BLOCKS   (6)
 #define PLANE_ITEMS    (8)
