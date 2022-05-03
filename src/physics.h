@@ -165,7 +165,7 @@ inline void entity_set_metasprite(entity_t * e, const metasprite_t * ms) {
 /**
  * Initialize physics / entity module.
  */
-void entity_init(void);
+void physics_init(void);
 
 /**
  * Add an entity to the list of active entities.
@@ -175,7 +175,7 @@ void entity_init(void);
  *
  * \param e  an entity.
  */
-void entity_add(entity_t * e);
+void physics_add_entity(entity_t * e);
 
 /**
  * Remove an entity from the list of active entities.
@@ -184,7 +184,7 @@ void entity_add(entity_t * e);
  *
  * \param e  an entity.
  */
-void entity_remove(entity_t * e);
+void physics_remove_entity(entity_t * e);
 
 /**
  * Update all active entities' state.
@@ -195,7 +195,7 @@ void entity_remove(entity_t * e);
  * \sa entity_update_speed()
  * \sa entity_run_post_step()
  */
-void entity_update(void);
+void physics_update(void);
 
 /**
  * Updates the buffer of the sprites of all entities according to their status.
@@ -204,12 +204,12 @@ void entity_update(void);
  * This function just updates the internal sprite table on RAM. To show, hide,
  * or move the sprites, call entity_apply_sprites() after this function.
  */
-void entity_update_sprites(void);
+void physics_update_sprites(void);
 
 /**
  * Writes the buffer of the sprites to the VRAM.
  */
-void entity_apply_sprites(void);
+void physics_apply_sprites(void);
 
 // -----------
 

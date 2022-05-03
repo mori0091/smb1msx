@@ -16,17 +16,17 @@ entity_t * const player = &player_entity;
 #define BUFFER_COLS   (STAGEMAP_BUFFER_PAGES * STAGEMAP_PAGE_COLS)
 #define BUFFER_WIDTH  (BUFFER_COLS * TILE_WIDTH)
 
-void entity_init(void) {
+void physics_init(void) {
   entities.length = 1;
   entities.list[0] = player;
 }
 
-void entity_add(entity_t * const e) {
+void physics_add_entity(entity_t * const e) {
   if (ENTITY_MAX <= entities.length || !e) return;
   entities.list[entities.length++] = e;
 }
 
-void entity_remove(entity_t * const e) {
+void physics_remove_entity(entity_t * const e) {
   if (!entities.length || !e) return;
   if (e->metasprite) {
     sm2_hide_sprites(e->plane, e->metasprite);
@@ -369,7 +369,7 @@ static void foreach_active_entity(void (* f)(entity_t *)) {
   }
 }
 
-void entity_update(void) {
+void physics_update(void) {
   // Action planning task
   foreach_active_entity(entity_update_input);
   // Dynamics state update task (position)
@@ -392,12 +392,12 @@ static void entity_set_sprites(entity_t * e) {
   sm2_show_sprites(e->plane, e->metasprite, x, y);
 }
 
-void entity_update_sprites(void) {
+void physics_update_sprites(void) {
   sm2_clear_sprites();
   foreach_active_entity(entity_set_sprites);
 }
 
-void entity_apply_sprites(void) {
+void physics_apply_sprites(void) {
   sm2_apply_sprites();
 }
 

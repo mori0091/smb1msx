@@ -74,7 +74,7 @@ void default_post_step(entity_t * e) {
   if ((e->pos.x.i <= x0 - 64)        ||
       (x0 + 256+64-16 <= e->pos.x.i) ||
       (212 <= e->pos.y.i)) {
-    entity_remove(e);
+    physics_remove_entity(e);
     return;
   }
 }
@@ -93,7 +93,7 @@ bool item_collision_handler(entity_t * e) {
     mario_power_up();
     sound_effect(&se_powup);
   }
-  entity_remove(e);
+  physics_remove_entity(e);
   return true;
 }
 
@@ -123,7 +123,7 @@ void mushroom_post_step(entity_t * e) {
 }
 
 static void mushroom_entity_new(uint8_t row, uint8_t col) {
-  entity_remove(&item_entity);
+  physics_remove_entity(&item_entity);
 
   entity_set_controller(&item_entity, no_controller);
   entity_set_post_step(&item_entity, mushroom_post_step);
@@ -142,7 +142,7 @@ static void mushroom_entity_new(uint8_t row, uint8_t col) {
   item_entity.pos.x.d = 0;
   item_entity.pos.y.i = item_y0 + item_tick;
   item_entity.pos.y.d = 0;
-  entity_add(&item_entity);
+  physics_add_entity(&item_entity);
 }
 
 static void block_post_step2(entity_t * e) {
@@ -151,7 +151,7 @@ static void block_post_step2(entity_t * e) {
     e->pos.y.i = row0 * TILE_HEIGHT;
   }
   else {
-    entity_remove(e);
+    physics_remove_entity(e);
   }
 }
 
@@ -176,7 +176,7 @@ static void block_post_step(entity_t * e) {
   default:
     break;
   }
-  entity_remove(e);
+  physics_remove_entity(e);
 }
 
 void entity_get_bounds(const entity_t * e, rect_t * rect) {
@@ -217,6 +217,6 @@ void physics_add_block_entity(uint8_t row, uint8_t col, uint8_t tile, uint8_t it
   block_entity.acc.x = 0;
   block_entity.acc.y = BLOCK_AY;
 
-  entity_add(&block_entity);
+  physics_add_entity(&block_entity);
   stage_put_tile(row, col, TILE_EMPTY);
 }

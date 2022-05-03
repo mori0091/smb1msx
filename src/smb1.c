@@ -133,7 +133,7 @@ static void get_ready(void) {
   mapld_init();
   stage_init();
   camera_init();
-  entity_init();
+  physics_init();
   mario_init();
   stage_setup();
   countdown_timer_set(0x400);
@@ -231,7 +231,7 @@ bool game_main(void) {
   await_vsync();
   // writes the internal sprite attribute table to VRAM.
   // (and sprite animation)
-  entity_apply_sprites();
+  physics_apply_sprites();
   // update tick counter
   timer_update();
   // ---- game core task ----
@@ -242,7 +242,7 @@ bool game_main(void) {
     switch (event_get()) {
     default:;
       // update entities' state
-      entity_update();
+      physics_update();
       // update countdown timer
       countdown_timer_update();
       break;
@@ -258,7 +258,7 @@ bool game_main(void) {
       return false;
     }
     // updates the internal sprite attribute table.
-    entity_update_sprites();
+    physics_update_sprites();
   }
   // ---- (optional) frame rate / sim.frequency display ----
   if (!(tick & 31)) {

@@ -7,6 +7,7 @@
 
 #include "event.h"
 #include "physics.h"
+#include "entity.h"
 
 enum mario_pose {
   STANDING    = 0,
