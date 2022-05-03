@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include "geom.h"
+#include "physics.h"
 
 #define ITEM_NONE          (0)
 #define ITEM_COIN          (1)
@@ -21,6 +22,6 @@
 
 void entity_get_bounds(const entity_t * e, rect_t * rect);
 
-void entity_add_block(uint8_t row, uint8_t col, uint8_t item, uint8_t tile);
+void physics_add_block_entity(uint8_t row, uint8_t col, uint8_t item, uint8_t tile);
 
 #endif

@@ -197,15 +197,15 @@ static void mario_post_step(entity_t * e) {
       sound_effect(&se_block);
       switch (obj) {
       case 0xb0:                // '?' block
-        entity_add_block(row, col, TILE_BLOCK, ITEM_MUSHROOM);
+        physics_add_block_entity(row, col, TILE_BLOCK, ITEM_MUSHROOM);
         sound_effect(&se_item);
         break;
       case 0xd1:                // brick #1
       case 0xd2:                // brick #2
-        entity_add_block(row, col, TILE_BRICK, ITEM_NONE);
+        physics_add_block_entity(row, col, TILE_BRICK, ITEM_NONE);
         break;
       case 0xff:                // hidden
-        entity_add_block(row, col, TILE_BLOCK, ITEM_1UP_MUSHROOM);
+        physics_add_block_entity(row, col, TILE_BLOCK, ITEM_1UP_MUSHROOM);
         sound_effect(&se_item);
         break;
       }

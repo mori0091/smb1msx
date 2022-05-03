@@ -194,7 +194,7 @@ void entity_get_bounds(const entity_t * e, rect_t * rect) {
   }
 }
 
-void entity_add_block(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
+void physics_add_block_entity(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
   row0 = row;
   col0 = col;
   tile0 = tile;
