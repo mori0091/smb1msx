@@ -44,11 +44,18 @@ const metasprite_t mushroom_metasprite = {
   .pats = mushroom_pats,
 };
 
-static metasprite_t block_metasprite = {
+const metasprite_t block_metasprite = {
   .n = 2,
   .anchor = {0,0},
   .layouts = W16H16D2,
-  // .pats = block_pats,
+  .pats = block_pats,
+};
+
+const metasprite_t brick_metasprite = {
+  .n = 2,
+  .anchor = {0,0},
+  .layouts = W16H16D2,
+  .pats = brick_pats,
 };
 
 static entity_t item_entity;
@@ -201,14 +208,10 @@ void entity_add_block(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
   col0 = col;
   tile0 = tile;
   item0 = item;
-  block_metasprite.pats
-    = (uint8_t *)((tile == TILE_BLOCK)
-                  ? block_pats
-                  : brick_pats);
 
   entity_set_controller(&block_entity, no_controller);
   entity_set_post_step(&block_entity, block_post_step);
-  entity_set_metasprite(&block_entity, &block_metasprite);
+  entity_set_metasprite(&block_entity, (tile == TILE_BLOCK) ? &block_metasprite : &brick_metasprite);
   // entity_set_sprite_palette(&block_entity, BLOCK_PALETTE);
   // assets_set_sprite_palette(SPRITES_0, PLANE_BLOCKS, BLOCK_PALETTE);
   block_entity.plane = PLANE_BLOCKS;
