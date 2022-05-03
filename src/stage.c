@@ -124,3 +124,13 @@ void stage_update(void) {
     map_renderer_task();
   }
 }
+
+void stage_put_tile(uint8_t row, uint8_t col, uint8_t tile) {
+  const uint16_t pp = (TILE_WIDTH * col) & 256; // page #0 (0) or page #1 (256)
+  const uint16_t ix = (TILE_WIDTH * col) & 255;
+  const uint16_t iy = TILE_HEIGHT * row + pp;
+  const uint16_t x = (tile & 0x0f) << 4;
+  const uint16_t y = (tile & 0x70) + 3 * LINES_PER_VRAM_PAGE;
+  vdp_cmd_execute_HMMM(x, y, TILE_WIDTH, TILE_HEIGHT, ix, iy);
+  *mapld_get_buffer_ptr_at(row, col) = tile;
+}

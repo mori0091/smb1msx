@@ -17,16 +17,6 @@
 #define BLOCK_VY       f8q8(5.0)
 #define BLOCK_AY       f8q8(2.0)
 
-static void put_tile(uint8_t row, uint8_t col, uint8_t tile) {
-  const uint16_t pp = (TILE_WIDTH * col) & 256; // page #0 (0) or page #1 (256)
-  const uint16_t ix = (TILE_WIDTH * col) & 255;
-  const uint16_t iy = TILE_HEIGHT * row + pp;
-  const uint16_t x = (tile & 0x0f) << 4;
-  const uint16_t y = (tile & 0x70) + 3 * LINES_PER_VRAM_PAGE;
-  vdp_cmd_execute_HMMM(x, y, TILE_WIDTH, TILE_HEIGHT, ix, iy);
-  *mapld_get_buffer_ptr_at(row, col) = tile;
-}
-
 const vec2i_t W16H16D2[] = { {0,0}, {0,0}, };
 
 const uint8_t mushroom_pats[] = { 88, 92, };
@@ -168,7 +158,7 @@ static void block_post_step(entity_t * e) {
   if (e->vel.y < +BLOCK_VY) {
     return;
   }
-  put_tile(row0, col0, tile0);
+  stage_put_tile(row0, col0, tile0);
   switch (item0) {
   case ITEM_NONE:
     break;
@@ -227,5 +217,5 @@ void entity_add_block(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
   block_entity.acc.y = BLOCK_AY;
 
   entity_add(&block_entity);
-  put_tile(row, col, TILE_EMPTY);
+  stage_put_tile(row, col, TILE_EMPTY);
 }
