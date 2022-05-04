@@ -17,6 +17,13 @@ const metasprite_t mushroom_metasprite = {
   .pats = mushroom_pats,
 };
 
+const metasprite_t fireflower_metasprite = {
+  .n = 2,
+  .anchor = {0,0},
+  .layouts = W16H16D2,
+  .pats = fireflower_pats,
+};
+
 static uint8_t mushroom_controller(void) {
   if (item_entity.collision & COLLISION_RIGHT) {
     item_entity.vel.x = -MUSHROOM_VX;
@@ -44,7 +51,7 @@ bool item_collision_handler(entity_t * e) {
   if (!rect_intersects(&a, &b)) {
     return false;
   }
-  if (item_state.kind == ITEM_1UP_MUSHROOM) {
+  if (item_state.item == ITEM_1UP_MUSHROOM) {
     mario_1up();
   }
   else {
@@ -70,27 +77,46 @@ void mushroom_post_step(entity_t * e) {
     e->pos.x.d = 0;
     e->pos.y.i = item_state.y0;
     e->pos.y.d = 0;
-    e->vel.x = MUSHROOM_VX;
-    e->vel.y = 0;
-    e->acc.x = 0;
-    e->acc.y = MUSHROOM_AY;
-    e->collision = 0;
-    entity_set_controller(e, mushroom_controller);
+    if (item_state.item == ITEM_FIREFLOWER) {
+        e->vel.x = 0;
+        e->vel.y = 0;
+        e->acc.x = 0;
+        e->acc.y = 0;
+        entity_set_controller(e, no_controller);
+    }
+    else {
+        e->vel.x = MUSHROOM_VX;
+        e->vel.y = 0;
+        e->acc.x = 0;
+        e->acc.y = MUSHROOM_AY;
+        entity_set_controller(e, mushroom_controller);
+    }
     entity_set_post_step(e, mushroom_post_step2);
+    e->collision = 0;
   }
 }
 
-void mushroom_entity_new(uint8_t row, uint8_t col) {
+void mushroom_entity_new(uint8_t row, uint8_t col, uint8_t item) {
   physics_remove_entity(&item_entity);
 
   entity_set_controller(&item_entity, no_controller);
   entity_set_post_step(&item_entity, mushroom_post_step);
-  entity_set_metasprite(&item_entity, &mushroom_metasprite);
-  // entity_set_sprite_palette(&item_entity, MUSHROOM_PALETTE);
-  assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS,
-                            (item_state.kind == ITEM_MUSHROOM)
-                            ? MUSHROOM_PALETTE
-                            : GREEN_MUSHROOM_PALETTE);
+  item_state.item = item;
+  switch (item_state.item) {
+      case ITEM_MUSHROOM:
+          entity_set_metasprite(&item_entity, &mushroom_metasprite);
+          assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS, MUSHROOM_PALETTE);
+          break;
+      case ITEM_1UP_MUSHROOM:
+          entity_set_metasprite(&item_entity, &mushroom_metasprite);
+          assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS, GREEN_MUSHROOM_PALETTE);
+          break;
+      case ITEM_FIREFLOWER:
+      default:
+          entity_set_metasprite(&item_entity, &fireflower_metasprite);
+          assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS, FIREFLOWER_PALETTE);
+          break;
+  }
   item_entity.plane = PLANE_ITEMS;
   item_entity.input = 0;
   item_state.x0 = col * TILE_WIDTH;

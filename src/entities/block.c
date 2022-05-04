@@ -38,20 +38,20 @@ static void block_post_step(entity_t * e) {
   if (e->vel.y < +BLOCK_VY) {
     return;
   }
-  stage_put_tile(block_state.row0, block_state.col0, block_state.kind);
-  switch (item_state.kind) {
+  stage_put_tile(block_state.row0, block_state.col0, block_state.tile);
+  switch (block_state.item) {
   case ITEM_NONE:
     break;
   case ITEM_COIN:
     break;
   case ITEM_MUSHROOM:
   case ITEM_1UP_MUSHROOM:
-    mushroom_entity_new(block_state.row0 - 1, block_state.col0);
+  case ITEM_FIREFLOWER:
+  case ITEM_STARMAN:
+    mushroom_entity_new(block_state.row0 - 1, block_state.col0, block_state.item);
     block_state.tick = 12;
     entity_set_post_step(e, block_post_step2);
     return;
-  case ITEM_FIREFLOWER:
-  case ITEM_STARMAN:
   default:
     break;
   }
@@ -63,8 +63,8 @@ void block_entity_new(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
   block_state.col0 = col;
   block_state.x0 = col * TILE_WIDTH;
   block_state.y0 = row * TILE_HEIGHT;
-  block_state.kind = tile;
-  item_state.kind = item;
+  block_state.tile = tile;
+  block_state.item = item;
 
   entity_set_controller(&block_entity, no_controller);
   entity_set_post_step(&block_entity, block_post_step);

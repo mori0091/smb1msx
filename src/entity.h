@@ -51,7 +51,8 @@ extern const vec2i_t W16H16D2[];
  * Extra state / properties for items and blocks.
  */
 typedef struct entity_state {
-  uint8_t kind;
+  uint8_t tile;                 /* for block / brick */
+  uint8_t item;
   uint8_t tick;
   uint8_t row0, col0;
   uint16_t x0, y0;
@@ -224,7 +225,7 @@ extern entity_state_t item_state;
 extern entity_t block_entity;
 extern entity_state_t block_state;
 
-void mushroom_entity_new(uint8_t row, uint8_t col);
+void mushroom_entity_new(uint8_t row, uint8_t col, uint8_t item);
 
 void block_entity_new(uint8_t row, uint8_t col, uint8_t item, uint8_t tile);
 

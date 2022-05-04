@@ -336,6 +336,8 @@ void level_intro(void) {
     text_putc('0' + mario_get_life() % 10);
   }
   {
+    assets_set_sprite_palette(SPRITES_0, 2, MARIO_PALETTE);
+    // assets_set_sprite_palette(SPRITES_0, 4, LUIGI_PALETTE);
     mario_set_pose(STANDING);
     entity_set_facing(player, FACING_RIGHT);
     mario_animate();

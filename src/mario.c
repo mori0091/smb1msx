@@ -41,8 +41,8 @@ void mario_init(void) {
   entity_set_facing(player, FACING_RIGHT);
   entity_set_metasprite(player, &mario_metasprite);
   // entity_set_sprite_palette(player, MARIO_PALETTE);
-  // assets_set_sprite_palette(SPRITES_0, 2, MARIO_PALETTE);
-  // assets_set_sprite_palette(SPRITES_0, 4, MARIO_PALETTE);
+  assets_set_sprite_palette(SPRITES_0, 2, MARIO_PALETTE);
+  assets_set_sprite_palette(SPRITES_0, 4, LUIGI_PALETTE);
   player->plane = 2;
 
   /* SDCC does not support ISO C99 compound literal */
@@ -197,7 +197,9 @@ static void mario_post_step(entity_t * e) {
       sound_effect(&se_block);
       switch (obj) {
       case 0xb0:                // '?' block
-        block_entity_new(row, col, TILE_BLOCK, ITEM_MUSHROOM);
+        block_entity_new(row, col, TILE_BLOCK, (mario_has_super_ability()
+                                                ? ITEM_FIREFLOWER
+                                                : ITEM_MUSHROOM));
         sound_effect(&se_item);
         break;
       case 0xd1:                // brick #1
