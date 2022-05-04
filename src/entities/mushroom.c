@@ -53,6 +53,7 @@ bool item_collision_handler(entity_t * e) {
   }
   if (item_state.item == ITEM_1UP_MUSHROOM) {
     mario_1up();
+    sound_effect(&se_1up);
   }
   else {
     mario_power_up();
