@@ -36,15 +36,11 @@ static const uint8_t intro_ch1[] = { // T225 L32 V15
   0xff,
 };
 
-static const uint8_t intro_ch2[] = { // T225 L32 V15
-  0xff,
-};
-
 static const struct sound_fragment intro = {
   .streams = {
     [0] = 0,
     [1] = intro_ch1,
-    [2] = intro_ch2,
+    [2] = 0,
   },
 };
 
