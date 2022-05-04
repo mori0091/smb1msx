@@ -1,182 +1,32 @@
 // -*- coding: utf-8-unix -*-
 
 #include "smb1.h"
-
-// | entity | entity # | plane # |
-// | ------ | -------- | ------- |
-// | N/A    | N/A      | #0..#1  | ... reserved for fps display
-// | player | 0        | #2..#5  |
-// | blocks | 1        | #6..#7  |
-// | items  | 2        | #8..#9  |
-
-#define PLANE_BLOCKS   (6)
-#define PLANE_ITEMS    (8)
-
-#define MUSHROOM_VX    f8q8(2.0)
-#define MUSHROOM_AY    gravity_hi;
-
-#define BLOCK_VY       f8q8(5.0)
-#define BLOCK_AY       f8q8(2.0)
+#include <stdint.h>
 
 const vec2i_t W16H16D2[] = { {0,0}, {0,0}, };
 
-const uint8_t mushroom_pats[] = { 88, 92, };
-const uint8_t fireflower_pats[] = { 96, 100, };
-const uint8_t starman_pats[] = { 104, 108, };
+entity_t item_entity;
+entity_state_t item_state;
 
-const uint8_t block_pats[] = { 112, 116, };
-const uint8_t brick_pats[] = { 120, 124, };
-const uint8_t debris_pats[] = { 128, 132, };
+entity_t block_entity;
+entity_state_t block_state;
 
-const metasprite_t mushroom_metasprite = {
-  .n = 2,
-  .anchor = {0,0},
-  .layouts = W16H16D2,
-  .pats = mushroom_pats,
-};
-
-const metasprite_t block_metasprite = {
-  .n = 2,
-  .anchor = {0,0},
-  .layouts = W16H16D2,
-  .pats = block_pats,
-};
-
-const metasprite_t brick_metasprite = {
-  .n = 2,
-  .anchor = {0,0},
-  .layouts = W16H16D2,
-  .pats = brick_pats,
-};
-
-static entity_t item_entity;
-static uint8_t item0;
-static uint8_t item_tick;
-static uint16_t item_x0, item_y0;
-
-static entity_t block_entity;
-static uint8_t tile0;
-static uint8_t block_tick;
-static uint8_t row0, col0;
-
-static uint8_t mushroom_controller(void) {
-  if (item_entity.collision & COLLISION_RIGHT) {
-    item_entity.vel.x = -MUSHROOM_VX;
-  }
-  if (item_entity.collision & COLLISION_LEFT) {
-    item_entity.vel.x = MUSHROOM_VX;
-  }
-  return (item_entity.vel.x < 0 ? VK_LEFT : VK_RIGHT);
+uint8_t no_controller(void) {
+  return 0;
 }
 
-void default_post_step(entity_t * e) {
-  uint16_t x0 = camera_get_x();
-  if ((e->pos.x.i <= x0 - 64)        ||
-      (x0 + 256+64-16 <= e->pos.x.i) ||
-      (212 <= e->pos.y.i)) {
-    physics_remove_entity(e);
-    return;
-  }
+uint8_t joystick1(void) {
+  return joypad_get_state(1);
 }
 
-bool item_collision_handler(entity_t * e) {
-  static rect_t a, b;
-  entity_get_bounds(e, &a);
-  entity_get_bounds(player, &b);
-  if (!rect_intersects(&a, &b)) {
-    return false;
-  }
-  if (item0 == ITEM_1UP_MUSHROOM) {
-    mario_1up();
+void entity_set_controller(entity_t * e, controller_t c) {
+  if (!e) return;
+  if (c) {
+    e->controller = c;
   }
   else {
-    mario_power_up();
-    sound_effect(&se_powup);
+    e->controller = no_controller;
   }
-  physics_remove_entity(e);
-  return true;
-}
-
-void mushroom_post_step2(entity_t * e) {
-  if (item_collision_handler(e)) return;
-  default_post_step(e);
-}
-
-void mushroom_post_step(entity_t * e) {
-  if (item_tick--) {
-    e->pos.x.i = item_x0;
-    e->pos.y.i = item_y0 + item_tick;
-  }
-  else {
-    e->pos.x.i = item_x0;
-    e->pos.x.d = 0;
-    e->pos.y.i = item_y0;
-    e->pos.y.d = 0;
-    e->vel.x = MUSHROOM_VX;
-    e->vel.y = 0;
-    e->acc.x = 0;
-    e->acc.y = MUSHROOM_AY;
-    e->collision = 0;
-    entity_set_controller(e, mushroom_controller);
-    entity_set_post_step(e, mushroom_post_step2);
-  }
-}
-
-static void mushroom_entity_new(uint8_t row, uint8_t col) {
-  physics_remove_entity(&item_entity);
-
-  entity_set_controller(&item_entity, no_controller);
-  entity_set_post_step(&item_entity, mushroom_post_step);
-  entity_set_metasprite(&item_entity, &mushroom_metasprite);
-  // entity_set_sprite_palette(&item_entity, MUSHROOM_PALETTE);
-  assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS,
-                            (item0 == ITEM_MUSHROOM)
-                            ? MUSHROOM_PALETTE
-                            : GREEN_MUSHROOM_PALETTE);
-  item_entity.plane = PLANE_ITEMS;
-  item_entity.input = 0;
-  item_x0 = col * TILE_WIDTH;
-  item_y0 = row * TILE_HEIGHT;
-  item_tick = 12;
-  item_entity.pos.x.i = item_x0;
-  item_entity.pos.x.d = 0;
-  item_entity.pos.y.i = item_y0 + item_tick;
-  item_entity.pos.y.d = 0;
-  physics_add_entity(&item_entity);
-}
-
-static void block_post_step2(entity_t * e) {
-  if (block_tick--) {
-    e->pos.x.i = col0 * TILE_WIDTH;
-    e->pos.y.i = row0 * TILE_HEIGHT;
-  }
-  else {
-    physics_remove_entity(e);
-  }
-}
-
-static void block_post_step(entity_t * e) {
-  if (e->vel.y < +BLOCK_VY) {
-    return;
-  }
-  stage_put_tile(row0, col0, tile0);
-  switch (item0) {
-  case ITEM_NONE:
-    break;
-  case ITEM_COIN:
-    break;
-  case ITEM_MUSHROOM:
-  case ITEM_1UP_MUSHROOM:
-    mushroom_entity_new(row0 - 1, col0);
-    block_tick = 12;
-    entity_set_post_step(e, block_post_step2);
-    return;
-  case ITEM_FIREFLOWER:
-  case ITEM_STARMAN:
-  default:
-    break;
-  }
-  physics_remove_entity(e);
 }
 
 void entity_get_bounds(const entity_t * e, rect_t * rect) {
@@ -194,29 +44,291 @@ void entity_get_bounds(const entity_t * e, rect_t * rect) {
   }
 }
 
-void physics_add_block_entity(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
-  row0 = row;
-  col0 = col;
-  tile0 = tile;
-  item0 = item;
+void entity_update_input(entity_t * e) {
+  e->input &= (VK_FIRE_0 | VK_FIRE_1);
+  e->input <<= 2;
+  e->input |= e->controller();
+}
 
-  entity_set_controller(&block_entity, no_controller);
-  entity_set_post_step(&block_entity, block_post_step);
-  entity_set_metasprite(&block_entity, (tile == TILE_BLOCK) ? &block_metasprite : &brick_metasprite);
-  // entity_set_sprite_palette(&block_entity, BLOCK_PALETTE);
-  // assets_set_sprite_palette(SPRITES_0, PLANE_BLOCKS, BLOCK_PALETTE);
-  block_entity.plane = PLANE_BLOCKS;
+void entity_update_dynamics(entity_t * e) {
+  /* SDCC does not support assignment to variable of struct / union. */
+  e->prev_pos.x.i = e->pos.x.i;
+  e->prev_pos.x.d = e->pos.x.d;
+  e->prev_pos.y.i = e->pos.y.i;
+  e->prev_pos.y.d = e->pos.y.d;
 
-  block_entity.input = 0;
-  block_entity.pos.x.i = col * TILE_WIDTH;
-  block_entity.pos.x.d = 0;
-  block_entity.pos.y.i = row * TILE_HEIGHT;
-  block_entity.pos.y.d = 0;
-  block_entity.vel.x = 0;
-  block_entity.vel.y = -BLOCK_VY;
-  block_entity.acc.x = 0;
-  block_entity.acc.y = BLOCK_AY;
+  f8q8_t f;
 
-  physics_add_entity(&block_entity);
-  stage_put_tile(row, col, TILE_EMPTY);
+  f = e->pos.x.d + e->vel.x;
+  e->pos.x.i += f >> 8;
+  e->pos.x.d = f & 255;
+
+  f = e->pos.y.d + e->vel.y;
+  e->pos.y.i += f >> 8;
+  e->pos.y.d = f & 255;
+
+  e->vel.x += e->acc.x;
+  e->vel.y += e->acc.y;
+
+  /* correct y-axis position and velocity */
+  if (e->vel.y < f8q8i(-16)) {
+    e->vel.y = f8q8i(-16);
+  }
+  if (f8q8i(16) < e->vel.y) {
+    e->vel.y = f8q8i(16);
+  }
+  if (e->pos.y.i < -32) {
+    e->pos.y.i = -32;
+    e->pos.y.d = 0;
+  }
+  if (240 <= e->pos.y.i) {
+    e->pos.y.i = 240;
+    e->pos.y.d = 0;
+  }
+}
+
+// for ceil collision test
+#define CEIL_MARGIN_L   (6)
+#define CEIL_MARGIN_R   (6)
+#define CEIL_L          (TILE_WIDTH - CEIL_MARGIN_L)
+#define CEIL_R          (CEIL_MARGIN_R)
+// for floor collision test
+#define FLOOR_MARGIN_L  (3)
+#define FLOOR_MARGIN_R  (3)
+#define FLOOR_L         (TILE_WIDTH - FLOOR_MARGIN_L)
+#define FLOOR_R         (FLOOR_MARGIN_R)
+// for side-wall collision test
+#define SIDE_MARGIN_L   (2)
+#define SIDE_MARGIN_R   (2)
+#define SIDE_L          (TILE_WIDTH - SIDE_MARGIN_L)
+#define SIDE_R          (SIDE_MARGIN_R)
+
+inline bool is_obstacle(uint8_t obj) {
+  return (0x7f < obj && obj < 0xff);
+}
+
+void entity_update_collision(entity_t * e) {
+  static rect_t box;
+  entity_get_bounds(e, &box);
+
+  static uint8_t collision, c1, c2;
+  collision = 0;
+  c1 = 0;
+  c2 = 0;
+
+  {
+    int8_t diff_y = e->pos.y.i - e->prev_pos.y.i;
+    // check ceil
+    if (diff_y < 0) {
+      c1 = mapld_get_object_at(box.left+CEIL_MARGIN_L, box.top);
+      c2 = mapld_get_object_at(box.right-CEIL_MARGIN_R, box.top);
+      if ((c1 | c2) & 0x80) {
+        collision |= COLLISION_CEIL;
+      }
+    }
+    // check floor
+    else {
+      c1 = mapld_get_object_at(box.left+FLOOR_MARGIN_L, box.bottom+1);
+      c2 = mapld_get_object_at(box.right-FLOOR_MARGIN_R, box.bottom+1);
+      if (is_obstacle(c1) || is_obstacle(c2)) {
+        collision |= COLLISION_FLOOR;
+      }
+    }
+  }
+
+  {
+    int8_t dy = 0;
+    if (collision & COLLISION_CEIL) {
+      dy = TILE_HEIGHT;
+    }
+    if (collision & COLLISION_FLOOR) {
+      dy = 1 - TILE_HEIGHT;
+    }
+
+    uint16_t yt = box.top + dy;
+    uint16_t yb = box.bottom + dy;
+    uint16_t yc = (yt+yb)/2;
+
+    uint8_t off_x = box.left & 15;
+    // check left-side wall
+    if (off_x < SIDE_L) {
+      uint16_t xl = box.left + SIDE_MARGIN_L;
+      if (is_obstacle(mapld_get_object_at(xl, yt)) ||
+          is_obstacle(mapld_get_object_at(xl, yc)) ||
+          is_obstacle(mapld_get_object_at(xl, yb))) {
+        if (c2 & 0x80) {
+          collision |= COLLISION_LEFT;
+        }
+        else {
+          collision = COLLISION_LEFT;
+        }
+      }
+    }
+    // check right-side wall
+    if (off_x > SIDE_R) {
+      uint16_t xr = box.right - SIDE_MARGIN_R;
+      if (is_obstacle(mapld_get_object_at(xr, yt)) ||
+          is_obstacle(mapld_get_object_at(xr, yc)) ||
+          is_obstacle(mapld_get_object_at(xr, yb))) {
+        if (c1 & 0x80) {
+          collision |= COLLISION_RIGHT;
+        }
+        else {
+          collision = COLLISION_RIGHT;
+        }
+      }
+    }
+  }
+
+  // correct X-coordinates
+  if (collision & (COLLISION_LEFT | COLLISION_RIGHT)) {
+    e->pos.x.i &= ~15;
+    e->pos.x.d = 0;
+    e->vel.x = 0;
+    if (collision & COLLISION_LEFT) {
+      e->pos.x.i += SIDE_L;
+    }
+    else {
+      e->pos.x.i += SIDE_R;
+    }
+  }
+  // correct Y-coordinates
+  if (collision & COLLISION_CEIL) {
+    e->pos.y.i = (e->pos.y.i & 240) + 16;
+    e->pos.y.d = 0;
+    e->vel.y = abs(e->vel.y);
+  }
+  if (collision & COLLISION_FLOOR) {
+    e->pos.y.i = (e->pos.y.i & 240);
+    e->pos.y.d = 0;
+    e->vel.y = 0;
+  }
+
+  e->collision = collision;
+  e->c1 = c1;
+  e->c2 = c2;
+}
+
+static void entity_update_speed_on_floor(entity_t * e) {
+  {
+    if (e->vel.x < 0) {
+      entity_set_facing(e, FACING_LEFT);
+    }
+    if (0 < e->vel.x) {
+      entity_set_facing(e, FACING_RIGHT);
+    }
+  }
+  f8q8_t speed = abs(e->vel.x);
+
+  uint8_t FORWARD_KEY;
+  uint8_t BACKWARD_KEY;
+  if (entity_get_facing(e) == FACING_LEFT) {
+    FORWARD_KEY = VK_LEFT;
+    BACKWARD_KEY = VK_RIGHT;
+  } else {
+    FORWARD_KEY = VK_RIGHT;
+    BACKWARD_KEY = VK_LEFT;
+  }
+
+  const uint8_t LR_KEY = e->input & (VK_LEFT | VK_RIGHT);
+
+  if (LR_KEY == FORWARD_KEY) {
+    if (e->input & B_BUTTON) {
+      speed += accel_hi;
+      if (speed_hi <= speed) {
+        speed = speed_hi;
+      }
+    } else if (speed < speed_lo) {
+      speed += accel;
+    } else {
+      speed -= accel;
+    }
+  }
+  else if (LR_KEY == BACKWARD_KEY) {
+    if (brake < speed) {
+      speed -= brake;
+    } else {
+      speed = 0;
+    }
+  }
+  else {
+    if (accel < speed) {
+      speed -= accel;
+    } else {
+      speed = 0;
+    }
+  }
+
+  if (!speed) {
+    if (LR_KEY == VK_LEFT) {
+      entity_set_facing(e, FACING_LEFT);
+    }
+    if (LR_KEY == VK_RIGHT) {
+      entity_set_facing(e, FACING_RIGHT);
+    }
+  }
+
+  if (entity_get_facing(e) == FACING_LEFT) {
+    e->vel.x = -speed;
+  } else {
+    e->vel.x = speed;
+  }
+}
+
+static void entity_update_speed_flight(entity_t * e) {
+  const uint8_t LR_KEY = e->input & (VK_LEFT | VK_RIGHT);
+
+  if (LR_KEY == VK_RIGHT) {
+    if (e->input & B_BUTTON) {
+      // e->vel.x += accel_hi;
+      e->vel.x += accel;
+      if (speed_hi <= e->vel.x) {
+        e->vel.x = speed_hi;
+      }
+    } else if (e->vel.x < speed_lo) {
+      e->vel.x += accel;
+    } else {
+      // e->vel.x -= accel;
+    }
+  }
+  else if (LR_KEY == VK_LEFT) {
+    if (e->input & B_BUTTON) {
+      // e->vel.x -= accel_hi;
+      e->vel.x -= accel;
+      if (e->vel.x <= -speed_hi) {
+        e->vel.x = -speed_hi;
+      }
+    } else if (-speed_lo < e->vel.x) {
+      e->vel.x -= accel;
+    } else {
+      // e->vel.x += accel;
+    }
+  }
+}
+
+void entity_update_speed(entity_t * e) {
+  if (e->collision & COLLISION_FLOOR) {
+    // update horizontal speed
+    entity_update_speed_on_floor(e);
+    // jump (set initial vertical velocity and gravity)
+    if ((e->input & (A_BUTTON | PREV_A_BUTTON)) == A_BUTTON) {
+      if (e->input & B_BUTTON) {
+        e->vel.y = initial_vy_hi;
+      } else {
+        e->vel.y = initial_vy_lo;
+      }
+      e->acc.y = gravity_lo;
+    }
+  } else {
+    // update horizontal speed
+    entity_update_speed_flight(e);
+    // jump (control gravity)
+    if (!(e->input & A_BUTTON) || 0 <= e->vel.y) {
+      e->acc.y = gravity_hi;
+    }
+  }
+}
+
+void entity_run_post_step(entity_t * e) {
+  e->post_step(e);
 }
