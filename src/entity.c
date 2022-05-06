@@ -5,12 +5,6 @@
 
 const vec2i_t W16H16D2[] = { {0,0}, {0,0}, };
 
-entity_t item_entity;
-entity_state_t item_state;
-
-entity_t block_entity;
-entity_state_t block_state;
-
 uint8_t no_controller(void) {
   return 0;
 }

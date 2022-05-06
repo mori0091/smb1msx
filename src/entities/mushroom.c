@@ -6,6 +6,9 @@
 #define MUSHROOM_VX    f8q8(2.0)
 #define MUSHROOM_AY    gravity_hi;
 
+static entity_t item_entity;
+static entity_state_t item_state;
+
 const uint8_t mushroom_pats[] = { 88, 92, };
 const uint8_t fireflower_pats[] = { 96, 100, };
 const uint8_t starman_pats[] = { 104, 108, };
@@ -98,12 +101,15 @@ void mushroom_post_step(entity_t * e) {
 }
 
 void mushroom_entity_new(uint8_t row, uint8_t col, uint8_t item) {
-  physics_remove_entity(&item_entity);
+  item_state.x0 = col * TILE_WIDTH;
+  item_state.y0 = row * TILE_HEIGHT;
+  item_state.item = item;
+  item_state.tick = 12;
 
+  physics_remove_entity(&item_entity);
   entity_set_controller(&item_entity, no_controller);
   entity_set_post_step(&item_entity, mushroom_post_step);
-  item_state.item = item;
-  switch (item_state.item) {
+  switch (item) {
       case ITEM_MUSHROOM:
           entity_set_metasprite(&item_entity, &mushroom_metasprite);
           assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS, MUSHROOM_PALETTE);
@@ -120,9 +126,6 @@ void mushroom_entity_new(uint8_t row, uint8_t col, uint8_t item) {
   }
   item_entity.plane = PLANE_ITEMS;
   item_entity.input = 0;
-  item_state.x0 = col * TILE_WIDTH;
-  item_state.y0 = row * TILE_HEIGHT;
-  item_state.tick = 12;
   item_entity.pos.x.i = item_state.x0;
   item_entity.pos.x.d = 0;
   item_entity.pos.y.i = item_state.y0 + item_state.tick;

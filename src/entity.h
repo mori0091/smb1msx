@@ -219,12 +219,6 @@ void entity_run_post_step(entity_t * e);
 
 // -----------
 
-extern entity_t item_entity;
-extern entity_state_t item_state;
-
-extern entity_t block_entity;
-extern entity_state_t block_state;
-
 void mushroom_entity_new(uint8_t row, uint8_t col, uint8_t item);
 
 void block_entity_new(uint8_t row, uint8_t col, uint8_t item, uint8_t tile);

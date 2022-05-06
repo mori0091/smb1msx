@@ -6,6 +6,9 @@
 #define BLOCK_VY       f8q8(5.0)
 #define BLOCK_AY       f8q8(2.0)
 
+static entity_t block_entity;
+static entity_state_t block_state;
+
 const uint8_t block_pats[] = { 112, 116, };
 const uint8_t brick_pats[] = { 120, 124, };
 const uint8_t debris_pats[] = { 128, 132, };
@@ -39,23 +42,20 @@ static void block_post_step(entity_t * e) {
     return;
   }
   stage_put_tile(block_state.row0, block_state.col0, block_state.tile);
+  block_state.tick = 12;
+  entity_set_post_step(e, block_post_step2);
   switch (block_state.item) {
-  case ITEM_NONE:
-    break;
-  case ITEM_COIN:
-    break;
   case ITEM_MUSHROOM:
   case ITEM_1UP_MUSHROOM:
   case ITEM_FIREFLOWER:
   case ITEM_STARMAN:
     mushroom_entity_new(block_state.row0 - 1, block_state.col0, block_state.item);
-    block_state.tick = 12;
-    entity_set_post_step(e, block_post_step2);
     return;
+  case ITEM_COIN:
+    break;
   default:
     break;
   }
-  physics_remove_entity(e);
 }
 
 void block_entity_new(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
