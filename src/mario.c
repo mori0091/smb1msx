@@ -204,7 +204,13 @@ static void mario_post_step(entity_t * e) {
         break;
       case 0xd1:                // brick #1
       case 0xd2:                // brick #2
-        block_entity_new(row, col, TILE_BRICK, ITEM_NONE);
+        if (mario_has_super_ability()) {
+          debris_entity_new(row, col);
+          sound_effect(&se_destruct);
+        }
+        else {
+          block_entity_new(row, col, TILE_BRICK, ITEM_NONE);
+        }
         break;
       case 0xff:                // hidden
         block_entity_new(row, col, TILE_BLOCK, ITEM_1UP_MUSHROOM);

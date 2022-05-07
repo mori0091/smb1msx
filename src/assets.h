@@ -22,6 +22,7 @@ extern const struct sound_clip se_hurryup;
 extern const struct sound_clip se_item;
 extern const struct sound_clip se_powup;
 extern const struct sound_clip se_1up;
+extern const struct sound_clip se_destruct;
 
 /* defined tileset */
 #include "assets/tileset.h"

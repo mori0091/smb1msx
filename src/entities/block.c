@@ -11,7 +11,6 @@ static entity_state_t block_state;
 
 const uint8_t block_pats[] = { 112, 116, };
 const uint8_t brick_pats[] = { 120, 124, };
-const uint8_t debris_pats[] = { 128, 132, };
 
 const metasprite_t block_metasprite = {
   .n = 2,
@@ -66,6 +65,7 @@ void block_entity_new(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
   block_state.tile = tile;
   block_state.item = item;
 
+  physics_remove_entity(&block_entity);
   entity_set_controller(&block_entity, no_controller);
   entity_set_post_step(&block_entity, block_post_step);
   entity_set_metasprite(&block_entity, (tile == TILE_BLOCK) ? &block_metasprite : &brick_metasprite);

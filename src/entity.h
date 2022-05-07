@@ -30,9 +30,11 @@
 // | player | 0        | #2..#5  |
 // | blocks | 1        | #6..#7  |
 // | items  | 2        | #8..#9  |
+// | debris | 3..6     | #10..#17 |
 
 #define PLANE_BLOCKS       (6)
 #define PLANE_ITEMS        (8)
+#define PLANE_DEBRIS       (10)
 
 #define ITEM_NONE          (0)
 #define ITEM_COIN          (1)
@@ -222,5 +224,7 @@ void entity_run_post_step(entity_t * e);
 void mushroom_entity_new(uint8_t row, uint8_t col, uint8_t item);
 
 void block_entity_new(uint8_t row, uint8_t col, uint8_t item, uint8_t tile);
+
+void debris_entity_new(uint8_t row, uint8_t col);
 
 #endif
