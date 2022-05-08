@@ -1,5 +1,6 @@
 // -*- coding: utf-8-unix -*-
 
+#include "boot.h"
 #include "smb1.h"
 
 #define SIM_FREQ         (30)
@@ -382,13 +383,9 @@ void play_game(void) {
   show_message("GAME OVER");
 }
 
-/** key click beep swith (0:off, non-zero:on) */
-static volatile __at (0xf3db) uint8_t CLIKSW;
-
 void main(void) {
-  CLIKSW = 0;
-  graphics_init_vdp();
-  graphics_clear_vram();
+  boot_main();
+
   assets_setup();
   timer_init();
   timer_set_user_freq(30);

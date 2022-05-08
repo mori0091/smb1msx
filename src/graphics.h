@@ -7,10 +7,6 @@
 
 #include <stdint.h>
 
-void graphics_init_vdp(void);
-
-void graphics_clear_vram(void);
-
 void graphics_hide_sprite(uint8_t plane);
 
 void graphics_hide_all_sprites(void);

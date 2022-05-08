@@ -33,21 +33,9 @@ void assets_setup(void) {
   /* Apply palette table to VDP */
   vdp_write_palette(color_palette);
 
-  /* Copy sprite patterns and sprite colors to VRAM */
-  vmem_write(REF_SPRITE_PATTERNS, smb1spt, smb1spt_size);
-  vmem_write(SPRITE_PATTERNS, smb1spt, smb1spt_size);
+  /* Initialize sprite color table */
   for (int i = 0; i < 16; ++i) {
-    assets_set_sprite_palette(SPRITES_0, i*2, sp[i]);
-    assets_set_sprite_palette(SPRITES_1, i*2, sp[i]);
-  }
-
-  /* Copy tileset image to VRAM page #3 */
-  tileset_decompress_into_vram();
-
-  /* Draw color palette at bottom of VRAM page #3 */
-  /* (debug purpose only) */
-  for (int i = 0; i < 16; ++i) {
-    vdp_cmd_execute_HMMV(16 * i, 196 + 3 * LINES_PER_VRAM_PAGE, 16, 16, i*17);
+    assets_set_sprite_palette(SPRITES, i*2, sp[i]);
   }
 }
 

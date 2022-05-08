@@ -24,13 +24,6 @@ extern const struct sound_clip se_powup;
 extern const struct sound_clip se_1up;
 extern const struct sound_clip se_destruct;
 
-/* defined tileset */
-#include "assets/tileset.h"
-
-/* defined sprite pattern table */
-extern const size_t smb1spt_size;
-extern const char smb1spt[];
-
 /* stage map */
 extern const size_t smb1map_size;
 extern const char smb1map[];
