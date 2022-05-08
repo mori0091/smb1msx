@@ -52,10 +52,10 @@ void assets_setup(void) {
 }
 
 static const tagged_color_t sp_palettes[][2] = {
-  [SPRITE_PALETTE_1] = {{0x01}, {0x02 | SPRITE_TAG_CC}},
-  [SPRITE_PALETTE_2] = {{0x0e}, {0x0d | SPRITE_TAG_CC}},
-  [SPRITE_PALETTE_3] = {{0x0e}, {0x05 | SPRITE_TAG_CC}},
-  [SPRITE_PALETTE_4] = {{0x0a}, {0x09 | SPRITE_TAG_CC}},
+  [SPRITE_PALETTE_1] = {0x01, 0x02 | SPRITE_TAG_CC},
+  [SPRITE_PALETTE_2] = {0x0e, 0x0d | SPRITE_TAG_CC},
+  [SPRITE_PALETTE_3] = {0x0e, 0x05 | SPRITE_TAG_CC},
+  [SPRITE_PALETTE_4] = {0x0a, 0x09 | SPRITE_TAG_CC},
 };
 
 void assets_set_sprite_palette(vmemptr_t base, uint8_t plane,
