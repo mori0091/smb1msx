@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "macros.h"
 #include "assets.h"
 #include "event.h"
 #include "physics.h"
@@ -131,8 +132,8 @@ inline void mario_power_up(void) {
   if (mario_has_super_ability()) {
     // \TODO Fire powered animation
     mario_enable_fire_ability();
-    assets_set_sprite_palette(SPRITES_0, 2, FIRE_MARIO_PALETTE);
-    assets_set_sprite_palette(SPRITES_0, 4, FIRE_MARIO_PALETTE);
+    assets_set_sprite_palette(SPRITES, 2, FIRE_MARIO_PALETTE);
+    assets_set_sprite_palette(SPRITES, 4, FIRE_MARIO_PALETTE);
     return;
   }
   {
@@ -150,8 +151,8 @@ inline void mario_power_down(void) {
   else {
     event_set(EV_PLAYER_DIES);
   }
-  assets_set_sprite_palette(SPRITES_0, 2, MARIO_PALETTE);
-  assets_set_sprite_palette(SPRITES_0, 4, LUIGI_PALETTE);
+  assets_set_sprite_palette(SPRITES, 2, MARIO_PALETTE);
+  assets_set_sprite_palette(SPRITES, 4, LUIGI_PALETTE);
 }
 
 inline int8_t mario_get_life(void) {

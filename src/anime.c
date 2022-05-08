@@ -49,7 +49,7 @@ void anime_set_enable_on_vsync(bool enable) {
     enable_on_vsync = enable;
     if (!enable) {
       vdp_write_palette(color_palette);
-      vdp_set_sprite_attribute_table(SPRITES_0);
+      // vdp_set_sprite_attribute_table(SPRITES);
     }
   }
 }

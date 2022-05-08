@@ -79,7 +79,7 @@ void sm2_show_sprites(uint8_t plane, const metasprite_t * ms, int x, int y) {
 //       sprites[endIdx++].y = 216;
 //     }
 //     vdp_cmd_await();
-//     vmem_write(SPRITES_0 + sizeof(sprites[0]) * beg,
+//     vmem_write(SPRITES + sizeof(sprites[0]) * beg,
 //                (void*)&(sprites[beg]),
 //                sizeof(sprites[0]) * (endIdx - beg));
 //     anime_update();
@@ -90,8 +90,8 @@ void sm2_show_sprites(uint8_t plane, const metasprite_t * ms, int x, int y) {
 void sm2_apply_sprites(void) {
   if (sm2_is_dirty()) {
     vdp_cmd_await();
-    // vmem_write(SPRITES_0, (void*)&sprites, sizeof(sprites));
-    vmem_write(SPRITES_0 + sizeof(sprites[0]) * 2, (void*)&(sprites[2]), sizeof(sprites[0]) * 30);
+    // vmem_write(SPRITES, (void*)&sprites, sizeof(sprites));
+    vmem_write(SPRITES + sizeof(sprites[0]) * 2, (void*)&(sprites[2]), sizeof(sprites[0]) * 30);
     anime_update();
     sm2_clear_sprites();
   }

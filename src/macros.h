@@ -15,10 +15,10 @@
 #define SPRITES                 (0x07600)
 #define SPRITE_COLORS           (SPRITES - 0x0200)
 
-#define SPRITES_0               (0x07600)
-#define SPRITES_COLORS_0        (SPRITES_0 - 0x0200)
-#define SPRITES_1               (0x07200)
-#define SPRITES_COLORS_1        (SPRITES_1 - 0x0200)
+// #define SPRITES_0               (0x07600)
+// #define SPRITES_COLORS_0        (SPRITES_0 - 0x0200)
+// #define SPRITES_1               (0x07200)
+// #define SPRITES_COLORS_1        (SPRITES_1 - 0x0200)
 
 #define PIXELS_PER_BYTE         (2)
 #define PIXELS_PER_LINE         (256)

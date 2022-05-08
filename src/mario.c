@@ -41,8 +41,8 @@ void mario_init(void) {
   entity_set_facing(player, FACING_RIGHT);
   entity_set_metasprite(player, &mario_metasprite);
   // entity_set_sprite_palette(player, MARIO_PALETTE);
-  assets_set_sprite_palette(SPRITES_0, 2, MARIO_PALETTE);
-  assets_set_sprite_palette(SPRITES_0, 4, LUIGI_PALETTE);
+  assets_set_sprite_palette(SPRITES, 2, MARIO_PALETTE);
+  assets_set_sprite_palette(SPRITES, 4, LUIGI_PALETTE);
   player->plane = 2;
 
   /* SDCC does not support ISO C99 compound literal */
@@ -104,7 +104,7 @@ static void mario_set_sprite_pat(uint8_t idx) {
 }
 
 void mario_show(int x, int y) {
-  vmem_set_metasprite_a(SPRITES_0, 2, x, y, &mario_metasprite);
+  vmem_set_metasprite_a(SPRITES, 2, x, y, &mario_metasprite);
 }
 
 static uint8_t anim_tick;

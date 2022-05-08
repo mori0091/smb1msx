@@ -112,16 +112,16 @@ void mushroom_entity_new(uint8_t row, uint8_t col, uint8_t item) {
   switch (item) {
       case ITEM_MUSHROOM:
           entity_set_metasprite(&item_entity, &mushroom_metasprite);
-          assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS, MUSHROOM_PALETTE);
+          assets_set_sprite_palette(SPRITES, PLANE_ITEMS, MUSHROOM_PALETTE);
           break;
       case ITEM_1UP_MUSHROOM:
           entity_set_metasprite(&item_entity, &mushroom_metasprite);
-          assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS, GREEN_MUSHROOM_PALETTE);
+          assets_set_sprite_palette(SPRITES, PLANE_ITEMS, GREEN_MUSHROOM_PALETTE);
           break;
       case ITEM_FIREFLOWER:
       default:
           entity_set_metasprite(&item_entity, &fireflower_metasprite);
-          assets_set_sprite_palette(SPRITES_0, PLANE_ITEMS, FIREFLOWER_PALETTE);
+          assets_set_sprite_palette(SPRITES, PLANE_ITEMS, FIREFLOWER_PALETTE);
           break;
   }
   item_entity.plane = PLANE_ITEMS;

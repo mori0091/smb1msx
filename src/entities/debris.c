@@ -42,7 +42,7 @@ void debris_entity_new(uint8_t row, uint8_t col) {
       entity_set_post_step(&debris_entity[i], debris_post_step);
       entity_set_metasprite(&debris_entity[i], &debris_metasprite);
       // entity_set_sprite_palette(&debris_entity[i], DEBRIS_PALETTE);
-      assets_set_sprite_palette(SPRITES_0, PLANE_DEBRIS + 2 * i, BLOCK_PALETTE);
+      assets_set_sprite_palette(SPRITES, PLANE_DEBRIS + 2 * i, BLOCK_PALETTE);
       debris_entity[i].plane = PLANE_DEBRIS + 2 * i;
 
       debris_entity[i].input = 0;

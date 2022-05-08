@@ -70,7 +70,7 @@ void block_entity_new(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
   entity_set_post_step(&block_entity, block_post_step);
   entity_set_metasprite(&block_entity, (tile == TILE_BLOCK) ? &block_metasprite : &brick_metasprite);
   // entity_set_sprite_palette(&block_entity, BLOCK_PALETTE);
-  // assets_set_sprite_palette(SPRITES_0, PLANE_BLOCKS, BLOCK_PALETTE);
+  // assets_set_sprite_palette(SPRITES, PLANE_BLOCKS, BLOCK_PALETTE);
   block_entity.plane = PLANE_BLOCKS;
 
   block_entity.input = 0;
