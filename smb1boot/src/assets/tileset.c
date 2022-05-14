@@ -1,6 +1,8 @@
 // -*- coding: utf-8-unix -*-
 
-#include "../smb1.h"
+/* #include "../smb1.h" */
+#include <msx.h>
+#include "../macros.h"
 #include "tileset.h"
 
 /**

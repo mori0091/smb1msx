@@ -14,6 +14,7 @@
 /**/bin
 /**/lib
 /**/obj
+/**/compile_commands.json
 /sprite/*.pbm
 *.tiled-project
 *.tiled-session

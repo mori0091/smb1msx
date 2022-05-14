@@ -1,14 +1,23 @@
 # -*- coding: utf-8-unix; tab-width: 8 -*-
 
-# Path to top of the libmsx installed folder.
-LIBMSX_HOME ?= ./libmsx
+.PHONY: all build clean
 
-NAME = smb1msx
+all: build
 
-CFLAGS  = -DNDEBUG --opt-code-speed
-LDFLAGS =
-LDLIBS  =
-LIBS    =
+build: bin/smb1msx.rom
 
-include ${LIBMSX_HOME}/mk/32k.4000.mk
-include ${LIBMSX_HOME}/mk/build.mk
+clean:
+	@rm -rf bin
+	@make -s -C smb1boot clean
+	@make -s -C smb1main clean
+
+bin/smb1msx.rom: smb1boot/bin/boot.rom smb1main/bin/main.rom
+	@${info [Build]	$@}
+	@mkdir -p $(dir $@)
+	@cat $^ > $@
+
+smb1boot/bin/boot.rom:
+	@make -C smb1boot
+
+smb1main/bin/main.rom:
+	@make -C smb1main

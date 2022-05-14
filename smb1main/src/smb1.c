@@ -1,6 +1,5 @@
 // -*- coding: utf-8-unix -*-
 
-#include "boot.h"
 #include "smb1.h"
 
 #define SIM_FREQ         (30)
@@ -384,8 +383,7 @@ void play_game(void) {
 }
 
 void main(void) {
-  boot_main();
-
+  vdp_set_screen_mode(SCREEN_MODE);
   assets_setup();
   timer_init();
   timer_set_user_freq(30);
