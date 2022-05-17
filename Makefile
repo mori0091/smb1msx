@@ -1,23 +1,39 @@
 # -*- coding: utf-8-unix; tab-width: 8 -*-
 
-.PHONY: all build clean
+# Path to top of the libmsx installed folder.
+LIBMSX_HOME ?= ./libmsx
 
-all: build
+NAME = smb1msx
 
-build: bin/smb1msx.rom
+CFLAGS  = -DNDEBUG --opt-code-speed
+LDFLAGS =
+LDLIBS  =
+LIBS    =
 
-clean:
-	@rm -rf bin
-	@make -s -C smb1boot clean
-	@make -s -C smb1main clean
+include ${LIBMSX_HOME}/mk/ascii16.mk
+include ${LIBMSX_HOME}/mk/build.mk
 
-bin/smb1msx.rom: smb1boot/bin/boot.rom smb1main/bin/main.rom
-	@${info [Build]	$@}
-	@mkdir -p $(dir $@)
-	@cat $^ > $@
+# -- for build compile_commands.json --
+# case 1: build on WSL, use on Windows (Mingw)
+CWD = $(shell wslpath -a -m ${CURDIR})
+# case 2: build on Windows (Mingw), use on Windows (Mingw)
+# CWD = $(shell cygpath -a -m ${CURDIR})
+# default: build and use on same system
+# CWD = ${CURDIR}
 
-smb1boot/bin/boot.rom:
-	@make -C smb1boot
+${OBJDIR}/%.compdb_entry: ${SRCDIR}/%.c
+	@echo "    {" > $@
+	@echo "        \"command\": \"${CC} -I ${LIBMSX_HOME}/include -c $<\"," >> $@
+	@echo "        \"directory\": \"${CWD}\"," >> $@
+	@echo "        \"file\": \"$<\"" >> $@
+	@echo "    }," >> $@
 
-smb1main/bin/main.rom:
-	@make -C smb1main
+COMPDB_ENTRIES = $(patsubst ${SRCDIR}/%.c, ${OBJDIR}/%.compdb_entry, ${SRCS_C})
+
+compile_commands.json: ${COMPDB_ENTRIES}
+	@echo "[" > $@.tmp
+	@cat $^ >> $@.tmp
+	@sed '$$d' < $@.tmp > $@
+	@echo "    }" >> $@
+	@echo "]" >> $@
+	@rm $@.tmp
