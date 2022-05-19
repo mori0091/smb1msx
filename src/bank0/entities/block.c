@@ -1,7 +1,10 @@
 // -*- coding: utf-8-unix -*-
 
-#include "../smb1.h"
+#pragma codeseg BANK0
+
 #include <stdint.h>
+
+#include "smb1.h"
 
 #define BLOCK_VY       f8q8(5.0)
 #define BLOCK_AY       f8q8(2.0)
@@ -25,8 +28,6 @@ const metasprite_t brick_metasprite = {
   .layouts = W16H16D2,
   .pats = brick_pats,
 };
-
-#pragma codeseg BANK0
 
 static void block_post_step2(entity_t * e) {
   if (block_state.tick--) {

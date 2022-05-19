@@ -1,8 +1,8 @@
 // -*- coding: utf-8-unix -*-
 
-#include "geom.h"
-
 #pragma codeseg BANK0
+
+#include "geom.h"
 
 bool rect_contains_xy(const rect_t * rect, int x, int y) {
   return ((rect->left <= x) && (x <= rect->right) &&

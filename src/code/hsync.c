@@ -1,6 +1,9 @@
 // -*- coding: utf-8-unix -*-
 
-#include <msx.h>
+#include <interrupt.h>
+#include <sound.h>
+#include <vdp.h>
+
 #include "anime.h"
 
 #define HSYNC_LINE (13)

@@ -2,10 +2,11 @@
 
 #pragma codeseg BANK1
 
-/* #include "../smb1.h" */
-#include <msx.h>
-#include "../macros.h"
-#include "tileset.h"
+#include <vdp.h>
+#include <vmem.h>
+
+#include "macros.h"
+#include "assets/tileset.h"
 
 /**
  * Tile-palette table (List of four color combinations).

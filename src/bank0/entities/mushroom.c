@@ -1,7 +1,10 @@
 // -*- coding: utf-8-unix -*-
 
-#include "../smb1.h"
+#pragma codeseg BANK0
+
 #include <stdint.h>
+
+#include "smb1.h"
 
 #define MUSHROOM_VX    f8q8(2.0)
 #define MUSHROOM_AY    gravity_hi;
@@ -12,8 +15,6 @@ static entity_state_t item_state;
 const uint8_t mushroom_pats[] = { 88, 92, };
 const uint8_t fireflower_pats[] = { 96, 100, };
 const uint8_t starman_pats[] = { 104, 108, };
-
-#pragma codeseg BANK0
 
 const metasprite_t mushroom_metasprite = {
   .n = 2,

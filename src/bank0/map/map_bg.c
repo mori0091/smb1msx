@@ -1,9 +1,9 @@
 // -*- coding: utf-8-unix -*-
 
-#include "map.h"
-#include "map_img.h"
-
 #pragma codeseg BANK0
+
+#include "map/map.h"
+#include "map/map_img.h"
 
 inline
 void map_bg_mountain(uint8_t xy, uint8_t obj, uint8_t * canvas) {

@@ -1,8 +1,10 @@
 // -*- coding: utf-8-unix -*-
 
-#include "smb1.h"
-
 #pragma codeseg BANK0
+
+#include <stdint.h>
+
+#include "smb1.h"
 
 #define FPS_SPRITE_PAT     FPS_SPRITE_PAT_1
 #define FPS_SPRITE_PAT_1   (252) /* top-left 8x8 pix */

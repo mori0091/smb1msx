@@ -1,11 +1,11 @@
 // -*- coding: utf-8-unix -*-
 
+#pragma codeseg BANK0
+
 #include "smb1.h"
 #include <stdint.h>
 
 const vec2i_t W16H16D2[] = { {0,0}, {0,0}, };
-
-#pragma codeseg BANK0
 
 uint8_t no_controller(void) {
   return 0;

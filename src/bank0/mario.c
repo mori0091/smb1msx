@@ -1,5 +1,7 @@
 // -*- coding: utf-8-unix -*-
 
+#pragma codeseg BANK0
+
 #include "smb1.h"
 
 struct mario_state mario_state;
@@ -24,8 +26,6 @@ const metasprite_t mario_metasprite = {
   .layouts = W16H32D2,
   .pats = mario_pats,
 };
-
-#pragma codeseg BANK0
 
 static void mario_post_step(entity_t * e);
 

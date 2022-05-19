@@ -15,6 +15,7 @@
 /**/lib
 /**/obj
 /**/compile_commands.json
+/**/.cache
 /sprite/*.pbm
 *.tiled-project
 *.tiled-session

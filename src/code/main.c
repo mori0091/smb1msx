@@ -1,9 +1,9 @@
 // -*- coding: utf-8-unix -*-
 
-#include "config.h"
-#include "../bank1/boot.h"
+#include <config.h>
 
-void smb1_main(void) __banked;
+#include "boot.h"
+#include "smb1.h"
 
 void main(void) {
   boot_main();

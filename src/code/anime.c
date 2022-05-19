@@ -1,6 +1,14 @@
 // -*- coding: utf-8-unix -*-
 
-#include "../bank0/smb1.h"
+#include <vdp.h>
+
+#include "anime.h"
+#include "assert.h"
+#include "graphics.h"
+#include "macros.h"
+#include "mario.h"
+#include "sm2.h"
+#include "timer.h"
 
 /* colors for palette animation of coin / ?-block */
 static const palette_t coin_colors[] = {

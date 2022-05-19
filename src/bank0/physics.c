@@ -1,5 +1,7 @@
 // -*- coding: utf-8-unix -*-
 
+#pragma codeseg BANK0
+
 #include "smb1.h"
 
 #define ENTITY_MAX  (8)
@@ -14,8 +16,6 @@ entity_t * const player = &player_entity;
 
 #define BUFFER_COLS   (STAGEMAP_BUFFER_PAGES * STAGEMAP_PAGE_COLS)
 #define BUFFER_WIDTH  (BUFFER_COLS * TILE_WIDTH)
-
-#pragma codeseg BANK0
 
 void physics_init(void) {
   entities.length = 1;

@@ -1,7 +1,13 @@
 // -*- coding: utf-8-unix -*-
 
-#include "../bank0/smb1.h"
 #include <stdint.h>
+
+#include <metasprite.h>
+#include <vmem.h>
+
+#include "macros.h"
+#include "anime.h"
+#include "sm2.h"
 
 static void sprites_from_metasprite(struct sprite * sp,
                                     const metasprite_t * ms,

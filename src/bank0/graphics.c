@@ -1,13 +1,13 @@
 // -*- coding: utf-8-unix -*-
 
+#pragma codeseg BANK0
+
 #include <msx.h>
 
 #include "graphics.h"
 #include "macros.h"
 #include "sprite.h"
 #include "vmem.h"
-
-#pragma codeseg BANK0
 
 // static const struct sprite hidden_sprite = { .y = 217 };
 

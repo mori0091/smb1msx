@@ -1,8 +1,8 @@
 // -*- coding: utf-8-unix -*-
 
-#include "map.h"
-
 #pragma codeseg BANK0
+
+#include "map/map.h"
 
 extern const uint8_t map_fg_layer_1_1_1[];
 

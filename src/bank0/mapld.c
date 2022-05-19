@@ -1,12 +1,11 @@
 // -*- coding: utf-8-unix -*-
 
-#include "smb1.h"
+#pragma codeseg BANK0
 
 #include <string.h>
 
+#include "smb1.h"
 #include "map/map_ld.h"
-
-#pragma codeseg BANK0
 
 #define PAGES     STAGEMAP_BUFFER_PAGES
 #define PAGE_ROWS STAGEMAP_PAGE_ROWS

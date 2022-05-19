@@ -1,11 +1,11 @@
 // -*- coding: utf-8-unix -*-
 
+#pragma codeseg BANK1
+
 #include <msx.h>
 
 #include "boot.h"
 #include "macros.h"
-
-#pragma codeseg BANK1
 
 void boot_init_vdp(void);
 void boot_init_vmem(void);

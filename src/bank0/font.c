@@ -1,10 +1,10 @@
 // -*- coding: utf-8-unix -*-
 
+#pragma codeseg BANK0
+
 #include <stdint.h>
 
 #include "font.h"
-
-#pragma codeseg BANK0
 
 extern const uint8_t font_title[];
 extern const uint8_t font_punct[];

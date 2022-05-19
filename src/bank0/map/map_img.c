@@ -1,8 +1,8 @@
 // -*- coding: utf-8-unix -*-
 
-#include "map_img.h"
-
 #pragma codeseg BANK0
+
+#include "map/map_img.h"
 
 void copy_rect(uint8_t * dst, const uint8_t * src, uint8_t w, uint8_t h) {
   for (uint8_t j = 0; j < w; ++j) {

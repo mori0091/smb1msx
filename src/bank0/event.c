@@ -1,8 +1,8 @@
 // -*- coding: utf-8-unix -*-
 
-#include "event.h"
-
 #pragma codeseg BANK0
+
+#include "event.h"
 
 static enum event evt;
 

@@ -4,7 +4,8 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include "tileset.h"
+
+#include "assets/tileset.h"
 
 const uint8_t tileset_table[] = {
   0x08, TILE_COLOR(C540, C540),

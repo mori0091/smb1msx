@@ -1,9 +1,10 @@
 // -*- coding: utf-8-unix -*-
 
-#include "smb1.h"
-#include "config.h"
-
 #pragma codeseg BANK0
+
+#include <config.h>
+
+#include "smb1.h"
 
 #define SIM_FREQ         (30)
 #define TITLE_DURATION   (5 * SIM_FREQ)

@@ -1,8 +1,10 @@
 // -*- coding: utf-8-unix -*-
 
-#include "smb1.h"
-
 #pragma codeseg BANK0
+
+#include <bios.h>
+
+#include "timer.h"
 
 /**
  * The main-timer tick counter.

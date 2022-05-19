@@ -1,8 +1,8 @@
 // -*- coding: utf-8-unix -*-
 
-#include "smb1.h"
-
 #pragma codeseg BANK0
+
+#include "smb1.h"
 
 /* default color palette */
 const palette_t color_palette[16] = {

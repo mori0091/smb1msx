@@ -1,8 +1,8 @@
 // -*- coding: utf-8-unix -*-
 
-#include "smb1.h"
-
 #pragma codeseg BANK0
+
+#include "smb1.h"
 
 /* next map column to be written */
 static uint16_t map_next;

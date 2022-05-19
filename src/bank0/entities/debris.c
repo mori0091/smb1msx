@@ -1,7 +1,10 @@
 // -*- coding: utf-8-unix -*-
 
-#include "../smb1.h"
+#pragma codeseg BANK0
+
 #include <stdint.h>
+
+#include "smb1.h"
 
 #define DEBRIS_VX       f8q8(5.0)
 #define DEBRIS_VY       f8q8(5.0)
@@ -17,8 +20,6 @@ const metasprite_t debris_metasprite = {
   .layouts = W16H16D2,
   .pats = debris_pats,
 };
-
-#pragma codeseg BANK0
 
 static void debris_post_step(entity_t * e) {
   if (e->vel.y < DEBRIS_VY) {
