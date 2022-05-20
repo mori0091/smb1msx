@@ -69,23 +69,6 @@
 #define CLOUD(width)            SIZED_OBJECT(ID_CLOUD, (width))
 #define GRASS(width)            SIZED_OBJECT(ID_GRASS, (width))
 
-enum map_bg {
-  MAP_BG_OVERWORLD_FINE_DAY = 0,
-  MAP_BG_OVERWORLD_ATHLETIC,
-  MAP_BG_OVER_SKY,
-  MAP_BG_UNDER_WATER,
-  MAP_BG_UNDERWORLD,
-  MAP_BG_CASTLE,
-};
-
-/**
- * BG layer table.
- *
- * The list of pointers to map command streams for BG layer.
- * The list is indexed by `enum map_bg`.
- */
-extern const uint8_t * const map_bg_layers[];
-
 /**
  * Put the tile-Ids of a BG object to the page buffer.
  *
@@ -93,7 +76,7 @@ extern const uint8_t * const map_bg_layers[];
  * \param obj     bytecode of a BG object (the 2nd byte of a map command)
  * \param canvas  the page buffer
  */
-void map_bg(uint8_t xy, uint8_t obj, uint8_t * canvas);
+void map_cmd_bg(uint8_t xy, uint8_t obj, uint8_t * canvas);
 
 
 // ---- FG (object) layer ----
@@ -143,19 +126,12 @@ void map_bg(uint8_t xy, uint8_t obj, uint8_t * canvas);
 #define VALLEY(width)            SIZED_OBJECT(1, width)
 
 /**
- * FG layer table.
- *
- * The list of pointers to map command streams for FG layer.
- */
-extern const uint8_t * const map_fg_layers[];
-
-/**
  * Put the tile-Ids of an object to the page buffer.
  *
  * \param xy      Row and Column index  (the 1st byte of a map command)
  * \param obj     bytecode of an object (the 2nd byte of a map command)
  * \param canvas  the page buffer
  */
-void map_fg(uint8_t xy, uint8_t obj, uint8_t * canvas);
+void map_cmd_fg(uint8_t xy, uint8_t obj, uint8_t * canvas);
 
 #endif

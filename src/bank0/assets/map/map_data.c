@@ -2,7 +2,7 @@
 
 #pragma codeseg BANK0
 
-#include "map_cmd.h"
+#include "map_data.h"
 
 extern const uint8_t map_bg_overworld_fine_day[];
 extern const uint8_t map_bg_overworld_athletic[];
@@ -20,38 +20,8 @@ const uint8_t * const map_bg_layers[] = {
   [MAP_BG_CASTLE]             = map_bg_castle,
 };
 
-const uint8_t map_bg_overworld_fine_day[] = {
-  XY( 0, 8), MOUNTAIN(3),
-  XY( 8, 1), CLOUD(3),
-  XY(11,10), GRASS(5),
+extern const uint8_t map_fg_world_1_1_room_1[];
 
-  XY( 0, 9), MOUNTAIN(2) | NEWPAGE,
-  XY( 3, 0), CLOUD(3),
-  XY( 7,10), GRASS(3),
-  XY(11, 1), CLOUD(5),
-
-  XY( 4, 0), CLOUD(4)    | NEWPAGE,
-  XY( 9,10), GRASS(4),
-
-  EOS,
-};
-
-const uint8_t map_bg_overworld_athletic[] = {
-  EOS,
-};
-
-const uint8_t map_bg_over_sky[] = {
-  EOS,
-};
-
-const uint8_t map_bg_under_water[] = {
-  EOS,
-};
-
-const uint8_t map_bg_underworld[] = {
-  EOS,
-};
-
-const uint8_t map_bg_castle[] = {
-  EOS,
+const uint8_t * const map_fg_layers[] = {
+  map_fg_world_1_1_room_1,
 };

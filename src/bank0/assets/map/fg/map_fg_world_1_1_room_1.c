@@ -4,13 +4,7 @@
 
 #include "map_cmd.h"
 
-extern const uint8_t map_fg_layer_1_1_1[];
-
-const uint8_t * const map_fg_layers[] = {
-  map_fg_layer_1_1_1,
-};
-
-const uint8_t map_fg_layer_1_1_1[] = {
+const uint8_t map_fg_world_1_1_room_1[] = {
   // page #0
 
   // page #1

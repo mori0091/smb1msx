@@ -6,7 +6,7 @@
 #include "map_img.h"
 
 inline
-void map_bg_mountain(uint8_t xy, uint8_t obj, uint8_t * canvas) {
+void map_cmd_bg_mountain(uint8_t xy, uint8_t obj, uint8_t * canvas) {
   uint8_t h = SIZED_OBJECT_LEN(obj);
   uint8_t * p = &(canvas[xy]);
   switch (h) {
@@ -42,7 +42,7 @@ void map_bg_mountain(uint8_t xy, uint8_t obj, uint8_t * canvas) {
 }
 
 inline
-void map_bg_cloud(uint8_t xy, uint8_t obj, uint8_t * canvas) {
+void map_cmd_bg_cloud(uint8_t xy, uint8_t obj, uint8_t * canvas) {
   uint8_t w = SIZED_OBJECT_LEN(obj);
   uint8_t * p = &(canvas[xy]);
   p[0] = 0x3d;
@@ -59,7 +59,7 @@ void map_bg_cloud(uint8_t xy, uint8_t obj, uint8_t * canvas) {
 }
 
 inline
-void map_bg_grass(uint8_t xy, uint8_t obj, uint8_t * canvas) {
+void map_cmd_bg_grass(uint8_t xy, uint8_t obj, uint8_t * canvas) {
   uint8_t w = SIZED_OBJECT_LEN(obj);
   uint8_t * p = &(canvas[xy]);
   p[0] = 0x5d;
@@ -72,18 +72,18 @@ void map_bg_grass(uint8_t xy, uint8_t obj, uint8_t * canvas) {
   p[0] = 0x5f;
 }
 
-void map_bg(uint8_t xy, uint8_t obj, uint8_t * canvas) {
+void map_cmd_bg(uint8_t xy, uint8_t obj, uint8_t * canvas) {
   // obj &= ~NEWPAGE;
   const uint8_t id = SIZED_OBJECT_ID(obj);
   switch (id) {
   case ID_MOUNTAIN:
-    map_bg_mountain(xy, obj, canvas);
+    map_cmd_bg_mountain(xy, obj, canvas);
     return;
   case ID_CLOUD:
-    map_bg_cloud(xy, obj, canvas);
+    map_cmd_bg_cloud(xy, obj, canvas);
     return;
   case ID_GRASS:
-    map_bg_grass(xy, obj, canvas);
+    map_cmd_bg_grass(xy, obj, canvas);
     return;
   default:
     return;

@@ -5,6 +5,8 @@
 #include <string.h>
 
 #include "smb1.h"
+#include "map_data.h"
+
 #include "map/map_ld.h"
 
 #define PAGES     STAGEMAP_BUFFER_PAGES

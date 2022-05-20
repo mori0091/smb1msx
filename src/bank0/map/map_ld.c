@@ -49,7 +49,7 @@ void map_ld_load_bg_page(uint8_t * canvas) {
       ctx.bg.cmd[1] &= ~NEWPAGE;
       return;
     }
-    map_bg(ctx.bg.cmd[0], ctx.bg.cmd[1], canvas);
+    map_cmd_bg(ctx.bg.cmd[0], ctx.bg.cmd[1], canvas);
     map_ld_fetch(&ctx.bg);
   }
 }
@@ -64,7 +64,7 @@ void map_ld_load_fg_page(uint8_t * canvas) {
       ctx.fg.cmd[1] &= ~NEWPAGE;
       return;
     }
-    map_fg(ctx.fg.cmd[0], ctx.fg.cmd[1], canvas);
+    map_cmd_fg(ctx.fg.cmd[0], ctx.fg.cmd[1], canvas);
     map_ld_fetch(&ctx.fg);
   }
 }
