@@ -116,16 +116,16 @@ void entity_update_collision(entity_t * e) {
     int8_t diff_y = e->pos.y.i - e->prev_pos.y.i;
     // check ceil
     if (diff_y < 0) {
-      c1 = mapld_get_object_at(box.left+CEIL_MARGIN_L, box.top);
-      c2 = mapld_get_object_at(box.right-CEIL_MARGIN_R, box.top);
+      c1 = map_get_object_at(box.left+CEIL_MARGIN_L, box.top);
+      c2 = map_get_object_at(box.right-CEIL_MARGIN_R, box.top);
       if ((c1 | c2) & 0x80) {
         collision |= COLLISION_CEIL;
       }
     }
     // check floor
     else {
-      c1 = mapld_get_object_at(box.left+FLOOR_MARGIN_L, box.bottom+1);
-      c2 = mapld_get_object_at(box.right-FLOOR_MARGIN_R, box.bottom+1);
+      c1 = map_get_object_at(box.left+FLOOR_MARGIN_L, box.bottom+1);
+      c2 = map_get_object_at(box.right-FLOOR_MARGIN_R, box.bottom+1);
       if (is_obstacle(c1) || is_obstacle(c2)) {
         collision |= COLLISION_FLOOR;
       }
@@ -149,9 +149,9 @@ void entity_update_collision(entity_t * e) {
     // check left-side wall
     if (off_x < SIDE_L) {
       uint16_t xl = box.left + SIDE_MARGIN_L;
-      if (is_obstacle(mapld_get_object_at(xl, yt)) ||
-          is_obstacle(mapld_get_object_at(xl, yc)) ||
-          is_obstacle(mapld_get_object_at(xl, yb))) {
+      if (is_obstacle(map_get_object_at(xl, yt)) ||
+          is_obstacle(map_get_object_at(xl, yc)) ||
+          is_obstacle(map_get_object_at(xl, yb))) {
         if (c2 & 0x80) {
           collision |= COLLISION_LEFT;
         }
@@ -163,9 +163,9 @@ void entity_update_collision(entity_t * e) {
     // check right-side wall
     if (off_x > SIDE_R) {
       uint16_t xr = box.right - SIDE_MARGIN_R;
-      if (is_obstacle(mapld_get_object_at(xr, yt)) ||
-          is_obstacle(mapld_get_object_at(xr, yc)) ||
-          is_obstacle(mapld_get_object_at(xr, yb))) {
+      if (is_obstacle(map_get_object_at(xr, yt)) ||
+          is_obstacle(map_get_object_at(xr, yc)) ||
+          is_obstacle(map_get_object_at(xr, yb))) {
         if (c1 & 0x80) {
           collision |= COLLISION_RIGHT;
         }

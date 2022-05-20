@@ -2,7 +2,7 @@
 
 #pragma codeseg BANK0
 
-#include "map/map.h"
+#include "map_cmd.h"
 
 extern const uint8_t map_fg_layer_1_1_1[];
 

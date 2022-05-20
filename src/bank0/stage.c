@@ -18,7 +18,7 @@ void stage_init(void) {
 void stage_setup(void) {
   /* Render the 1st page of the stage map */
   for (int j = 0; j < STAGEMAP_PAGE_COLS; ++j) {
-    const uint8_t * p = mapld_get_buffer_ptr_at(0, j);
+    const uint8_t * p = map_get_buffer_ptr_at(0, j);
     for (int i = 0; i < STAGEMAP_VISIBLE_ROWS; ++i) {
       const uint8_t c = *p++;
       uint16_t x1 = (c & 0x0f) << 4;
@@ -49,8 +49,8 @@ static uint16_t pp;
 static uint16_t ix;
 static uint16_t iy;
 
-inline void map_renderer_task_begin(void) {
-  p = mapld_get_buffer_ptr_at(1, map_next);
+inline void stage_renderer_task_begin(void) {
+  p = map_get_buffer_ptr_at(1, map_next);
   pp = (TILE_WIDTH * map_next) & 256; // page #0 (0) or page #1 (256)
   ix = (TILE_WIDTH * map_next) & 255;
   iy = TILE_HEIGHT + pp;
@@ -58,7 +58,7 @@ inline void map_renderer_task_begin(void) {
   renderer_state = 1;
 }
 
-inline void map_renderer_task_do(void) {
+inline void stage_renderer_task_do(void) {
   // tile := c|y|y|y|x|x|x|x ... 'c': collision bit
   const uint8_t tile = *p++;
   // tile position on VRAM page #3
@@ -70,32 +70,32 @@ inline void map_renderer_task_do(void) {
   iy += TILE_HEIGHT;
 }
 
-inline void map_renderer_task_end(void) {
+inline void stage_renderer_task_end(void) {
   renderer_state = 0;
   map_next++;
   if (!(map_next % (STAGEMAP_PAGE_COLS / 2))) {
-    mapld_load_next_half_page();
+    map_load_next_half_page();
     stage_test_and_fix_wraparound();
   }
 }
 
-inline bool map_renderer_task_is_buffer_full(void) {
+inline bool stage_renderer_task_is_buffer_full(void) {
   // return ((camera_get_x() + 2 * PIXELS_PER_LINE) / TILE_WIDTH <= map_next);
   return (camera_get_x() / TILE_WIDTH + 2 * STAGEMAP_PAGE_COLS <= map_next);
 }
 
-inline void map_renderer_task(void) {
+inline void stage_renderer_task(void) {
   if (!renderer_state) {
-    if (map_renderer_task_is_buffer_full()) {
+    if (stage_renderer_task_is_buffer_full()) {
       return;
     }
-    map_renderer_task_begin();
+    stage_renderer_task_begin();
   }
   {
-    map_renderer_task_do();
+    stage_renderer_task_do();
   }
   if (renderer_state >= STAGEMAP_VISIBLE_ROWS) {
-    map_renderer_task_end();
+    stage_renderer_task_end();
   }
 }
 
@@ -123,7 +123,7 @@ void stage_update(void) {
   }
   while (0 < timeslot_counter) {
     timeslot_counter -= TILE_WIDTH;
-    map_renderer_task();
+    stage_renderer_task();
   }
 }
 
@@ -134,5 +134,5 @@ void stage_put_tile(uint8_t row, uint8_t col, uint8_t tile) {
   const uint16_t x = (tile & 0x0f) << 4;
   const uint16_t y = (tile & 0x70) + 3 * LINES_PER_VRAM_PAGE;
   vdp_cmd_execute_HMMM(x, y, TILE_WIDTH, TILE_HEIGHT, ix, iy);
-  *mapld_get_buffer_ptr_at(row, col) = tile;
+  *map_get_buffer_ptr_at(row, col) = tile;
 }

@@ -5,7 +5,7 @@
 #ifndef MAP_LD_H
 #define MAP_LD_H
 
-#include "map.h"
+#include "map_cmd.h"
 
 struct map_ptr {
   const uint8_t * head;         // pointer to the head of map command stream

@@ -2,8 +2,8 @@
 
 #pragma once
 
-#ifndef MAPLD_H
-#define MAPLD_H
+#ifndef MAP_H
+#define MAP_H
 
 #include <stdint.h>
 
@@ -12,12 +12,12 @@
 /**
  * Initialize the map loader.
  */
-void mapld_init(void);
+void map_init(void);
 
 /**
  * Load next half page of the map.
  */
-void mapld_load_next_half_page(void);
+void map_load_next_half_page(void);
 
 /**
  * Returns the buffer page number according to the column number of stage map.
@@ -25,7 +25,7 @@ void mapld_load_next_half_page(void);
  * \param col  the column number
  * \return     the buffer page number
  */
-inline uint8_t mapld_get_buffer_page_at(uint16_t col) {
+inline uint8_t map_get_buffer_page_at(uint16_t col) {
   return (col >> 4) % STAGEMAP_BUFFER_PAGES;
 }
 
@@ -36,7 +36,7 @@ inline uint8_t mapld_get_buffer_page_at(uint16_t col) {
  * \param row, col  (row, column) index
  * \return          pointer to the map buffer element.
  */
-uint8_t* mapld_get_buffer_ptr_at(uint8_t row, uint16_t col);
+uint8_t* map_get_buffer_ptr_at(uint8_t row, uint16_t col);
 
 /**
  * Returns an object at the given position.
@@ -45,6 +45,6 @@ uint8_t* mapld_get_buffer_ptr_at(uint8_t row, uint16_t col);
  * \param y  y-coordinate in the stage. [pix]
  * \return   the object code at (x,y)
  */
-uint8_t mapld_get_object_at(int x, int y);
+uint8_t map_get_object_at(int x, int y);
 
 #endif

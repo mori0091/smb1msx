@@ -2,8 +2,8 @@
 
 #pragma codeseg BANK0
 
-#include "map/map_ld.h"
-#include "map/map_img.h"
+#include "map_ld.h"
+#include "map_img.h"
 
 static struct map_ctx ctx;
 

@@ -2,12 +2,12 @@
 
 #pragma once
 
-#ifndef MAP_H
-#define MAP_H
+#ifndef MAP_CMD_H
+#define MAP_CMD_H
 
 #include <stdint.h>
 
-#include "../macros.h"
+#include "macros.h"
 
 // opcode
 

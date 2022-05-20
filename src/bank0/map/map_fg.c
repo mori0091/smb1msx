@@ -2,8 +2,8 @@
 
 #pragma codeseg BANK0
 
-#include "map/map.h"
-#include "map/map_img.h"
+#include "map_cmd.h"
+#include "map_img.h"
 
 inline
 void map_fg_q_block(uint8_t xy, uint8_t obj, uint8_t * canvas) {

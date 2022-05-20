@@ -26,7 +26,7 @@
 #include "event.h"
 #include "countdown.h"
 
-#include "mapld.h"
+#include "map.h"
 #include "stage.h"
 #include "camera.h"
 #include "physics.h"

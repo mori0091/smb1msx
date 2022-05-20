@@ -44,8 +44,8 @@ static uint8_t auto_pilot_2(void) {
         (player->c2 < 0x80)) {
       return VK_FIRE_0 | VK_RIGHT;
     }
-    if (mapld_get_object_at(player->pos.x.i + 40,
-                            player->pos.y.i - 48) > 0x7f) {
+    if (map_get_object_at(player->pos.x.i + 40,
+                          player->pos.y.i - 48) > 0x7f) {
       return VK_FIRE_0 | VK_LEFT;
     }
   }
@@ -134,7 +134,7 @@ static void show_hud(void) {
 
 static void get_ready(void) {
   event_init();
-  mapld_init();
+  map_init();
   stage_init();
   camera_init();
   physics_init();

@@ -21,7 +21,7 @@ uint8_t page[PAGE_COLS][PAGE_ROWS];
 static uint8_t next_buffer_page;
 static bool odd_half;
 
-void mapld_init(void) {
+void map_init(void) {
   map_ld_init();
   map_ld_set_bg_theme(0);       // \todo
   map_ld_set_bg_layer(map_bg_layers[0], 0x1800);
@@ -30,15 +30,15 @@ void mapld_init(void) {
   next_buffer_page = 0;
   odd_half = false;
   memset(map_buffer, 0, sizeof(map_buffer));
-  mapld_load_next_half_page();
-  mapld_load_next_half_page();
-  mapld_load_next_half_page();
+  map_load_next_half_page();
+  map_load_next_half_page();
+  map_load_next_half_page();
 }
 
 #define HALF_PAGE_COLS  (PAGE_COLS / 2)
 #define HALF_PAGE_SIZE  (PAGE_ROWS * PAGE_COLS / 2)
 
-void mapld_load_next_half_page(void) {
+void map_load_next_half_page(void) {
   if (odd_half) {
     memcpy(map_buffer[next_buffer_page][HALF_PAGE_COLS],
            page[HALF_PAGE_COLS], HALF_PAGE_SIZE);
@@ -53,12 +53,12 @@ void mapld_load_next_half_page(void) {
   }
 }
 
-uint8_t* mapld_get_buffer_ptr_at(uint8_t row, uint16_t col) {
+uint8_t* map_get_buffer_ptr_at(uint8_t row, uint16_t col) {
   const uint16_t idx = ((col & 0x1f) << 4) + (row & 0x0f);
   return (uint8_t *)map_buffer + idx;
 }
 
-uint8_t mapld_get_object_at(int x, int y) {
+uint8_t map_get_object_at(int x, int y) {
   if (y < 0 || 211 < y) {
     return 0;
   }

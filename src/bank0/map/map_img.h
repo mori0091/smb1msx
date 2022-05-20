@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "../macros.h"
+#include "macros.h"
 
 #define ROWS  STAGEMAP_PAGE_ROWS
 #define COLS  STAGEMAP_PAGE_COLS
