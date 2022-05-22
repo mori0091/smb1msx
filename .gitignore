@@ -19,3 +19,4 @@
 /sprite/*.pbm
 *.tiled-project
 *.tiled-session
+/**/.vscode
