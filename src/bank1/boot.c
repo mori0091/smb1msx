@@ -2,6 +2,7 @@
 
 #pragma codeseg BANK1
 
+#include <stdint.h>
 #include <msx.h>
 
 #include "boot.h"
@@ -53,6 +54,21 @@ void boot_init_vdp(void) {
                        LINES_PER_VRAM_PAGE,                   \
                        (byte))
 
+#include "assets/tilemap.h"
+
+extern const u8_256x8 tileset_mario_0;
+extern const u8_256x8 tileset_mario_1;
+const u8_256x8 * sprite_tilsets[] = {
+  &tileset_mario_1,
+  &tileset_mario_0,
+};
+
+extern const uint8_t tilemap_mario[64][2];
+extern const uint8_t tilemap_super_mario_u[64][2];
+extern const uint8_t tilemap_super_mario_b[64][2];
+extern const uint8_t tilemap_fire_mario_u[64][2];
+extern const uint8_t tilemap_fire_mario_b[64][2];
+
 void boot_init_vmem(void) {
   /* clear VRAM page #0 and #1 */
   VRAM_PAGE_FILL(0, 0x00);
@@ -68,6 +84,20 @@ void boot_init_vmem(void) {
   /* Copy sprite patterns to VRAM */
   vmem_write(REF_SPRITE_PATTERNS, (void *)smb1spt, smb1spt_size);
   vmem_write(SPRITE_PATTERNS, (void *)smb1spt, smb1spt_size);
+
+  vmem_set_write_address(REF_SPRITE_PATTERNS);
+  /* facing to left */
+  tilemap_copy_to_vmem_4_hflip(64, tilemap_mario        , 2, sprite_tilsets); // + 0..+15
+  tilemap_copy_to_vmem_4_hflip(64, tilemap_super_mario_u, 2, sprite_tilsets); // +16..+31
+  tilemap_copy_to_vmem_4_hflip(64, tilemap_super_mario_b, 2, sprite_tilsets); // +32..+47
+  tilemap_copy_to_vmem_4_hflip(64, tilemap_fire_mario_u , 2, sprite_tilsets); // +48..+63
+  tilemap_copy_to_vmem_4_hflip(64, tilemap_fire_mario_b , 2, sprite_tilsets); // +64..+79
+  /* facing to right */
+  tilemap_copy_to_vmem_4      (64, tilemap_mario        , 2, sprite_tilsets);
+  tilemap_copy_to_vmem_4      (64, tilemap_super_mario_u, 2, sprite_tilsets);
+  tilemap_copy_to_vmem_4      (64, tilemap_super_mario_b, 2, sprite_tilsets);
+  tilemap_copy_to_vmem_4      (64, tilemap_fire_mario_u , 2, sprite_tilsets);
+  tilemap_copy_to_vmem_4      (64, tilemap_fire_mario_b , 2, sprite_tilsets);
 
   /* Copy tileset image to VRAM page #3 */
   tileset_decompress_into_vram();

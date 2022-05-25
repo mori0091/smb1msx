@@ -44,7 +44,7 @@ void mario_init(void) {
   entity_set_metasprite(player, &mario_metasprite);
   // entity_set_sprite_palette(player, MARIO_PALETTE);
   assets_set_sprite_palette(SPRITES, 2, MARIO_PALETTE);
-  assets_set_sprite_palette(SPRITES, 4, LUIGI_PALETTE);
+  assets_set_sprite_palette(SPRITES, 4, MARIO_PALETTE);
   player->plane = 2;
 
   /* SDCC does not support ISO C99 compound literal */
@@ -77,14 +77,14 @@ void mario_init(void) {
 static void mario_set_sprite_pat(uint8_t idx) {
   if (mario_has_super_ability()) {
     // layer #0, #1 (lower body)
-    vdp_cmd_execute_HMMM(SPRITE_PAT_SX(idx),
-                         SPRITE_PAT_SY(idx),
+    vdp_cmd_execute_HMMM(SPRITE_PAT_SX(idx+32),
+                         SPRITE_PAT_SY(idx+32),
                          128, 1,
                          MARIO_PAT1_DX,
                          MARIO_PAT1_DY);
     // layer #2, #3 (upper body)
-    vdp_cmd_execute_HMMM(SPRITE_PAT_SX(idx),
-                         SPRITE_PAT_SY(idx),
+    vdp_cmd_execute_HMMM(SPRITE_PAT_SX(idx+16),
+                         SPRITE_PAT_SY(idx+16),
                          128, 1,
                          MARIO_PAT2_DX,
                          MARIO_PAT2_DY);
@@ -112,7 +112,8 @@ void mario_show(int x, int y) {
 static uint8_t anim_tick;
 
 void mario_animate(void) {
-  uint8_t idx = mario_state.pose + player->facing;
+  // uint8_t idx = mario_state.pose + player->facing;
+  uint8_t idx = mario_state.pose + (16*5) * player->facing;
   if (mario_state.pose != WALKING) {
     mario_set_sprite_pat(idx);
     return;
@@ -125,11 +126,13 @@ void mario_animate(void) {
   if (6 <= anim_tick) {
     anim_tick = 0;
   }
-  const uint8_t t = anim_tick & ~1;
+  // const uint8_t t = anim_tick & ~1;
+  const uint8_t t = anim_tick >> 1;
   mario_set_sprite_pat(t + idx);
 }
 
 void mario_animate_die(void) {
+  mario_reset_ability();
   mario_set_pose(DEAD);
   entity_set_facing(player, 0);
   player->input = A_BUTTON;
@@ -176,8 +179,15 @@ static void mario_post_step(entity_t * e) {
     else if (player_get_speed() == 0) {
       mario_set_pose(STANDING);
     }
+    else if (player->braking) {
+      mario_set_pose(BRAKING);
+    }
     else {
       mario_set_pose(WALKING);
+    }
+    // overwrite mario's pose if super-mario is crouching.
+    if (mario_has_super_ability() && (player->input & VK_DOWN)) {
+      mario_set_pose(CROUCHING);
     }
   }
   else {

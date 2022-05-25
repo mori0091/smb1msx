@@ -228,6 +228,7 @@ static void entity_update_speed_on_floor(entity_t * e) {
 
   const uint8_t LR_KEY = e->input & (VK_LEFT | VK_RIGHT);
 
+  e->braking = false;
   if (LR_KEY == FORWARD_KEY) {
     if (e->input & B_BUTTON) {
       speed += accel_hi;
@@ -243,6 +244,7 @@ static void entity_update_speed_on_floor(entity_t * e) {
   else if (LR_KEY == BACKWARD_KEY) {
     if (brake < speed) {
       speed -= brake;
+      e->braking = true;
     } else {
       speed = 0;
     }
@@ -303,6 +305,10 @@ static void entity_update_speed_flight(entity_t * e) {
 }
 
 void entity_update_speed(entity_t * e) {
+  if (e->input & VK_DOWN) {
+    // omit left / right arrow key when down key is pressed
+    e->input &= ~(VK_LEFT | VK_RIGHT);
+  }
   if (e->collision & COLLISION_FLOOR) {
     // update horizontal speed
     entity_update_speed_on_floor(e);

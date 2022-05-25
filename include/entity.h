@@ -99,6 +99,8 @@ struct entity {
   entity_callback_t post_step;
   /** The direction in which the entity is facing. */
   enum facing facing;
+  /** Whether the entity is braking or not. */
+  bool braking;
   /** Metasprite of this entity (optional). */
   const metasprite_t * metasprite;
   // /** Sprite palette number. */

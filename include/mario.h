@@ -13,27 +13,25 @@
 
 enum mario_pose {
   STANDING    = 0,
-  STANDING_L  = 0,
-  STANDING_R  = 1,
-
-  JUMPING     = 2,
-  JUMPING_L   = 2,
-  JUMPING_R   = 3,
-
-  WALKING     = 4,
-  WALKING_1   = 4,
-  WALKING_1_L = 4,
-  WALKING_1_R = 5,
-
-  WALKING_2   = 6,
-  WALKING_2_L = 6,
-  WALKING_2_R = 7,
-
-  WALKING_3   = 8,
-  WALKING_3_L = 8,
-  WALKING_3_R = 9,
-
-  DEAD        = 10,
+  JUMPING     = 1,
+  WALKING     = 2,
+  WALKING_0   = 2,
+  WALKING_1   = 3,
+  WALKING_2   = 4,
+  BRAKING     = 5,
+  CLIMBING    = 6,
+  CLIMBING_0  = 6,
+  CLIMBING_1  = 7,
+  SWIMING     = 8,
+  SWIMING_0   = 8,
+  SWIMING_1   = 9,
+  SWIMING_2   = 10,
+  SWIMING_3   = 11,
+  SWIMING_4   = 12,
+  SWIMING_5   = 13,             /* only for super mario */
+  CROUCHING   = 14,             /* only for super mario */
+  DEAD        = 15,             /* only for mario */
+  TRANFORMING = 15,             /* only for super mario */
 };
 
 // data SuperAbility   = Normal | SuperPower
@@ -101,6 +99,8 @@ inline uint8_t mario_get_ability(void) {
 
 inline void mario_reset_ability(void) {
   mario_state.status &= ~ABILITY_MASK;
+  assets_set_sprite_palette(SPRITES, 2, MARIO_PALETTE);
+  assets_set_sprite_palette(SPRITES, 4, MARIO_PALETTE);
 }
 
 inline void mario_set_ability(uint8_t ability) {
@@ -145,14 +145,12 @@ inline void mario_power_up(void) {
 inline void mario_power_down(void) {
   if (mario_has_super_ability()) {
     // \TODO Power down animation
-    mario_reset_ability();
     mario_set_physical_status(STATUS_WEAKENED);
   }
   else {
     event_set(EV_PLAYER_DIES);
   }
-  assets_set_sprite_palette(SPRITES, 2, MARIO_PALETTE);
-  assets_set_sprite_palette(SPRITES, 4, LUIGI_PALETTE);
+  mario_reset_ability();
 }
 
 inline int8_t mario_get_life(void) {
