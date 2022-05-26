@@ -23,6 +23,7 @@ extern const struct sound_clip se_item;
 extern const struct sound_clip se_powup;
 extern const struct sound_clip se_1up;
 extern const struct sound_clip se_destruct;
+extern const struct sound_clip se_pipe;
 
 /* stage map */
 extern const size_t smb1map_size;
@@ -43,6 +44,8 @@ enum sprite_palette {
   SPRITE_PALETTE_4 = 3,
   SPRITE_PALETTE_5 = 4,
 };
+
+extern const tagged_color_t sp_palettes[][2];
 
 // aliases (Mario color)
 #define MARIO_PALETTE           SPRITE_PALETTE_1

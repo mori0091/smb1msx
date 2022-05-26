@@ -1,5 +1,6 @@
 // -*- coding: utf-8-unix -*-
 
+#include <stdint.h>
 #pragma codeseg BANK0
 
 #include "smb1.h"
@@ -106,7 +107,7 @@ static void mario_set_sprite_pat(uint8_t idx) {
 }
 
 void mario_show(int x, int y) {
-  vmem_set_metasprite_a(SPRITES, 2, x, y, &mario_metasprite);
+  vmem_set_metasprite_a(SPRITES, 2, x, y - 1, &mario_metasprite);
 }
 
 static uint8_t anim_tick;
@@ -165,6 +166,55 @@ void mario_animate_die(void) {
   sleep_millis(100);
 }
 
+static void mario_enter_pipe_down(void) {
+  int16_t x = player->pos.x.i;
+  int16_t y = player->pos.y.i;
+  sound_effect(&se_pipe);
+  for (uint8_t i = 0; i < 32; ++i) {
+    await_vsync();
+    mario_show(x - camera_get_x(), ++y);
+    vmemptr_t p = SPRITE_COLORS + 32 + 15 - (i & 15);
+    if (i < 16) {
+      // hide lower body line by line
+      vmem_set_write_address(p + 0);
+      vmem_set(0);
+      vmem_set_write_address(p + 16);
+      vmem_set(0);
+    } else {
+      // hide upper body line by line
+      vmem_set_write_address(p + 32);
+      vmem_set(0);
+      vmem_set_write_address(p + 48);
+      vmem_set(0);
+    }
+  }
+}
+
+static void mario_leave_pipe_up(void) {
+  int16_t x = player->pos.x.i;
+  int16_t y = player->pos.y.i + 32;
+  uint8_t plt = mario_has_fire_ability() ? FIRE_MARIO_PALETTE : MARIO_PALETTE;
+  sound_effect(&se_pipe);
+  for (uint8_t i = 0; i < 32; ++i) {
+    await_vsync();
+    mario_show(x - camera_get_x(), --y);
+    vmemptr_t p = SPRITE_COLORS + 32 + (i & 15);
+    if (i < 16) {
+      // hide upper body line by line
+      vmem_set_write_address(p + 32);
+      vmem_set(sp_palettes[plt][0]);
+      vmem_set_write_address(p + 48);
+      vmem_set(sp_palettes[plt][1]);
+    } else {
+      // hide lower body line by line
+      vmem_set_write_address(p + 0);
+      vmem_set(sp_palettes[plt][0]);
+      vmem_set_write_address(p + 16);
+      vmem_set(sp_palettes[plt][1]);
+    }
+  }
+}
+
 static void mario_post_step(entity_t * e) {
   // assert(e == player);
   (void)e;
@@ -185,9 +235,23 @@ static void mario_post_step(entity_t * e) {
     else {
       mario_set_pose(WALKING);
     }
-    // overwrite mario's pose if super-mario is crouching.
-    if (mario_has_super_ability() && (player->input & VK_DOWN)) {
-      mario_set_pose(CROUCHING);
+    if (player->input & VK_DOWN) {
+      if (mario_has_super_ability()) {
+        // overwrite mario's pose if super-mario is crouching.
+        mario_set_pose(CROUCHING);
+      }
+      if (0 <= player->vel.y &&
+          player->c1 == (0x26 | 0x80) &&
+          player->c2 == (0x27 | 0x80)) {
+        // Enter the pipe underfoot.
+        player->vel.x = 0;
+        player->vel.y = 0;
+        mario_set_pose(STANDING);
+        mario_animate();
+        mario_enter_pipe_down();
+        sleep_millis(500);
+        mario_leave_pipe_up();
+      }
     }
   }
   else {

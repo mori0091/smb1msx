@@ -41,7 +41,7 @@ void assets_setup(void) {
   }
 }
 
-static const tagged_color_t sp_palettes[][2] = {
+const tagged_color_t sp_palettes[][2] = {
   [SPRITE_PALETTE_1] = {0x01, 0x02 | SPRITE_TAG_CC},
   [SPRITE_PALETTE_2] = {0x0e, 0x0d | SPRITE_TAG_CC},
   [SPRITE_PALETTE_3] = {0x0e, 0x05 | SPRITE_TAG_CC},
