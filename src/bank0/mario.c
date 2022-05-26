@@ -194,7 +194,7 @@ static void mario_post_step(entity_t * e) {
     if (player->collision & COLLISION_CEIL) {
       uint8_t col = x / TILE_WIDTH;
       uint8_t row = y / TILE_HEIGHT - 1;
-      if (mario_has_super_ability()) {
+      if (mario_has_super_ability() && mario_state.pose != CROUCHING) {
         row--;
       }
       uint8_t obj;

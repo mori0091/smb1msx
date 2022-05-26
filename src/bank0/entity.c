@@ -26,7 +26,7 @@ void entity_set_controller(entity_t * e, controller_t c) {
 }
 
 void entity_get_bounds(const entity_t * e, rect_t * rect) {
-  if (e == player && mario_has_super_ability()) {
+  if (e == player && mario_has_super_ability() && mario_state.pose != CROUCHING) {
     rect->left   = player->pos.x.i;
     rect->top    = player->pos.y.i - 16;
     rect->right  = rect->left + 15;
