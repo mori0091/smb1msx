@@ -305,10 +305,6 @@ static void entity_update_speed_flight(entity_t * e) {
 }
 
 void entity_update_speed(entity_t * e) {
-  if (e->input & VK_DOWN) {
-    // omit left / right arrow key when down key is pressed
-    e->input &= ~(VK_LEFT | VK_RIGHT);
-  }
   if (e->collision & COLLISION_FLOOR) {
     // update horizontal speed
     entity_update_speed_on_floor(e);

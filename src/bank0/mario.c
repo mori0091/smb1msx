@@ -235,7 +235,7 @@ static void mario_post_step(entity_t * e) {
     else {
       mario_set_pose(WALKING);
     }
-    if (player->input & VK_DOWN) {
+    if ((player->input & (VK_DOWN | VK_LEFT | VK_RIGHT | VK_UP)) == VK_DOWN) {
       if (mario_has_super_ability()) {
         // overwrite mario's pose if super-mario is crouching.
         mario_set_pose(CROUCHING);
