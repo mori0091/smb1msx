@@ -73,7 +73,7 @@ void map_ld_load_page(uint8_t * canvas) {
   if (ctx.bg.cmd[0] == 0xff) {
     map_ld_rewind(&ctx.bg);
     // -- optional (loop / sync) --
-    if (32 <= ctx.page && ctx.fg.cmd[0] == 0xff) {
+    if (24 <= ctx.page && ctx.fg.cmd[0] == 0xff) {
       map_ld_rewind(&ctx.fg);
       ctx.page = 0;
     }

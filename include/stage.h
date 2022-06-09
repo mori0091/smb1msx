@@ -25,6 +25,11 @@ void stage_setup(void);
 void stage_update(void);
 
 /**
+ * Reset stage map and then forward it until catching up to camera's position.
+ */
+void stage_warp_to_camera_position(void);
+
+/**
  * Replace the tile at the given (row, col).
  *
  * Used to dynamically update objects on the current map.

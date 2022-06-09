@@ -1,5 +1,6 @@
 // -*- coding: utf-8-unix -*-
 
+#include <stdint.h>
 #pragma codeseg BANK0
 
 #include "smb1.h"
@@ -32,7 +33,7 @@ void stage_setup(void) {
   vdp_cmd_execute_HMMV(0, 256, 256, 16, 0xcc);
 }
 
-#define MAX_PAGES_TO_WRAPAROUND    (32)
+#define MAX_PAGES_TO_WRAPAROUND    (24)
 #define MAX_COLUMNS_TO_WRAPAROUND  (MAX_PAGES_TO_WRAPAROUND * STAGEMAP_PAGE_COLS)
 #define MAX_PIXELS_TO_WRAPAROUND   (MAX_COLUMNS_TO_WRAPAROUND * TILE_WIDTH)
 
@@ -125,6 +126,18 @@ void stage_update(void) {
     timeslot_counter -= TILE_WIDTH;
     stage_renderer_task();
   }
+}
+
+void stage_warp_to_camera_position(void) {
+  map_init();
+  stage_init();
+  uint8_t n = camera_get_x() / TILE_WIDTH;
+  while (n--) {
+    stage_update();
+  }
+  vdp_cmd_await();
+  set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
+  await_vsync();
 }
 
 void stage_put_tile(uint8_t row, uint8_t col, uint8_t tile) {

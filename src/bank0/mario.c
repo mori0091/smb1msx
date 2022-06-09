@@ -258,16 +258,10 @@ static void mario_post_step(entity_t * e) {
           vdp_set_visible(false);
           player->pos.x.i = TILE_WIDTH * 163 + 8;
           player->pos.y.i = TILE_HEIGHT * 9;
-          map_init();
-          stage_init();
+          player->vel.x = 0;
           camera_init();
-          camera_set_x(player->pos.x.i - 124);
-          // camera_set_x(TILE_WIDTH * 160);
-          camera_set_speed(0);
-          stage_update();
-          vdp_cmd_await();
-          set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
-          await_vsync();
+          camera_set_x(TILE_WIDTH * 160);
+          stage_warp_to_camera_position();
           vdp_set_visible(true);
           sound_start();
         }
