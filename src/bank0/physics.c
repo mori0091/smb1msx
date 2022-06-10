@@ -20,6 +20,7 @@ entity_t * const player = &player_entity;
 void physics_init(void) {
   entities.length = 1;
   entities.list[0] = player;
+  sm2_clear_sprites();
 }
 
 void physics_add_entity(entity_t * const e) {
