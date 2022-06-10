@@ -192,7 +192,7 @@ static void mario_enter_pipe_down(void) {
 static void mario_leave_pipe_up(void) {
   int16_t x = player->pos.x.i;
   int16_t y = player->pos.y.i + 32;
-  uint8_t plt = mario_has_fire_ability() ? FIRE_MARIO_PALETTE : MARIO_PALETTE;
+  uint8_t plt = MARIO_PALETTE;
   sound_effect(&se_pipe);
   for (uint8_t i = 0; i < 32; ++i) {
     await_vsync();

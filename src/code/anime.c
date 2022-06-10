@@ -82,6 +82,11 @@ void anime_on_vsync(void) {
       graphics_hide_sprite(2);
     }
   }
+  if (mario_state.status_timer) {
+    if (!(--mario_state.status_timer)) {
+      mario_reset_physical_status();
+    }
+  }
 }
 
 void anime_update(void) {

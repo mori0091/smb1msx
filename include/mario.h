@@ -53,7 +53,7 @@ struct mario_state {
   int8_t life;
   enum mario_pose pose;
   uint8_t status;
-  uint8_t status_timer;         // countdown timer for INVINCIBLE / WEAKENED status
+  uint16_t status_timer;     // countdown timer for INVINCIBLE / WEAKENED status
 };
 
 extern struct mario_state mario_state;
@@ -68,39 +68,15 @@ inline void mario_set_pose(enum mario_pose pose) {
   mario_state.pose = pose;
 }
 
-inline enum physical_status mario_get_physical_status(void) {
-  return mario_state.status & PHYSICAL_STATUS_MASK;
-}
-
-inline bool mario_is_invincible(void) {
-  return (mario_get_physical_status() == STATUS_INVINCIBLE);
-}
-
-inline bool mario_is_weakened(void) {
-  return (mario_get_physical_status() == STATUS_WEAKENED);
-}
-
-inline void mario_reset_physical_status(void) {
-  mario_state.status &= ~PHYSICAL_STATUS_MASK;
-}
-
-inline void mario_set_physical_status(enum physical_status status) {
-  mario_reset_physical_status();
-  mario_state.status |= status;
-  if (status) {
-    // \TODO
-    // mario_set_status_countdown_timer(3*30); // 3 seconds
-  }
-}
-
 inline uint8_t mario_get_ability(void) {
   return mario_state.status & ABILITY_MASK;
 }
 
 inline void mario_reset_ability(void) {
   mario_state.status &= ~ABILITY_MASK;
-  assets_set_sprite_palette(SPRITES, 2, MARIO_PALETTE);
-  assets_set_sprite_palette(SPRITES, 4, MARIO_PALETTE);
+  vdp_set_palette(1, color_palette[1]);
+  vdp_set_palette(2, color_palette[2]);
+  vdp_set_palette(3, color_palette[3]);
 }
 
 inline void mario_set_ability(uint8_t ability) {
@@ -122,6 +98,43 @@ inline bool mario_has_fire_ability(void) {
 
 inline void mario_enable_fire_ability(void) {
   mario_state.status |= FIRE_ABILITY_MASK;
+  vdp_set_palette(1, color_palette[14]);
+  vdp_set_palette(2, color_palette[13]);
+  vdp_set_palette(3, color_palette[15]);
+}
+
+inline enum physical_status mario_get_physical_status(void) {
+  return mario_state.status & PHYSICAL_STATUS_MASK;
+}
+
+inline bool mario_is_invincible(void) {
+  return (mario_get_physical_status() == STATUS_INVINCIBLE);
+}
+
+inline bool mario_is_weakened(void) {
+  return (mario_get_physical_status() == STATUS_WEAKENED);
+}
+
+inline void mario_reset_physical_status(void) {
+  mario_state.status &= ~PHYSICAL_STATUS_MASK;
+  if (mario_has_fire_ability()) {
+    vdp_set_palette(1, color_palette[14]);
+    vdp_set_palette(2, color_palette[13]);
+    vdp_set_palette(3, color_palette[15]);
+  }
+  else {
+    vdp_set_palette(1, color_palette[1]);
+    vdp_set_palette(2, color_palette[2]);
+    vdp_set_palette(3, color_palette[3]);
+  }
+}
+
+inline void mario_set_physical_status(enum physical_status status) {
+  mario_reset_physical_status();
+  mario_state.status |= status;
+  if (status) {
+    mario_state.status_timer = msx_get_vsync_frequency() * 10; /* 10sec */
+  }
 }
 
 inline void mario_power_up(void) {
@@ -132,8 +145,6 @@ inline void mario_power_up(void) {
   if (mario_has_super_ability()) {
     // \TODO Fire powered animation
     mario_enable_fire_ability();
-    assets_set_sprite_palette(SPRITES, 2, FIRE_MARIO_PALETTE);
-    assets_set_sprite_palette(SPRITES, 4, FIRE_MARIO_PALETTE);
     return;
   }
   {
