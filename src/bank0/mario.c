@@ -132,6 +132,7 @@ void mario_animate(void) {
 
 void mario_animate_die(void) {
   mario_reset_ability();
+  mario_reset_physical_status();
   mario_set_pose(DEAD);
   entity_set_facing(player, 0);
   player->input = A_BUTTON;
