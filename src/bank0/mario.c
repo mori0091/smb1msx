@@ -113,7 +113,6 @@ void mario_show(int x, int y) {
 static uint8_t anim_tick;
 
 void mario_animate(void) {
-  // uint8_t idx = mario_state.pose + player->facing;
   uint8_t idx = mario_state.pose + (16*5) * player->facing;
   if (mario_state.pose != WALKING) {
     mario_set_sprite_pat(idx);
@@ -122,13 +121,12 @@ void mario_animate(void) {
   /* pose == WALKING */
   anim_tick++;
   if (speed_lo < player_get_speed()) {
-    anim_tick++;
+    anim_tick += 3;
   }
-  if (6 <= anim_tick) {
+  if (12 <= anim_tick) {
     anim_tick = 0;
   }
-  // const uint8_t t = anim_tick & ~1;
-  const uint8_t t = anim_tick >> 1;
+  const uint8_t t = anim_tick >> 2;
   mario_set_sprite_pat(t + idx);
 }
 
