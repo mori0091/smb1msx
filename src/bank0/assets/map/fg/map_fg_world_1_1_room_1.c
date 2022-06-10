@@ -23,23 +23,23 @@ const uint8_t map_fg_world_1_1_room_1[] = {
   XY( 9, 7), V_PIPE_ENTER(4) | NEWPAGE,
 
   // page #4
-  XY( 0, 6), HIDDEN_COIN | NEWPAGE,
+  XY( 0, 6), HIDDEN_1UP | NEWPAGE,
   XY( 5,14), VALLEY(2),         // E-command
   XY(13, 7), H_BRICKS(3),
-  XY(14, 7), Q_BLOCK_COIN,
+  XY(14, 7), Q_BLOCK_POWERUP,
 
   // page #5
   XY( 0, 3), H_BRICKS(8) | NEWPAGE,
   XY( 6,14), VALLEY(3),         // E-command
   XY(11, 3), H_BRICKS(3),
   XY(14, 3), Q_BLOCK_COIN,
-  XY(14, 7), H_BRICKS(1),
+  XY(14, 7), BRICK_10_COINS,
 
   // page #6
-  XY( 4, 7), H_BRICKS(2) | NEWPAGE,
+  XY( 4, 7), H_BRICKS(1) | NEWPAGE,
   XY( 5, 7), BRICK_STARMAN,
   XY(10, 7), Q_BLOCK_COIN,
-  XY(13, 3), Q_BLOCK_COIN,
+  XY(13, 3), Q_BLOCK_POWERUP,
   XY(13, 7), Q_BLOCK_COIN,
 
   // page #7
