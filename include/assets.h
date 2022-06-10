@@ -24,6 +24,7 @@ extern const struct sound_clip se_powup;
 extern const struct sound_clip se_1up;
 extern const struct sound_clip se_destruct;
 extern const struct sound_clip se_pipe;
+extern const struct sound_clip se_coin;
 
 /* stage map */
 extern const size_t smb1map_size;
