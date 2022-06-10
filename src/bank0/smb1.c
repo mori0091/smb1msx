@@ -134,9 +134,8 @@ static void show_hud(void) {
 
 static void get_ready(void) {
   event_init();
-  map_init();
-  stage_init();
   camera_init();
+  stage_init();
   physics_init();
   mario_init();
   stage_setup();

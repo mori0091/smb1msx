@@ -12,25 +12,13 @@ static uint16_t map_next;
 static uint8_t renderer_state;
 
 void stage_init(void) {
-  map_next = STAGEMAP_VISIBLE_COLS;
-  renderer_state = 0;
+  vdp_cmd_execute_HMMV(0,   0, 256, 16, 0xcc);
+  vdp_cmd_execute_HMMV(0, 256, 256, 16, 0xcc);
 }
 
 void stage_setup(void) {
-  /* Render the 1st page of the stage map */
-  for (int j = 0; j < STAGEMAP_PAGE_COLS; ++j) {
-    const uint8_t * p = map_get_buffer_ptr_at(0, j);
-    for (int i = 0; i < STAGEMAP_VISIBLE_ROWS; ++i) {
-      const uint8_t c = *p++;
-      uint16_t x1 = (c & 0x0f) << 4;
-      uint16_t y1 = (c & 0x70) + 3 * LINES_PER_VRAM_PAGE;
-      uint16_t x2 = 16 * j;
-      uint16_t y2 = 16 * i;
-      vdp_cmd_execute_HMMM(x1, y1, 16, 16, x2, y2);
-    }
-  }
-  vdp_cmd_execute_HMMV(0,   0, 256, 16, 0xcc);
-  vdp_cmd_execute_HMMV(0, 256, 256, 16, 0xcc);
+  /* (Re)load and render the 1st page of the stage map */
+  stage_warp_to(0);
 }
 
 #define MAX_PAGES_TO_WRAPAROUND    (24)
@@ -85,7 +73,7 @@ inline bool stage_renderer_task_is_buffer_full(void) {
   return (camera_get_x() / TILE_WIDTH + 2 * STAGEMAP_PAGE_COLS <= map_next);
 }
 
-inline void stage_renderer_task(void) {
+void stage_renderer_task(void) {
   if (!renderer_state) {
     if (stage_renderer_task_is_buffer_full()) {
       return;
@@ -128,14 +116,29 @@ void stage_update(void) {
   }
 }
 
-void stage_warp_to_camera_position(void) {
-  map_init();
-  stage_init();
-  uint8_t n = camera_get_x() / TILE_WIDTH;
-  while (n--) {
-    stage_update();
+void stage_warp_to(uint8_t col) {
+  {
+    // rewind map then forward it to column `col`.
+    map_init();
+    map_next = 0;
+    renderer_state = 0;
+    uint8_t n = col / (STAGEMAP_PAGE_COLS / 2);
+    while (n--) {
+      map_load_next_half_page();
+    }
+    map_next = col;
   }
-  vdp_cmd_await();
+  {
+    // render at least one page
+    const uint8_t n = col + STAGEMAP_VISIBLE_COLS + 1;
+    while (map_next < n) {
+      stage_renderer_task();
+    }
+  }
+}
+
+void stage_warp_to_camera_position(void) {
+  stage_warp_to(camera_get_x() / TILE_WIDTH);
   set_hscroll(camera_get_x() & (2 * PIXELS_PER_LINE - 1));
   await_vsync();
 }

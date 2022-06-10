@@ -33,8 +33,6 @@ void map_init(void) {
   odd_half = false;
   memset(map_buffer, 0, sizeof(map_buffer));
   map_load_next_half_page();
-  map_load_next_half_page();
-  map_load_next_half_page();
 }
 
 #define HALF_PAGE_COLS  (PAGE_COLS / 2)

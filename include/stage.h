@@ -25,6 +25,14 @@ void stage_setup(void);
 void stage_update(void);
 
 /**
+ * Reset stage map and then forward it until catching up to the given column.
+ *
+ * \sa stage_warp_to_camera_position()
+ * \note camera position and viewport (i.e. scroll) are not changed.
+ */
+void stage_warp_to(uint8_t col);
+
+/**
  * Reset stage map and then forward it until catching up to camera's position.
  */
 void stage_warp_to_camera_position(void);

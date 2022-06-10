@@ -243,29 +243,26 @@ static void mario_post_step(entity_t * e) {
       if (0 <= player->vel.y &&
           player->c1 == (0x26 | 0x80) &&
           player->c2 == (0x27 | 0x80)) {
-        // Enter the pipe underfoot.
-        player->vel.x = 0;
-        player->vel.y = 0;
-        mario_set_pose(STANDING);
-        mario_animate();
-
-        mario_enter_pipe_down();
-        sleep_millis(500);
         if (player->pos.x.i / TILE_WIDTH == 57)
         {
+          // Enter the pipe underfoot.
+          mario_set_pose(STANDING);
+          mario_animate();
+          mario_enter_pipe_down();
+          sleep_millis(500);
           // pipe warp!
-          sound_pause();
           vdp_set_visible(false);
           player->pos.x.i = TILE_WIDTH * 163 + 8;
           player->pos.y.i = TILE_HEIGHT * 9;
           player->vel.x = 0;
-          camera_init();
+          player->vel.y = 0;
           camera_set_x(TILE_WIDTH * 160);
+          camera_set_speed(0);
           stage_warp_to_camera_position();
           vdp_set_visible(true);
-          sound_start();
+          // Leave the pipe.
+          mario_leave_pipe_up();
         }
-        mario_leave_pipe_up();
       }
     }
   }
