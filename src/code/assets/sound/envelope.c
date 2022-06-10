@@ -5,7 +5,7 @@
 static const struct sound_eg_AHDSR envelope_0 = {
   .attack_rate = 255,
   .hold_time = 0,
-  .decay_rate = 8,
+  .decay_rate = 6,
   .sustain_level = 0,
   .release_rate = 255,
 };
@@ -13,9 +13,9 @@ static const struct sound_eg_AHDSR envelope_0 = {
 static const struct sound_eg_AHDSR envelope_1 = {
   .attack_rate = 255,
   .hold_time = 0,
-  .decay_rate = 10,
-  .sustain_level = 64,
-  .release_rate = 32,
+  .decay_rate = 4,
+  .sustain_level = 0,
+  .release_rate = 255,
 };
 
 static const struct sound_eg_AHDSR envelope_2 = {
