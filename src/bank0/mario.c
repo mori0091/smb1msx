@@ -214,6 +214,10 @@ static void mario_leave_pipe_up(void) {
   }
 }
 
+#include "map_cmd.h"
+
+extern void show_hud_coin(void);
+
 static void mario_post_step(entity_t * e) {
   // assert(e == player);
   (void)e;
@@ -281,31 +285,74 @@ static void mario_post_step(entity_t * e) {
       else {
         obj = player->c1;
       }
+
       sound_effect(&se_block);
+
+      // ----
+      uint8_t attr = map_get_attribute_at(col * TILE_WIDTH, row * TILE_HEIGHT);
+      uint8_t item = ITEM_NONE;
+      switch (attr) {
+        case OBJ_10_COINS:
+        case OBJ_COIN:
+          item = ITEM_COIN;
+          sound_effect(&se_coin);
+          if (++mario_state.coin > 99) {
+            mario_state.coin = 0;
+            mario_state.life++;
+            sound_effect(&se_1up);
+          }
+          show_hud_coin();
+          break;
+        case OBJ_POWERUP:
+          item = (mario_has_super_ability()
+                  ? ITEM_FIREFLOWER
+                  : ITEM_MUSHROOM);
+          sound_effect(&se_item);
+          break;
+        case OBJ_1UP:
+          item = ITEM_1UP_MUSHROOM;
+          sound_effect(&se_item);
+          break;
+        case OBJ_STARMAN:
+          item = ITEM_STARMAN;
+          sound_effect(&se_item);
+          break;
+        case OBJ_VINE_PLANT:
+          sound_effect(&se_item); // \TODO
+        default:
+          break;
+      }
+
+      // ----
       switch (obj) {
       case 0xb0:                // '?' block
-        block_entity_new(row, col, TILE_BLOCK, (mario_has_super_ability()
-                                                ? ITEM_FIREFLOWER
-                                                : ITEM_MUSHROOM));
-        sound_effect(&se_item);
+        block_entity_new(row, col, TILE_BLOCK, item);
         break;
       case 0xd1:                // brick #1
       case 0xd2:                // brick #2
-        if (mario_has_super_ability()) {
-          debris_entity_new(row, col);
-          sound_effect(&se_destruct);
+        if (item == ITEM_NONE) {
+          if (mario_has_super_ability()) {
+            debris_entity_new(row, col);
+            sound_effect(&se_destruct);
+          }
+          else {
+            block_entity_new(row, col, TILE_BRICK, item);
+          }
+        }
+        else if (attr == OBJ_10_COINS) {
+          block_entity_new(row, col, TILE_BRICK, item);
         }
         else {
-          block_entity_new(row, col, TILE_BRICK, ITEM_NONE);
+          block_entity_new(row, col, TILE_BLOCK, item);
         }
         break;
       case 0xff:                // hidden
-        block_entity_new(row, col, TILE_BLOCK, ITEM_1UP_MUSHROOM);
-        sound_effect(&se_item);
+        block_entity_new(row, col, TILE_BLOCK, item);
         break;
       }
     }
   }
+
   // Mario fell into the valley?
   if (211 < y) {
     event_set(EV_PLAYER_DIES);
