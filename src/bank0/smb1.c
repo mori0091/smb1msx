@@ -113,13 +113,23 @@ static void clear_screen(void) {
   graphics_hide_all_sprites();
 }
 
+void show_hud_coin(void) {
+  set_foreground_color(14);
+  locate(108,8);
+  uint8_t b = mario_state.coin % 10;
+  uint8_t a = mario_state.coin / 10 % 10;
+  text_putc('0' + a);
+  text_putc('0' + b);
+}
+
 static void show_hud(void) {
   set_foreground_color(14);
   locate(28,0);
   text_puts("MARIO\n"
             "000000");
   locate(92,8);
-  text_puts(" x00");
+  text_puts(" x");
+  show_hud_coin();
   locate(148,0);
   text_puts("WORLD\n"
             " 1-1");
@@ -296,8 +306,9 @@ bool game_main_loop(const struct scene_conf * scene) {
 
 void title_demo(void) {
   uint8_t demo_version = 0;
-  mario_set_life(3);
   for (;;) {
+    mario_set_life(3);
+    mario_state.coin = 0;
     // ---- Title screen ----
     set_visible(false);
     anime_set_enable_on_vsync(false);
@@ -367,6 +378,7 @@ static void show_message(const char* msg) {
 
 void play_game(void) {
   mario_set_life(3);
+  mario_state.coin = 0;
   while (!mario_is_over()) {
     level_intro();
     set_visible(false);

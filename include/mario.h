@@ -50,6 +50,7 @@ enum physical_status {
 };
 
 struct mario_state {
+  uint8_t coin;
   int8_t life;
   enum mario_pose pose;
   uint8_t status;
