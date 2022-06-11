@@ -55,7 +55,7 @@ void map_ld_load_bg_page(uint8_t * canvas) {
 }
 
 inline
-void map_ld_load_fg_page(uint8_t * canvas) {
+void map_ld_load_fg_page(uint8_t * canvas, uint8_t * attrib) {
   for (;;) {
     if (ctx.fg.cmd[0] == 0xff) {
       return;
@@ -64,12 +64,12 @@ void map_ld_load_fg_page(uint8_t * canvas) {
       ctx.fg.cmd[1] &= ~NEWPAGE;
       return;
     }
-    map_cmd_fg(ctx.fg.cmd[0], ctx.fg.cmd[1], canvas);
+    map_cmd_fg(ctx.fg.cmd[0], ctx.fg.cmd[1], canvas, attrib);
     map_ld_fetch(&ctx.fg);
   }
 }
 
-void map_ld_load_page(uint8_t * canvas) {
+void map_ld_load_page(uint8_t * canvas, uint8_t * attrib) {
   if (ctx.bg.cmd[0] == 0xff) {
     map_ld_rewind(&ctx.bg);
     // -- optional (loop / sync) --
@@ -84,6 +84,6 @@ void map_ld_load_page(uint8_t * canvas) {
     p += ROWS;
   }
   map_ld_load_bg_page(canvas);
-  map_ld_load_fg_page(canvas);
+  map_ld_load_fg_page(canvas, attrib);
   ctx.page++;
 }

@@ -25,6 +25,6 @@ void map_ld_init(void);
 void map_ld_set_bg_theme(uint8_t theme);
 void map_ld_set_bg_layer(const uint8_t * bg_data, uint16_t block_layout);
 void map_ld_set_fg_layer(const uint8_t * fg_data);
-void map_ld_load_page(uint8_t * canvas);
+void map_ld_load_page(uint8_t * canvas, uint8_t * attrib);
 
 #endif

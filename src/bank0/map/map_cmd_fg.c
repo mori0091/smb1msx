@@ -159,7 +159,9 @@ void map_cmd_fg_valley(uint8_t xy, uint8_t obj, uint8_t * canvas) {
   }
 }
 
-void map_cmd_fg(uint8_t xy, uint8_t obj, uint8_t * canvas) {
+uint8_t coin_10x_counter;
+
+void map_cmd_fg(uint8_t xy, uint8_t obj, uint8_t * canvas, uint8_t * attrib) {
   // obj &= ~NEWPAGE;
   uint8_t y = ROW(xy);
   const uint8_t id = SIZED_OBJECT_ID(obj);
@@ -168,19 +170,41 @@ void map_cmd_fg(uint8_t xy, uint8_t obj, uint8_t * canvas) {
     case 0:
       switch (obj) {
       case Q_BLOCK_POWERUP:
+        map_cmd_fg_q_block(xy, obj, canvas);
+        attrib[xy] = OBJ_POWERUP;
+        return;
       case Q_BLOCK_COIN:
         map_cmd_fg_q_block(xy, obj, canvas);
+        attrib[xy] = OBJ_COIN;
         return;
       case HIDDEN_COIN:
+        map_cmd_fg_hidden(xy, obj, canvas);
+        attrib[xy] = OBJ_COIN;
+        return;
       case HIDDEN_1UP:
         map_cmd_fg_hidden(xy, obj, canvas);
+        attrib[xy] = OBJ_1UP;
         return;
       case BRICK_POWERUP:
+        map_cmd_fg_brick(xy, obj, canvas);
+        attrib[xy] = OBJ_POWERUP;
+        return;
       case BRICK_VINE_PLANT:
+        map_cmd_fg_brick(xy, obj, canvas);
+        attrib[xy] = OBJ_VINE_PLANT;
+        return;
       case BRICK_STARMAN:
+        map_cmd_fg_brick(xy, obj, canvas);
+        attrib[xy] = OBJ_STARMAN;
+        return;
       case BRICK_10_COINS:
+        map_cmd_fg_brick(xy, obj, canvas);
+        attrib[xy] = OBJ_10_COINS;
+        coin_10x_counter = 9;
+        return;
       case BRICK_1UP:
         map_cmd_fg_brick(xy, obj, canvas);
+        attrib[xy] = OBJ_1UP;
         return;
       case H_PIPE_HEAD:
         map_cmd_fg_h_pipe_head(xy, obj, canvas);

@@ -150,5 +150,5 @@ void stage_put_tile(uint8_t row, uint8_t col, uint8_t tile) {
   const uint16_t x = (tile & 0x0f) << 4;
   const uint16_t y = (tile & 0x70) + 3 * LINES_PER_VRAM_PAGE;
   vdp_cmd_execute_HMMM(x, y, TILE_WIDTH, TILE_HEIGHT, ix, iy);
-  *map_get_buffer_ptr_at(row, col) = tile;
+  map_put_tile(row, col, tile);
 }

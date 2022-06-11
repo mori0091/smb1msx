@@ -39,12 +39,37 @@ inline uint8_t map_get_buffer_page_at(uint16_t col) {
 uint8_t* map_get_buffer_ptr_at(uint8_t row, uint16_t col);
 
 /**
- * Returns an object at the given position.
+ * Replace an object tile at the given (row, col) index.
+ *
+ * \param row, col  (row, column) index
+ * \param tile      the object tile code
+ */
+void map_put_tile(uint8_t row, uint8_t col, uint8_t tile);
+
+/**
+ * Update an attribute at the given (row, col) index.
+ *
+ * \param row, col  (row, column) index
+ * \note This shall be called when an item was poped out.
+ */
+void map_consume_item(uint8_t row, uint8_t col);
+
+/**
+ * Returns an object tile at the given position.
  *
  * \param x  x-coordinate in the stage. [pix]
  * \param y  y-coordinate in the stage. [pix]
- * \return   the object code at (x,y)
+ * \return   the object tile code at (x,y)
  */
 uint8_t map_get_object_at(int x, int y);
+
+/**
+ * Returns an attribute at the given position.
+ *
+ * \param x  x-coordinate in the stage. [pix]
+ * \param y  y-coordinate in the stage. [pix]
+ * \return   the attribute code at (x,y)
+ */
+uint8_t map_get_attribute_at(int x, int y);
 
 #endif

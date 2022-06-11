@@ -7,7 +7,11 @@
 #include "smb1.h"
 
 #define MUSHROOM_VX    f8q8(2.0)
-#define MUSHROOM_AY    gravity_hi;
+#define MUSHROOM_AY    gravity_hi
+
+#define STARMAN_VX     f8q8(2.0)
+#define STARMAN_VY     initial_vy_hi
+#define STARMAN_AY     gravity_lo
 
 static entity_t item_entity;
 static entity_state_t item_state;
@@ -30,6 +34,13 @@ const metasprite_t fireflower_metasprite = {
   .pats = fireflower_pats,
 };
 
+const metasprite_t starman_metasprite = {
+  .n = 2,
+  .anchor = {0,0},
+  .layouts = W16H16D2,
+  .pats = starman_pats,
+};
+
 static uint8_t mushroom_controller(void) {
   if (item_entity.collision & COLLISION_RIGHT) {
     item_entity.vel.x = -MUSHROOM_VX;
@@ -38,6 +49,15 @@ static uint8_t mushroom_controller(void) {
     item_entity.vel.x = MUSHROOM_VX;
   }
   return (item_entity.vel.x < 0 ? VK_LEFT : VK_RIGHT);
+}
+
+static uint8_t starman_controller(void) {
+  item_entity.vel.x = STARMAN_VX;
+  if (item_entity.collision & COLLISION_FLOOR) {
+    item_entity.vel.y = STARMAN_VY;
+    item_entity.acc.y = STARMAN_AY;
+  }
+  return VK_FIRE_0 | (item_entity.vel.x < 0 ? VK_LEFT : VK_RIGHT);
 }
 
 void default_post_step(entity_t * e) {
@@ -60,6 +80,10 @@ bool item_collision_handler(entity_t * e) {
   if (item_state.item == ITEM_1UP_MUSHROOM) {
     mario_1up();
     sound_effect(&se_1up);
+  }
+  else if (item_state.item == ITEM_STARMAN) {
+    mario_set_physical_status(STATUS_INVINCIBLE);
+    sound_effect(&se_powup);
   }
   else {
     mario_power_up();
@@ -85,18 +109,25 @@ void mushroom_post_step(entity_t * e) {
     e->pos.y.i = item_state.y0;
     e->pos.y.d = 0;
     if (item_state.item == ITEM_FIREFLOWER) {
-        e->vel.x = 0;
-        e->vel.y = 0;
-        e->acc.x = 0;
-        e->acc.y = 0;
-        entity_set_controller(e, no_controller);
+      e->vel.x = 0;
+      e->vel.y = 0;
+      e->acc.x = 0;
+      e->acc.y = 0;
+      entity_set_controller(e, no_controller);
+    }
+    else if (item_state.item == ITEM_STARMAN) {
+      e->vel.x = STARMAN_VX;
+      e->vel.y = STARMAN_VY;
+      e->acc.x = 0;
+      e->acc.y = STARMAN_AY;
+      entity_set_controller(e, starman_controller);
     }
     else {
-        e->vel.x = MUSHROOM_VX;
-        e->vel.y = 0;
-        e->acc.x = 0;
-        e->acc.y = MUSHROOM_AY;
-        entity_set_controller(e, mushroom_controller);
+      e->vel.x = MUSHROOM_VX;
+      e->vel.y = 0;
+      e->acc.x = 0;
+      e->acc.y = MUSHROOM_AY;
+      entity_set_controller(e, mushroom_controller);
     }
     entity_set_post_step(e, mushroom_post_step2);
     e->collision = 0;
@@ -113,19 +144,24 @@ void mushroom_entity_new(uint8_t row, uint8_t col, uint8_t item) {
   entity_set_controller(&item_entity, no_controller);
   entity_set_post_step(&item_entity, mushroom_post_step);
   switch (item) {
-      case ITEM_MUSHROOM:
-          entity_set_metasprite(&item_entity, &mushroom_metasprite);
-          assets_set_sprite_palette(SPRITES, PLANE_ITEMS, MUSHROOM_PALETTE);
-          break;
-      case ITEM_1UP_MUSHROOM:
-          entity_set_metasprite(&item_entity, &mushroom_metasprite);
-          assets_set_sprite_palette(SPRITES, PLANE_ITEMS, GREEN_MUSHROOM_PALETTE);
-          break;
-      case ITEM_FIREFLOWER:
-      default:
-          entity_set_metasprite(&item_entity, &fireflower_metasprite);
-          assets_set_sprite_palette(SPRITES, PLANE_ITEMS, FIREFLOWER_PALETTE);
-          break;
+    case ITEM_MUSHROOM:
+      entity_set_metasprite(&item_entity, &mushroom_metasprite);
+      assets_set_sprite_palette(SPRITES, PLANE_ITEMS, MUSHROOM_PALETTE);
+      break;
+    case ITEM_1UP_MUSHROOM:
+      entity_set_metasprite(&item_entity, &mushroom_metasprite);
+      assets_set_sprite_palette(SPRITES, PLANE_ITEMS, GREEN_MUSHROOM_PALETTE);
+      break;
+    case ITEM_FIREFLOWER:
+      entity_set_metasprite(&item_entity, &fireflower_metasprite);
+      assets_set_sprite_palette(SPRITES, PLANE_ITEMS, FIREFLOWER_PALETTE);
+      break;
+    case ITEM_STARMAN:
+      entity_set_metasprite(&item_entity, &starman_metasprite);
+      assets_set_sprite_palette(SPRITES, PLANE_ITEMS, STARMAN_PALETTE);
+      break;
+    default:
+      break;
   }
   item_entity.plane = PLANE_ITEMS;
   item_entity.input = 0;

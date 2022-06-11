@@ -88,4 +88,5 @@ void block_entity_new(uint8_t row, uint8_t col, uint8_t tile, uint8_t item) {
 
   physics_add_entity(&block_entity);
   stage_put_tile(row, col, TILE_EMPTY);
+  map_consume_item(row, col);
 }

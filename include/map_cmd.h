@@ -125,13 +125,28 @@ void map_cmd_bg(uint8_t xy, uint8_t obj, uint8_t * canvas);
 
 #define VALLEY(width)            SIZED_OBJECT(1, width)
 
+
+// ---- object attributes ----
+#define OBJ_EMPTY                (0x00)
+#define OBJ_RESERVED_01          (0x01)
+#define OBJ_COIN                 (0x02)
+#define OBJ_1UP                  (0x03)
+#define OBJ_POWERUP              (0x04)
+#define OBJ_VINE_PLANT           (0x05)
+#define OBJ_STARMAN              (0x06)
+#define OBJ_10_COINS             (0x07)
+#define OBJ_RESERVED_08          (0x08)
+
+extern uint8_t coin_10x_counter;
+
 /**
  * Put the tile-Ids of an object to the page buffer.
  *
  * \param xy      Row and Column index  (the 1st byte of a map command)
  * \param obj     bytecode of an object (the 2nd byte of a map command)
  * \param canvas  the page buffer
+ * \param attrib  the page buffer (for object attributes)
  */
-void map_cmd_fg(uint8_t xy, uint8_t obj, uint8_t * canvas);
+void map_cmd_fg(uint8_t xy, uint8_t obj, uint8_t * canvas, uint8_t * attrib);
 
 #endif
