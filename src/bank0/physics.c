@@ -49,8 +49,14 @@ void physics_remove_entity(entity_t * const e) {
 inline void player_correct_position(void) {
   // Limits the state of the dynamics to between the upper and lower limits.
   uint16_t x0 = camera_get_x() + 8;
+  uint16_t x1 = camera_get_x() + 240;
   if (player->pos.x.i < x0) {
     player->pos.x.i = x0;
+    player->pos.x.d = 0;
+    player->vel.x = 0;
+  }
+  if (x1 <= player->pos.x.i) {
+    player->pos.x.i = x1;
     player->pos.x.d = 0;
     player->vel.x = 0;
   }

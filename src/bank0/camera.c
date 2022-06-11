@@ -10,10 +10,12 @@ void camera_init(void) {
   camera.x.i = 0;               /* intefer part of camera position */
   camera.x.d = 0;               /* decimal part of camera position */
   camera.speed = 0;             /* scroll speed ; 10.6 fixedpoint [pix] */
+  camera.follow = true;         /* whether the camera follow mario or not. */
 }
 
 /* follow mario */
 void camera_update(void) {
+  if (!camera.follow) return;
   const int16_t sx = camera_get_x();
   const int16_t x0 = player_get_prev_x();
   const int16_t x = player_get_x();

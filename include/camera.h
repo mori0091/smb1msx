@@ -11,6 +11,7 @@
 struct camera {
   f16q8_t x;
   f8q8_t speed;
+  bool follow;
 };
 
 extern struct camera camera;
@@ -31,6 +32,17 @@ inline int16_t camera_get_x(void) {
 
 inline void camera_set_x(int16_t x) {
   camera.x.i = x;
+}
+
+inline void camera_set_follow_mode(bool b) {
+  camera.follow = b;
+  if (!b) {
+    camera_set_speed(0);
+  }
+}
+
+inline bool camera_get_follow_mode(void) {
+  return camera.follow;
 }
 
 #endif
