@@ -165,6 +165,33 @@ void mario_animate_die(void) {
   sleep_millis(100);
 }
 
+static void mario_enter_pipe_right(void) {
+  int16_t x = player->pos.x.i;
+  int16_t y = player->pos.y.i;
+  sound_effect(&se_pipe);
+  // anime_set_enable_on_vsync(false);
+  static uint8_t buf[4][32];
+  vmemptr_t p = SPRITE_PATTERNS;
+  vmem_read(p, buf, sizeof(buf));
+  for (int8_t n = 16; n >= 0; n -= 16) {
+    uint8_t mask = 255;
+    for (uint8_t i = 0; i < 8; ++i) {
+      mask <<= 1;
+      await_vsync();
+      mario_show(x++ - camera_get_x(), y);
+      for (uint8_t j = 0; j < 4; ++j) {
+        uint8_t * q = &buf[j][n];
+        for (uint8_t k = 0; k < 16; ++k) {
+          *q++ &= mask;
+        }
+      }
+      vmem_write(p, buf, sizeof(buf));
+    }
+  }
+  sleep_millis(500);
+  // anime_set_enable_on_vsync(true);
+}
+
 static void mario_enter_pipe_down(void) {
   int16_t x = player->pos.x.i;
   int16_t y = player->pos.y.i;
