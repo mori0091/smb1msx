@@ -117,6 +117,10 @@ inline bool mario_is_weakened(void) {
 }
 
 inline void mario_reset_physical_status(void) {
+  if (event_get() != EV_PLAYER_DIES && (mario_state.status & STATUS_INVINCIBLE)) {
+    sound_set_bgm(&bgm_over_world);
+    sound_start();                // start BGM
+  }
   mario_state.status &= ~PHYSICAL_STATUS_MASK;
   if (mario_has_fire_ability()) {
     vdp_set_palette(1, color_palette[14]);

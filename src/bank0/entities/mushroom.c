@@ -83,7 +83,9 @@ bool item_collision_handler(entity_t * e) {
   }
   else if (item_state.item == ITEM_STARMAN) {
     mario_set_physical_status(STATUS_INVINCIBLE);
-    sound_effect(&se_powup);
+    // sound_effect(&bgm_starman);
+    sound_set_bgm(&bgm_starman);
+    sound_start();
   }
   else {
     mario_power_up();
