@@ -14,6 +14,7 @@ extern const struct sound_eg_attribute envelope_table[16];
 /* BGMs */
 extern const struct sound_clip bgm_player_down;
 extern const struct sound_clip bgm_over_world;
+extern const struct sound_clip bgm_starman;
 
 /* SEs */
 extern const struct sound_clip se_jump;
