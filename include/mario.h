@@ -134,7 +134,7 @@ inline void mario_set_physical_status(enum physical_status status) {
   mario_reset_physical_status();
   mario_state.status |= status;
   if (status) {
-    mario_state.status_timer = msx_get_vsync_frequency() * 10; /* 10sec */
+    mario_state.status_timer = msx_get_vsync_frequency() * 12; /* 12sec */
   }
 }
 
