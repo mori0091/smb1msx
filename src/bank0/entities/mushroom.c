@@ -10,7 +10,7 @@
 #define MUSHROOM_AY    gravity_hi
 
 #define STARMAN_VX     f8q8(2.0)
-#define STARMAN_VY     initial_vy_hi
+#define STARMAN_VY     initial_vy_lo
 #define STARMAN_AY     gravity_lo
 
 static entity_t item_entity;
@@ -55,9 +55,9 @@ static uint8_t starman_controller(void) {
   item_entity.vel.x = STARMAN_VX;
   if (item_entity.collision & COLLISION_FLOOR) {
     item_entity.vel.y = STARMAN_VY;
-    item_entity.acc.y = STARMAN_AY;
+    // item_entity.acc.y = STARMAN_AY;
   }
-  return VK_FIRE_0 | (item_entity.vel.x < 0 ? VK_LEFT : VK_RIGHT);
+  return VK_FIRE_0 | VK_RIGHT;
 }
 
 void default_post_step(entity_t * e) {
