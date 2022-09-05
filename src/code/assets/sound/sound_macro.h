@@ -5,6 +5,42 @@
 
 #include <stdint.h>
 
+// utility
+#define VARIADIC_SIZE(...)                                               \
+  VARIADIC_SIZE_I(__VA_ARGS__, 64, 63, 62, 61, 60, 59, 58, 57, 56, 55,   \
+                  54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42,    \
+                  41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29,    \
+                  28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16,    \
+                  15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, )
+#define VARIADIC_SIZE_I(                                                 \
+    e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14,     \
+    e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27,     \
+    e28, e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40,     \
+    e41, e42, e43, e44, d45, e46, e47, e48, e49, e50, e51, e52, e53,     \
+    e54, e55, e56, e57, e58, e59, e60, e61, e62, e63, size, ...)         \
+  size
+
+// -----------------------------------------------------------------------
+
+/**
+ * Pack duration and commands into a chunk.
+ *
+ * \param tick   Duration expressed in tick counts at 60 Hz.
+ * \param ...    A series of commands (except for EOM) to pack into a chunk.
+ *
+ * \note
+ * The number of octets in the command is automatically calculated and encoded
+ * into a chunk along with the tick count and command.
+ */
+#define PACK(tick, ...)                                    \
+  PACK0(tick, VARIADIC_SIZE(__VA_ARGS__), __VA_ARGS__)
+#define PACK0(tick, n, ...)                                \
+  (uint8_t)((((n) << 5) & 0xe0) + (((tick) >> 8) & 0x1f)), \
+  (uint8_t)((tick) & 255),                                 \
+  __VA_ARGS__
+
+// commands --------------------------------------------------------------
+
 // End of music track / section
 #define EOM       (0xff)
 
@@ -41,7 +77,7 @@
 // Rest
 #define R         KEYOFF()
 
-// ---- Tone ----
+// Note commands
 #define O1C       0x0d, 0x5d
 #define O1Cs      0x0c, 0x9c
 #define O1D       0x0b, 0xe7
