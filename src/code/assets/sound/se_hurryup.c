@@ -2,79 +2,84 @@
 
 #include <sound.h>
 
+#include "sound_macro.h"
+
 static const uint8_t intro_ch1[] = {
-  0x80, 0x06, 0x8f, 0xc2, 0x01, 0x53, // T300 L8 V15 @2 O4 E
-  0x40, 0x06, 0x00, 0xbe,             // T300 L8     O5 D
-  0x20, 0x06, 0x10,                   // T300 L8        R
-  0x40, 0x06, 0x00, 0xbe,             // T300 L8     O5 D
-  0x40, 0x0c, 0x00, 0xbe,             // T300 L4     O5 D
+  // T300 V15 @2
+  PACK( 6, V(15), E(2), O4E),   // L8 O4 E
+  PACK( 6, O5D),                //    O5 D
+  PACK( 6, R),                  //       R
+  PACK( 6, O5D),                //    O5 D
+  PACK(12, O5D),                // L4 O5 D
 
-  0x40, 0x06, 0x01, 0x40,             // T300 L8     O4 F
-  0x40, 0x06, 0x00, 0xb4,             // T300 L8     O5 E- (D+)
-  0x20, 0x06, 0x10,                   // T300 L8        R
-  0x40, 0x06, 0x00, 0xaa,             // T300 L8     O5 E
-  0x40, 0x0c, 0x00, 0xaa,             // T300 L4     O5 E
+  PACK( 6, O4F),                // L8 O4 F
+  PACK( 6, O5Ds),               //    O5 D+
+  PACK( 6, R),                  //       R
+  PACK( 6, O5E),                //    O5 E
+  PACK(12, O5E),                // L4 O5 E
 
-  0x40, 0x06, 0x01, 0x2e,             // T300 L8     O4 F+
-  0x40, 0x06, 0x00, 0xaa,             // T300 L8     O5 E
-  0x20, 0x06, 0x10,                   // T300 L8        R
-  0x40, 0x06, 0x00, 0xaa,             // T300 L8     O5 E
-  0x40, 0x0c, 0x00, 0xaa,             // T300 L4     O5 E
+  PACK( 6, O4Fs),               // L8 O4F+
+  PACK( 6, O5E),                //    O5E
+  PACK( 6, R),                  //      R
+  PACK( 6, O5E),                //    O5E
+  PACK(12, O5E),                // L4 O5E
 
-  0x40, 0x0c, 0x00, 0xa0,             // T300 L4     O5 F
-  0x40, 0x18, 0x00, 0xa0,             // T300 L2     O5 F
+  PACK(12, O5F),                // L4 O5F
+  PACK(24, O5F),                // L2 O5F
 
-  0x20, 0x0c, 0x10,                   // T300 L4        R
+  PACK(12, R),                  // L4   R
 
-  0xff,                               // end of stream
+  EOM,
 };
 
 static const uint8_t intro_ch2[] = {
-  0x80, 0x06, 0x8f, 0xc2, 0x02, 0xa7, // T300 L8 V15 @2 O3 E
-  0x40, 0x0c, 0x01, 0x0d,             // T300 L4     O4 G+
-  0x40, 0x06, 0x01, 0x1d,             // T300 L8     O4 G
-  0x40, 0x0c, 0x01, 0x1d,             // T300 L4     O4 G
+  // T300 V15 @2
+  PACK( 6, V(15), E(2), O3E),   // L8 O3 E
+  PACK(12, O4Gs),               // L4 O4 G+
+  PACK( 6, O4G),                // L8 O4 G
+  PACK(12, O4G),                // L4 O4 G
 
-  0x40, 0x06, 0x02, 0x81,             // T300 L8     O3 F
-  0x40, 0x0c, 0x00, 0xfe,             // T300 L4     O4 A
-  0x40, 0x06, 0x00, 0xfe,             // T300 L8     O4 A
-  0x40, 0x0c, 0x00, 0xfe,             // T300 L4     O4 A
+  PACK( 6, O3F),                // L8 O3 F
+  PACK(12, O4A),                // L4 O4 A
+  PACK( 6, O4A),                // L8 O4 A
+  PACK(12, O4A),                // L4 O4 A
 
-  0x40, 0x06, 0x02, 0x5d,             // T300 L8     O3 F+
-  0x40, 0x0c, 0x00, 0xf0,             // T300 L4     O4 A+
-  0x40, 0x06, 0x00, 0xfe,             // T300 L8     O4 A
-  0x40, 0x0c, 0x00, 0xfe,             // T300 L4     O4 A
+  PACK( 6, O3Fs),               // L8 O3 F+
+  PACK(12, O4As),               // L4 O4 A+
+  PACK( 6, O4A),                // L8 O4 A
+  PACK(12, O4A),                // L4 O4 A
 
-  0x40, 0x0c, 0x00, 0xe3,             // T300 L4     O4 B
-  0x40, 0x18, 0x00, 0xe3,             // T300 L2     O4 B
+  PACK(12, O4B),                // L4 O4 B
+  PACK(24, O4B),                // L2 O4 B
 
-  0x20, 0x0c, 0x10,                   // T300 L4        R
+  PACK(12, R),                  // L4    R
 
-  0xff,                               // end of stream
+  EOM,
 };
 
 static const uint8_t intro_ch3[] = {
-  0x80, 0x06, 0x8f, 0xc2, 0x01, 0xc5, // T300 L8 V15 @2 O3 B
-  0x40, 0x06, 0x00, 0xe3,             // T300 L8     O4 B
-  0x20, 0x06, 0x10,                   // T300 L8        R
-  0x40, 0x12, 0x00, 0xe3,             // T300 L4.    O4 B
+  // T300 V15 @2
+  PACK( 6, V(15), E(2), O3B),   // L8  O3 B
+  PACK( 6, O4B),                // L8  O4 B
+  PACK( 6, R),                  // L8     R
+  PACK(18, O4B),                // L4. O4 B
 
-  0x40, 0x06, 0x01, 0xac,             // T300 L8     O4 C
-  0x40, 0x06, 0x00, 0xd6,             // T300 L8     O5 C
-  0x20, 0x06, 0x10,                   // T300 L8        R
-  0x40, 0x12, 0x00, 0xd6,             // T300 L4.    O5 C
+  PACK( 6, O4C),                // L8  O4 C
+  PACK( 6, O5C),                // L8  O5 C
+  PACK( 6, R),                  // L8     R
+  PACK(18, O5C),                // L4. O5 C
 
-  0x40, 0x06, 0x01, 0x94,             // T300 L8     O4 C+
-  0x40, 0x06, 0x00, 0xca,             // T300 L8     O5 C+
-  0x20, 0x06, 0x10,                   // T300 L8        R
-  0x40, 0x12, 0x00, 0xd6,             // T300 L4.    O5 C
+  PACK( 6, O4Cs),               // L8  O4 C+
+  PACK( 6, O5Cs),               // L8  O5 C+
+  PACK( 6, R),                  // L8     R
+  PACK(18, O5C),                // L4. O5 C
 
-  0x40, 0x0c, 0x02, 0x3b,             // T300 L4     O3 G
-  0x40, 0x18, 0x02, 0x3b,             // T300 L2     O3 G
+  PACK(12, O3G),                // L4  O3 G
+  PACK(24, O3G),                // L2  O3 G
 
-  0x20, 0x0c, 0x10,                   // T300 L4        R
+  PACK(12, R),                  // L4     R
 
-  0xff,                               // end of stream
+  EOM,
 };
 
 static const struct sound_fragment intro = {

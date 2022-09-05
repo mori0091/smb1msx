@@ -2,54 +2,65 @@
 
 #include <sound.h>
 
-// "T180 L64 >CCGA- DDA-A E-E-AB- EEB-B"
-static const uint8_t intro_ch1[] = { // T112 L64 V15
-  0x60, 0x02, 0x8f, 0x01, 0xac,      // O4 C
-  0x40, 0x02, 0x01, 0xac,            //    C
-  0x40, 0x02, 0x01, 0x1d,            //    G
-  0x40, 0x02, 0x01, 0x0d,            //    G+
+#include "sound_macro.h"
 
-  0x40, 0x02, 0x01, 0x7d,            //    D
-  0x40, 0x02, 0x01, 0x7d,            //    D
-  0x40, 0x02, 0x01, 0x0d,            //    G+
-  0x40, 0x02, 0x00, 0xfe,            //    A
+// 1 "T180 O4 V15 L64 >CCGA- DDA-A E-E-AB- EEB-B R"
+// 2 "T180 O4 V13 L64 R >CCGA- DDA-A E-E-AB- EEB-B"
 
-  0x40, 0x02, 0x01, 0x68,            //    D+
-  0x40, 0x02, 0x01, 0x68,            //    D+
-  0x40, 0x02, 0x00, 0xfe,            //    A
-  0x40, 0x02, 0x00, 0xf0,            //    A+
+// "T180 L64 = 1.25 tick"
 
-  0x40, 0x02, 0x01, 0x53,            //    E
-  0x40, 0x02, 0x01, 0x53,            //    E
-  0x40, 0x02, 0x00, 0xf0,            //    A+
-  0x40, 0x02, 0x00, 0xe3,            //    B
+static const uint8_t intro_ch1[] = {
+  // T180 V15 L64
+  PACK( 2, V(15), O4C),         // O4 C
+  PACK( 1, O4C),                //    C
+  PACK( 1, O4G),                //    G
+  PACK( 1, O4Gs),               //    G+
 
-  0xff,
+  PACK( 2, O4D),                //    D
+  PACK( 1, O4D),                //    D
+  PACK( 1, O4Gs),               //    G+
+  PACK( 1, O4A),                //    A
+
+  PACK( 2, O4Ds),               //    D+
+  PACK( 1, O4Ds),               //    D+
+  PACK( 1, O4A),                //    A
+  PACK( 1, O4As),               //    A+
+
+  PACK( 2, O4E),                //    E
+  PACK( 1, O4E),                //    E
+  PACK( 1, O4As),               //    A+
+  PACK( 1, O4B),                //    B
+
+  //PACK( 1, R),                  //    R
+
+  EOM,
 };
 
-static const uint8_t intro_ch2[] = { // T112 L64
-  0x40, 0x02, 0x8d, 0x10,            // V13 R64
-  0x40, 0x02, 0x01, 0xac,            // O4 C
-  0x40, 0x02, 0x01, 0xac,            //    C
-  0x40, 0x02, 0x01, 0x1d,            //    G
-  0x40, 0x02, 0x01, 0x0d,            //    G+
+static const uint8_t intro_ch2[] = {
+  // T180 V13 L64
+  PACK( 1, V(13), R),           //    R (delay)
 
-  0x40, 0x02, 0x01, 0x7d,            //    D
-  0x40, 0x02, 0x01, 0x7d,            //    D
-  0x40, 0x02, 0x01, 0x0d,            //    G+
-  0x40, 0x02, 0x00, 0xfe,            //    A
+  PACK( 2, O4C),                // O4 C
+  PACK( 1, O4C),                //    C
+  PACK( 1, O4G),                //    G
+  PACK( 1, O4Gs),               //    G+
 
-  0x40, 0x02, 0x01, 0x68,            //    D+
-  0x40, 0x02, 0x01, 0x68,            //    D+
-  0x40, 0x02, 0x00, 0xfe,            //    A
-  0x40, 0x02, 0x00, 0xf0,            //    A+
+  PACK( 2, O4D),                //    D
+  PACK( 1, O4D),                //    D
+  PACK( 1, O4Gs),               //    G+
+  PACK( 1, O4A),                //    A
 
-  0x40, 0x02, 0x01, 0x53,            //    E
-  0x40, 0x02, 0x01, 0x53,            //    E
-  0x40, 0x02, 0x00, 0xf0,            //    A+
-  0x40, 0x02, 0x00, 0xe3,            //    B
+  PACK( 2, O4Ds),               //    D+
+  PACK( 1, O4Ds),               //    D+
+  PACK( 1, O4A),                //    A
+  PACK( 1, O4As),               //    A+
 
-  0xff,
+  PACK( 2, O4E),                //    E
+  PACK( 1, O4E),                //    E
+  PACK( 1, O4As),               //    A+
+  PACK( 1, O4B),                //    B
+
+  EOM,
 };
 
 static const struct sound_fragment intro = {

@@ -2,19 +2,21 @@
 
 #include <sound.h>
 
+#include "sound_macro.h"
+
 // tick = 60Hz * 60s * 4 / (Tempo * L)
 //      = 14400 / (Tempo * L)
 
-// "T120 L16 >>EG>ECDG"
-static const uint8_t intro_ch1[] = { // T120 L16 V15
-  0x60, 0x07, 0x8f, 0x00, 0x55,      // O6 E
-  0x40, 0x07, 0x00, 0x47,            //    G
-  0x40, 0x07, 0x00, 0x47,            // O7 E
-  0x40, 0x07, 0x00, 0x35,            //    C
-  0x40, 0x07, 0x00, 0x30,            //    D
-  0x40, 0x07, 0x00, 0x24,            //    G
+static const uint8_t intro_ch1[] = {
+  // T120 L16 V15
+  PACK( 7, V(15), O6E),
+  PACK( 7, O6G),
+  PACK( 7, O7E),
+  PACK( 7, O7C),
+  PACK( 7, O7D ),
+  PACK( 7, O7G ),
 
-  0xff,
+  EOM,
 };
 
 static const struct sound_fragment intro = {

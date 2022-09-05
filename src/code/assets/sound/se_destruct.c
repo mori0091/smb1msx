@@ -2,15 +2,18 @@
 
 #include <sound.h>
 
+#include "sound_macro.h"
+
 // tick = 60Hz * 60s * 4 / (Tempo * L)
 //      = 14400 / (Tempo * L)
 
 // "T180 mixer(101 010) noise(16) @3 V15 C4 V12 C8"
 static const uint8_t intro_ch1[] = {
-  0xe0, 0x14, 0x70, 0x2a, 0x30, 0xc3, 0x8f, 0x01, 0xac,
-  0x60, 0x0a,                         0x8c, 0x01, 0xac,
+  // T180 mixer(101 010) noise(16) @3 V15
+  PACK(20, MIX(0x2a), N(16), E(3), V(15), O4C),
+  PACK(10, V(12), O4C),
 
-  0xff,
+  EOM,
 };
 
 static const struct sound_fragment intro = {

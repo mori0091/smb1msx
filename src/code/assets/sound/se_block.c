@@ -2,24 +2,27 @@
 
 #include <sound.h>
 
-static const uint8_t intro_ch1[] = { // T225 L64
-  0x60, 0x01, 0x8f, 0x01, 0xfd,      // V15 O3 A
-  0x40, 0x01, 0x02, 0x81,            //     O3 F
-  0x40, 0x01, 0x02, 0xfa,            //     O3 D
-  0x40, 0x01, 0x03, 0x8a,            //     O2 B
-  0x40, 0x01, 0x03, 0xf9,            //     O2 A
-  0x40, 0x01, 0x03, 0xc0,            //     O2 A+
-  0x40, 0x01, 0x03, 0x8a,            //     O2 B
-  0x40, 0x01, 0x03, 0x8a,            //     O2 B
+#include "sound_macro.h"
 
-  0xff,
+static const uint8_t intro_ch1[] = {
+  // T225 L64
+  PACK( 1, V(15), O3A),
+  PACK( 1, O3F),
+  PACK( 1, O3D),
+  PACK( 1, O2B),
+  PACK( 1, O2A),
+  PACK( 1, O2As),
+  PACK( 1, O2B),
+  PACK( 1, O2B),
+
+  EOM,
 };
 
 static const struct sound_fragment intro = {
   .streams = {
     [0] = 0,
-    [1] = 0,
-    [2] = intro_ch1,
+    [1] = intro_ch1,
+    [2] = 0,
   },
 };
 

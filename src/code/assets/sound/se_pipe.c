@@ -2,24 +2,27 @@
 
 #include <sound.h>
 
+#include "sound_macro.h"
+
 // tick = 60Hz * 60s * 4 / (Tempo * L)
 //      = 14400 / (Tempo * L)
 
 // "T300 o4 v15 L48 >[3 [2 AD<G> r16] r12]"
 static const uint8_t intro_ch1[] = {
-  0x60, 0x01, 0x8f, 0x00, 0x7f, // V15 O5 A48
-  0x40, 0x01,       0x00, 0xbe, //     O5 D48
-  0x40, 0x01,       0x01, 0x1d, //     O4 G48
-  0x20, 0x03,       0x10,       //        R16
+  // T300 V15
+  PACK( 1, V(15), O5A),         // V15 O5 A48
+  PACK( 1, O5D),                //     O5 D48
+  PACK( 1, O4G),                //     O4 G48
+  PACK( 3, R),                  //        R16
 
-  0x40, 0x01,       0x00, 0x7f, //     O5 A48
-  0x40, 0x01,       0x00, 0xbe, //     O5 D48
-  0x40, 0x01,       0x01, 0x1d, //     O4 G48
-  0x20, 0x03,       0x10,       //        R16
+  PACK( 1, O5A),                //     O5 A48
+  PACK( 1, O5D),                //     O5 D48
+  PACK( 1, O4G),                //     O4 G48
+  PACK( 3, R),                  //        R16
 
-  0x20, 0x04,       0x10,       //        R12
+  PACK( 4, R),                  //        R12
 
-  0xff,
+  EOM,
 };
 
 static const struct sound_fragment intro = {
