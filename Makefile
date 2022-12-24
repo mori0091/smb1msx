@@ -14,4 +14,4 @@ include ${LIBMSX_HOME}/mk/ascii16.mk
 include ${LIBMSX_HOME}/mk/build.mk
 
 run: build
-	openmsx -cart ${BINDIR}/${NAME}.rom -machine C-BIOS_MSX2+
+	openmsx.exe -cart ${BINDIR}/${NAME}.rom -machine C-BIOS_MSX2+
