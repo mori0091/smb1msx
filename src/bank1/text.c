@@ -45,7 +45,7 @@ static void text_put_char(uint8_t c) {
     buf[3] = cc[(bits     ) & 3];
     vmem_write(dst, buf, 4);
     dst += 128;
-    src ++;
+    src++;
   }
   locate(text_x + 8, text_y);
 }
