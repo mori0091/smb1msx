@@ -6,11 +6,13 @@
 Super Mario Bros. (SMB1) is a video game for NES released on 1985 by NINTENDO.
 - Super Mario Bros. [[https://www.nintendo.co.jp/software/smb1/index.html]]
 
-This is an experimental, fan-made, MSX version of SMB1 clone.
+This is an experimental, fan-made, incomplete, MSX version of SMB1 clone.
 - *MADE FROM FULL SCRATCH, BUT...*
 - *NOT LISENCED BY Nintendo Co.,Ltd.*
 - *NO PRE-BUILT PLAYABLE GAME DISK IMAGE NOR ROM IMAGE IS INCLUDED IN THE REPOSITORY.*
-- *DO NOT COPY, MODIFY, MERGE, PUBLISH, DISTRIBUTE, SUBLICENSE, AND/OR SELL FILES IN THIS REPOSITORY, DISK IMAGE, ROM IMAGE, AND/OR ANY ARTIFACTS, THAT MADE FROM FILES IN THIS REPOSITORY.*
+- *DO NOT COPY, MODIFY, MERGE, PUBLISH, DISTRIBUTE, SUBLICENSE, AND/OR SELL
+  FILES IN THIS REPOSITORY, DISK IMAGE, ROM IMAGE, AND/OR ANY ARTIFACTS, THAT
+  MADE FROM FILES IN THIS REPOSITORY.*
 
 Copyright (C) 1985 NINTENDO \\
 Copyright (C) 2021 Daishi Mori (mori0091)
@@ -23,8 +25,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-
-[[https://www.youtube.com/watch?v=aWMUJvC_TQA][https://img.youtube.com/vi/aWMUJvC_TQA/0.jpg]]
+[[https://www.youtube.com/watch?v=Lj5KaXntIz0][https://img.youtube.com/vi/Lj5KaXntIz0/0.jpg]]
 
 
 * Pre-requisites
