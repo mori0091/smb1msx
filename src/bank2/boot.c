@@ -8,6 +8,37 @@
 #include "boot.h"
 #include "macros.h"
 
+#include "assets/tileset.h"     // To construct BG tileset.
+#include "assets/tilemap.h"     // To construct sprite patterns for Mario.
+
+/* Pre-defined sprite pattern table */
+extern const size_t smb1spt_size;
+extern const char smb1spt[];
+
+/*
+ * Two tilesets (2 layers x 256 pattern x 8x8 pixel x 1bpp) and some tilemaps to
+ * generate two-layer sprite patterns for Mario.
+ */
+extern const Tileset_256x8x8x1bpp tileset_mario_0;
+extern const Tileset_256x8x8x1bpp tileset_mario_1;
+const Tileset_256x8x8x1bpp * sprite_tilsets[] = {
+  &tileset_mario_1,
+  &tileset_mario_0,
+};
+
+extern const TilemapElement tilemap_mario[64];         // Tilemap for Mario.
+extern const TilemapElement tilemap_super_mario_u[64]; // Tilemap for upper body of Super Mario.
+extern const TilemapElement tilemap_super_mario_b[64]; // Tilemap for lower body of Super Mario.
+extern const TilemapElement tilemap_fire_mario_u[64];  // Tilemap for upper body of Fire Mario. (Fireball, etc.)
+extern const TilemapElement tilemap_fire_mario_b[64];  // Tilemap for lower body of Fire Mario. (Fireball, etc.)
+
+#define VRAM_PAGE_FILL(pp, byte)                              \
+  vdp_cmd_execute_HMMV(0,                                     \
+                       (pp)*LINES_PER_VRAM_PAGE,              \
+                       PIXELS_PER_LINE,                       \
+                       LINES_PER_VRAM_PAGE,                   \
+                       (byte))
+
 void boot_init_vdp(void);
 void boot_init_vmem(void);
 
@@ -16,13 +47,6 @@ void boot_main(void) __banked {
   boot_init_vdp();
   boot_init_vmem();
 }
-
-/* defined tileset */
-#include "assets/tileset.h"
-
-/* defined sprite pattern table */
-extern const size_t smb1spt_size;
-extern const char smb1spt[];
 
 void boot_init_vdp(void) {
   /* Set backdrop color (border color of the screen) */
@@ -47,28 +71,6 @@ void boot_init_vdp(void) {
   vdp_set_adjust(-4, 0);           /* centering visible display area */
 }
 
-#define VRAM_PAGE_FILL(pp, byte)                              \
-  vdp_cmd_execute_HMMV(0,                                     \
-                       (pp)*LINES_PER_VRAM_PAGE,              \
-                       PIXELS_PER_LINE,                       \
-                       LINES_PER_VRAM_PAGE,                   \
-                       (byte))
-
-#include "assets/tilemap.h"
-
-extern const u8_256x8 tileset_mario_0;
-extern const u8_256x8 tileset_mario_1;
-const u8_256x8 * sprite_tilsets[] = {
-  &tileset_mario_1,
-  &tileset_mario_0,
-};
-
-extern const uint8_t tilemap_mario[64][2];
-extern const uint8_t tilemap_super_mario_u[64][2];
-extern const uint8_t tilemap_super_mario_b[64][2];
-extern const uint8_t tilemap_fire_mario_u[64][2];
-extern const uint8_t tilemap_fire_mario_b[64][2];
-
 void boot_init_vmem(void) {
   /* clear VRAM page #0 and #1 */
   VRAM_PAGE_FILL(0, 0x00);
@@ -81,10 +83,10 @@ void boot_init_vmem(void) {
   /* Clear sprites */
   vmem_memset(SPRITES, 217, sizeof(struct sprite) * 32);
 
-  /* Copy sprite patterns to VRAM */
-  vmem_write(REF_SPRITE_PATTERNS, (void *)smb1spt, smb1spt_size);
+  /* Copy pre-defined sprite patterns (mushroom, fire-flower, etc.) to VRAM */
   vmem_write(SPRITE_PATTERNS, (void *)smb1spt, smb1spt_size);
 
+  /* Construct Mario's sprite patterns from 2 tilesets and various tilemaps. */
   vmem_set_write_address(REF_SPRITE_PATTERNS);
   /* facing to left */
   tilemap_copy_to_vmem_4_hflip(64, tilemap_mario        , 2, sprite_tilsets); // + 0..+15
@@ -99,7 +101,7 @@ void boot_init_vmem(void) {
   tilemap_copy_to_vmem_4      (64, tilemap_fire_mario_u , 2, sprite_tilsets);
   tilemap_copy_to_vmem_4      (64, tilemap_fire_mario_b , 2, sprite_tilsets);
 
-  /* Copy tileset image to VRAM page #3 */
+  /* Construct BG tileset image to VRAM page #3 */
   tileset_decompress_into_vram();
 
   // /* Draw color palette at bottom of VRAM page #3 */

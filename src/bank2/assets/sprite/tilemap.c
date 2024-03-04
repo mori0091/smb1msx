@@ -92,8 +92,8 @@ static void copy_tile_to_vmem(uint8_t attr, const uint8_t tile[8]) {
   }
 }
 
-void tilemap_copy_to_vmem(uint8_t n, const uint8_t tilemap[/* n */][2],
-                          uint8_t m, const u8_256x8 * tileset[/* m */]) {
+void tilemap_copy_to_vmem(uint8_t n, const TilemapElement * tilemap,
+                          uint8_t m, const Tileset_256x8x8x1bpp ** tileset) {
   const uint8_t * p = (const uint8_t *)tilemap;
   while (n--) {
     const uint8_t idx = *p++;
@@ -104,8 +104,8 @@ void tilemap_copy_to_vmem(uint8_t n, const uint8_t tilemap[/* n */][2],
   }
 }
 
-void tilemap_copy_to_vmem_hflip(uint8_t n, const uint8_t tilemap[/* n */][2],
-                                uint8_t m, const u8_256x8 * tileset[/* m */]) {
+void tilemap_copy_to_vmem_hflip(uint8_t n, const TilemapElement * tilemap,
+                                uint8_t m, const Tileset_256x8x8x1bpp ** tileset) {
   const uint8_t * p = (const uint8_t *)tilemap;
   while (n--) {
     const uint8_t idx = *p++;
@@ -116,8 +116,8 @@ void tilemap_copy_to_vmem_hflip(uint8_t n, const uint8_t tilemap[/* n */][2],
   }
 }
 
-void tilemap_copy_to_vmem_vflip(uint8_t n, const uint8_t tilemap[/* n */][2],
-                                uint8_t m, const u8_256x8 * tileset[/* m */]) {
+void tilemap_copy_to_vmem_vflip(uint8_t n, const TilemapElement * tilemap,
+                                uint8_t m, const Tileset_256x8x8x1bpp ** tileset) {
   const uint8_t * p = (const uint8_t *)tilemap;
   while (n--) {
     const uint8_t idx = *p++;
@@ -128,8 +128,8 @@ void tilemap_copy_to_vmem_vflip(uint8_t n, const uint8_t tilemap[/* n */][2],
   }
 }
 
-void tilemap_copy_to_vmem_4(uint8_t n, const uint8_t tilemap[/* n */][2],
-                            uint8_t m, const u8_256x8 * tileset[/* m */]) {
+void tilemap_copy_to_vmem_4(uint8_t n, const TilemapElement * tilemap,
+                            uint8_t m, const Tileset_256x8x8x1bpp ** tileset) {
   const uint8_t * p = (const uint8_t *)tilemap;
   for (uint8_t i = 0; i < n; i += 4) {
     const uint8_t idx0 = *p++;
@@ -141,7 +141,7 @@ void tilemap_copy_to_vmem_4(uint8_t n, const uint8_t tilemap[/* n */][2],
     const uint8_t idx3 = *p++;
     const uint8_t attr3 = *p++;
     for (uint8_t j = 0; j < m; ++j) {
-      const u8_256x8 * ts = tileset[j];
+      const Tileset_256x8x8x1bpp * ts = tileset[j];
       copy_tile_to_vmem(attr0, (*ts)[idx0]);
       copy_tile_to_vmem(attr1, (*ts)[idx1]);
       copy_tile_to_vmem(attr2, (*ts)[idx2]);
@@ -150,8 +150,8 @@ void tilemap_copy_to_vmem_4(uint8_t n, const uint8_t tilemap[/* n */][2],
   }
 }
 
-void tilemap_copy_to_vmem_4_hflip(uint8_t n, const uint8_t tilemap[/* n */][2],
-                                  uint8_t m, const u8_256x8 * tileset[/* m */]) {
+void tilemap_copy_to_vmem_4_hflip(uint8_t n, const TilemapElement * tilemap,
+                                  uint8_t m, const Tileset_256x8x8x1bpp ** tileset) {
   const uint8_t * p = (const uint8_t *)tilemap;
   for (uint8_t i = 0; i < n; i += 4) {
     const uint8_t idx0 = *p++;
@@ -163,7 +163,7 @@ void tilemap_copy_to_vmem_4_hflip(uint8_t n, const uint8_t tilemap[/* n */][2],
     const uint8_t idx3 = *p++;
     const uint8_t attr3 = *p++ ^ FLIP_HORIZONTAL;
     for (uint8_t j = 0; j < m; ++j) {
-      const u8_256x8 * ts = tileset[j];
+      const Tileset_256x8x8x1bpp * ts = tileset[j];
       copy_tile_to_vmem(attr2, (*ts)[idx2]);
       copy_tile_to_vmem(attr3, (*ts)[idx3]);
       copy_tile_to_vmem(attr0, (*ts)[idx0]);
@@ -172,8 +172,8 @@ void tilemap_copy_to_vmem_4_hflip(uint8_t n, const uint8_t tilemap[/* n */][2],
   }
 }
 
-void tilemap_copy_to_vmem_4_vflip(uint8_t n, const uint8_t tilemap[/* n */][2],
-                                  uint8_t m, const u8_256x8 * tileset[/* m */]) {
+void tilemap_copy_to_vmem_4_vflip(uint8_t n, const TilemapElement * tilemap,
+                                  uint8_t m, const Tileset_256x8x8x1bpp ** tileset) {
   const uint8_t * p = (const uint8_t *)tilemap;
   for (uint8_t i = 0; i < n; i += 4) {
     const uint8_t idx0 = *p++;
@@ -185,7 +185,7 @@ void tilemap_copy_to_vmem_4_vflip(uint8_t n, const uint8_t tilemap[/* n */][2],
     const uint8_t idx3 = *p++;
     const uint8_t attr3 = *p++ ^ FLIP_VERTICAL;
     for (uint8_t j = 0; j < m; ++j) {
-      const u8_256x8 * ts = tileset[j];
+      const Tileset_256x8x8x1bpp * ts = tileset[j];
       copy_tile_to_vmem(attr1, (*ts)[idx1]);
       copy_tile_to_vmem(attr0, (*ts)[idx0]);
       copy_tile_to_vmem(attr3, (*ts)[idx3]);

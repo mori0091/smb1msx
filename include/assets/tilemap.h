@@ -31,9 +31,24 @@ enum {
 };
 
 /**
- * A 256x8 matrix of uint8_t type.
+ * The elements of the tilemap consist of the pattern index to the tileset and
+ * the identifier of the matrix transformation.
  */
-typedef uint8_t u8_256x8[256][8];
+typedef uint8_t TilemapElement[2];
+
+/**
+ * 8x8 pixel 1bpp image.
+ */
+typedef uint8_t Img8x8x1[8];
+
+/**
+ * Set of 256 bitmap tiles.
+ *
+ * \note
+ * Its layout is same as pattern generator talble and sprite pattern generator
+ * table of VDP.
+ */
+typedef Img8x8x1 Tileset_256x8x8x1bpp[256];
 
 /**
  * Copy 1 bpp tile pattern of 8x8 pixels to VRAM according to the given tilemap.
@@ -94,12 +109,12 @@ typedef uint8_t u8_256x8[256][8];
  * \param n        the number of elements of tilemap
  * \param tilemap  n-element list of (idx, attr) tupples
  * \param m        the number of leyars / the number of tilesets
- * \param tileset  a list of pointers to tileset. (one tileset per one layer)
+ * \param tileset  m-element list of pointers to tileset. (one tileset per one layer)
  *
  * \note vmem_set_write_address() is required before call to this function.
  */
-void tilemap_copy_to_vmem(uint8_t n, const uint8_t tilemap[/* n */][2],
-                          uint8_t m, const u8_256x8 * tileset[/* m */]);
+void tilemap_copy_to_vmem(uint8_t n, const TilemapElement * tilemap,
+                          uint8_t m, const Tileset_256x8x8x1bpp ** tileset);
 
 /**
  * Same as tilemap_copy_to_vmem() but resulting tiles are flipped horizonally.
@@ -107,12 +122,12 @@ void tilemap_copy_to_vmem(uint8_t n, const uint8_t tilemap[/* n */][2],
  * \param n        the number of elements of tilemap
  * \param tilemap  n-element list of (idx, attr) tupples
  * \param m        the number of leyars / the number of tilesets
- * \param tileset  a list of pointers to tileset. (one tileset per one layer)
+ * \param tileset  m-element list of pointers to tileset. (one tileset per one layer)
  *
  * \note vmem_set_write_address() is required before call to this function.
  */
-void tilemap_copy_to_vmem_hflip(uint8_t n, const uint8_t tilemap[/* n */][2],
-                                uint8_t m, const u8_256x8 * tileset[/* m */]);
+void tilemap_copy_to_vmem_hflip(uint8_t n, const TilemapElement * tilemap,
+                                uint8_t m, const Tileset_256x8x8x1bpp ** tileset);
 
 /**
  * Same as tilemap_copy_to_vmem() but resulting tiles are flipped vertically.
@@ -120,12 +135,12 @@ void tilemap_copy_to_vmem_hflip(uint8_t n, const uint8_t tilemap[/* n */][2],
  * \param n        the number of elements of tilemap
  * \param tilemap  n-element list of (idx, attr) tupples
  * \param m        the number of leyars / the number of tilesets
- * \param tileset  a list of pointers to tileset. (one tileset per one layer)
+ * \param tileset  m-element list of pointers to tileset. (one tileset per one layer)
  *
  * \note vmem_set_write_address() is required before call to this function.
  */
-void tilemap_copy_to_vmem_vflip(uint8_t n, const uint8_t tilemap[/* n */][2],
-                                uint8_t m, const u8_256x8 * tileset[/* m */]);
+void tilemap_copy_to_vmem_vflip(uint8_t n, const TilemapElement * tilemap,
+                                uint8_t m, const Tileset_256x8x8x1bpp ** tileset);
 
 /**
  * Same as tilemap_copy_to_vmem() but tilemap is processed for each 4 elements.
@@ -167,15 +182,15 @@ void tilemap_copy_to_vmem_vflip(uint8_t n, const uint8_t tilemap[/* n */][2],
  * \param n        the number of elements of tilemap (multiple of 4)
  * \param tilemap  n-element list of (idx, attr) tupples
  * \param m        the number of leyars / the number of tilesets
- * \param tileset  a list of pointers to tileset. (one tileset per one layer)
+ * \param tileset  m-element list of pointers to tileset. (one tileset per one layer)
  *
  * \note vmem_set_write_address() is required before call to this function.
  *
  * \note If `m` is 1, this function produces exactly the same result as
  * tilemap_copy_to_vmem().
  */
-void tilemap_copy_to_vmem_4(uint8_t n, const uint8_t tilemap[/* n */][2],
-                            uint8_t m, const u8_256x8 * tileset[/* m */]);
+void tilemap_copy_to_vmem_4(uint8_t n, const TilemapElement * tilemap,
+                            uint8_t m, const Tileset_256x8x8x1bpp ** tileset);
 
 /**
  * Same as tilemap_copy_to_vmem_4() but resulting tiles are flipped horizonally.
@@ -183,12 +198,12 @@ void tilemap_copy_to_vmem_4(uint8_t n, const uint8_t tilemap[/* n */][2],
  * \param n        the number of elements of tilemap (multiple of 4)
  * \param tilemap  n-element list of (idx, attr) tupples
  * \param m        the number of leyars / the number of tilesets
- * \param tileset  a list of pointers to tileset. (one tileset per one layer)
+ * \param tileset  m-element list of pointers to tileset. (one tileset per one layer)
  *
  * \note vmem_set_write_address() is required before call to this function.
  */
-void tilemap_copy_to_vmem_4_hflip(uint8_t n, const uint8_t tilemap[/* n */][2],
-                                  uint8_t m, const u8_256x8 * tileset[/* m */]);
+void tilemap_copy_to_vmem_4_hflip(uint8_t n, const TilemapElement * tilemap,
+                                  uint8_t m, const Tileset_256x8x8x1bpp ** tileset);
 
 /**
  * Same as tilemap_copy_to_vmem_4() but resulting tiles are flipped vertically.
@@ -196,11 +211,11 @@ void tilemap_copy_to_vmem_4_hflip(uint8_t n, const uint8_t tilemap[/* n */][2],
  * \param n        the number of elements of tilemap (multiple of 4)
  * \param tilemap  n-element list of (idx, attr) tupples
  * \param m        the number of leyars / the number of tilesets
- * \param tileset  a list of pointers to tileset. (one tileset per one layer)
+ * \param tileset  m-element list of pointers to tileset. (one tileset per one layer)
  *
  * \note vmem_set_write_address() is required before call to this function.
  */
-void tilemap_copy_to_vmem_4_vflip(uint8_t n, const uint8_t tilemap[/* n */][2],
-                                  uint8_t m, const u8_256x8 * tileset[/* m */]);
+void tilemap_copy_to_vmem_4_vflip(uint8_t n, const TilemapElement * tilemap,
+                                  uint8_t m, const Tileset_256x8x8x1bpp ** tileset);
 
 #endif // TILEMAP_H_
